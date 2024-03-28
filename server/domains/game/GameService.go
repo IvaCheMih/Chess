@@ -1,6 +1,8 @@
 package game
 
-import "github.com/IvaCheMih/chess/server/domains/game/dto"
+import (
+	"github.com/IvaCheMih/chess/server/domains/game/dto"
+)
 
 type GamesService struct {
 	boardRepo  *BoardCellsRepository
@@ -43,7 +45,8 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor dto.RequestedCo
 		return dto.ResponseGetGame{}, err
 	}
 
-	if !g.boardRepo.CreateNewBoardCells(requestCreateGame.GameId, tx) {
+	err = g.boardRepo.CreateNewBoardCells(requestCreateGame.GameId, tx)
+	if err != nil {
 		return dto.ResponseGetGame{}, err
 	}
 
@@ -71,29 +74,25 @@ func (g *GamesService) GetBoard(gameId int, userId int) (dto.ResponseGetBoard, e
 		return dto.ResponseGetBoard{}, err
 	}
 
-	boardMap := map[int]int{}
+	err = tx.Commit()
 
-	for _, cell := range boardCells {
-		boardMap[cell.IndexCell] = cell.FigureId
-	}
+	responseBoard := make([]dto.BoardCell, 64)
 
-	var responseBoard []dto.BoardCell
+	for _, boardCell := range boardCells {
+		responseBoard[boardCell.IndexCell] = dto.BoardCell{boardCell.IndexCell, boardCell.FigureId}
 
-	for i := 0; i < 64; i++ {
-		if boardMap[i] > 0 {
-			var cell = dto.BoardCell{i, boardMap[i]}
-			responseBoard = append(responseBoard, cell)
-		} else {
-			var cell = dto.BoardCell{i, 0}
-			responseBoard = append(responseBoard, cell)
-		}
 	}
 
 	var responseGetBoard = dto.ResponseGetBoard{
 		BoardCells: responseBoard,
 	}
 
-	err = tx.Commit()
-
 	return responseGetBoard, err
+}
+
+var startField = [][]int{
+	{0, 7}, {1, 8}, {2, 9}, {3, 10}, {4, 11}, {5, 9}, {6, 8}, {7, 7},
+	{8, 12}, {9, 12}, {10, 12}, {11, 12}, {12, 12}, {13, 12}, {14, 12}, {15, 12},
+	{48, 6}, {49, 6}, {50, 6}, {51, 6}, {52, 6}, {53, 6}, {54, 6}, {55, 6},
+	{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 1},
 }

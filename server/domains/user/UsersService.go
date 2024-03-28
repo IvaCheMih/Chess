@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/user/dto"
 	_ "github.com/lib/pq"
 )
@@ -18,6 +19,7 @@ func CreateUsersService(usersRepo *UsersRepository) UsersService {
 func (u *UsersService) CreateSession(clientId int, password string) bool {
 	tx, err := u.usersRepo.db.Begin()
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 
@@ -25,11 +27,13 @@ func (u *UsersService) CreateSession(clientId int, password string) bool {
 
 	passwordFromBase, err := u.usersRepo.GetClientPassword(clientId, tx)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 
 	err = tx.Commit()
 	if err != nil || password != passwordFromBase {
+		fmt.Println(err)
 		return false
 	}
 
@@ -39,6 +43,7 @@ func (u *UsersService) CreateSession(clientId int, password string) bool {
 func (u *UsersService) CreateUser(password string) (dto.CreateUsersResponse, error) {
 	tx, err := u.usersRepo.db.Begin()
 	if err != nil {
+		fmt.Println(err)
 		return dto.CreateUsersResponse{}, err
 	}
 
@@ -46,11 +51,13 @@ func (u *UsersService) CreateUser(password string) (dto.CreateUsersResponse, err
 
 	query, err := u.usersRepo.CreateUser(password, tx)
 	if err != nil {
+		fmt.Println(err)
 		return dto.CreateUsersResponse{}, err
 	}
 
 	err = tx.Commit()
-	if err != nil || query.Password == password {
+	if err != nil || query.Password != password {
+		fmt.Println(err)
 		return dto.CreateUsersResponse{}, err
 	}
 

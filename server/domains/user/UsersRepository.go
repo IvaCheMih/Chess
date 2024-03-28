@@ -2,7 +2,9 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/user/dto"
+	_ "github.com/lib/pq"
 )
 
 type UsersRepository struct {
@@ -18,7 +20,7 @@ func CreateUsersRepository(db *sql.DB) UsersRepository {
 func (r *UsersRepository) GetClientPassword(clientId int, tx *sql.Tx) (string, error) {
 	var password string
 
-	row, err := tx.Query(`
+	rows, err := tx.Query(`
 		select password
 		from users 
 			where id = $1
@@ -27,10 +29,13 @@ func (r *UsersRepository) GetClientPassword(clientId int, tx *sql.Tx) (string, e
 	)
 
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 
-	err = row.Scan(&password)
+	for rows.Next() {
+		err = rows.Scan(&password)
+	}
 
 	return password, err
 }
@@ -46,7 +51,7 @@ func (r *UsersRepository) CreateUser(password string, tx *sql.Tx) (dto.CreateUse
 		password,
 	)
 
-	err := row.Scan(&response)
+	err := row.Scan(&response.Id, &response.Password)
 
 	return response, err
 }

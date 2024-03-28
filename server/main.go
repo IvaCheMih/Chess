@@ -1,18 +1,20 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	jwtware "github.com/gofiber/contrib/jwt"
+)
 
 import (
 	"github.com/IvaCheMih/chess/server/domains"
 	"github.com/IvaCheMih/chess/server/domains/game"
 	"github.com/IvaCheMih/chess/server/domains/user"
-	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"time"
 )
 
-const connect = "postgres://postgres:vonefi88@localhost/postgres?sslmode=disable"
+const connect = "postgres://user:pass@postgres:5432/test?sslmode=disable"
 
 var db *sql.DB
 
@@ -59,15 +61,15 @@ func main() {
 
 	server := fiber.New()
 
+	server.Post("/user", userHandlers.CreateUser)
+
+	server.Post("/session", userHandlers.CreateSession)
+
 	server.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
 	}))
 
-	server.Post("/session", userHandlers.CreateSession)
-
-	server.Post("/user", userHandlers.CreateUser)
-
-	server.Get("/user/:userId", userHandlers.GetUser)
+	//server.Get("/user/:userId", userHandlers.GetUser)
 
 	server.Post("/game", gamesHandlers.CreateGame)
 
@@ -153,8 +155,7 @@ func main() {
 	//	server.SendMessage(*game.BlackClientId, "do-move", game.GetBoard())
 	//})
 
-	log.Fatal(server.Listen(":3000"))
-
+	log.Fatal(server.Listen(":8082"))
 	//err := http.ListenAndServe(":8082", nil)
 	//if err != nil {
 	//	log.Fatal(err)

@@ -7,9 +7,9 @@ CREATE TABLE users (
 
 CREATE TABLE boardCells (
     id          serial       NOT NULL,
-    gameId      integer      NOT NULL,
-    indexCell   integer      NOT NULL,
-    figureId    integer      NOT NULL,
+    gameId      integer      NOT NULL default 0,
+    indexCell   integer      NOT NULL default 0,
+    figureId    integer      NOT NULL default 0,
 
     CONSTRAINT boardCells_pkey PRIMARY KEY (id)
 );

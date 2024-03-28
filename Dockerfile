@@ -8,18 +8,16 @@ RUN go mod download
 
 COPY ./server/ ./server
 
-RUN go build -o chess_http ./src
+RUN go build -o chess ./server
 
 FROM ubuntu
 
 WORKDIR /app
 
-ADD ./postgresql/ ./postgresql/
-
 ADD ./migrations/ ./migrations/
 
-COPY --from=builder /app/chess_http .
+COPY --from=builder /app/chess .
 
 EXPOSE 8082
 
-CMD [ "./chess_http" ]
+CMD [ "./chess" ]

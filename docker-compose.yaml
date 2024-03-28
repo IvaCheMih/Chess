@@ -4,13 +4,10 @@ services:
   application:
     depends_on:
       - postgres
-      - clickhouse
-      - redis
-      - nats
     build:
       context: .
     ports:
-      - "8081:8081"
+      - "8082:8082"
     networks:
       - infra
 

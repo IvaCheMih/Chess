@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/user/dto"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -18,7 +19,13 @@ func CreateUserHandlers(usersService *UsersService) UserHandlers {
 
 func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 	clientId := dto.GetClientId(c)
-	clientPassword := dto.GetClientPassword(c)
+
+	fmt.Println(clientId)
+
+	clientPassword, err := dto.GetClientPassword(c)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 
 	if !h.usersService.CreateSession(clientId, clientPassword) {
 		return c.SendStatus(fiber.StatusUnauthorized)
@@ -35,7 +42,10 @@ func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 }
 
 func (h *UserHandlers) CreateUser(c *fiber.Ctx) error {
-	clientPassword := dto.GetClientPassword(c)
+	clientPassword, err := dto.GetClientPassword(c)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 
 	userData, err := h.usersService.CreateUser(clientPassword)
 	if err != nil {

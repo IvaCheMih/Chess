@@ -2,7 +2,9 @@ package game
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	_ "github.com/lib/pq"
 )
 
 type GamesRepository struct {
@@ -26,7 +28,7 @@ func (g *GamesRepository) CreateGame(userId int, tx *sql.Tx) (dto.ResponseGetGam
 
 	var requestCreateGame dto.ResponseGetGame
 
-	err := row.Scan(&requestCreateGame)
+	err := RowToGame(row, &requestCreateGame)
 
 	return requestCreateGame, err
 }
@@ -48,6 +50,7 @@ func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (dto.ResponseGetGame, e
 	for resultQuery.Next() {
 		err = resultQuery.Scan(&responseCreateGame)
 		if err != nil {
+			fmt.Println(22)
 			return dto.ResponseGetGame{}, err
 		}
 	}
@@ -71,18 +74,31 @@ func (g *GamesRepository) JoinBlackToGame(gameId int, userId int, tx *sql.Tx) er
 func (g *GamesRepository) GetGame(gameId int, tx *sql.Tx) (dto.ResponseGetGame, error) {
 	resultQuery, err := tx.Query(`
 		SELECT * FROM games
-		    where gameId = $1
+		    where id = $1
 		`,
 		gameId,
 	)
+
+	fmt.Println(resultQuery)
+
+	if err != nil {
+		fmt.Println(1111)
+		return dto.ResponseGetGame{}, err
+	}
+
 	var responseCreateGame dto.ResponseGetGame
 
 	for resultQuery.Next() {
-		err = resultQuery.Scan(&responseCreateGame)
+		err = resultQuery.Scan(&responseCreateGame.GameId, &responseCreateGame.WhiteUserId, &responseCreateGame.BlackUserId, &responseCreateGame.IsStarted, &responseCreateGame.IsEnded)
 		if err != nil {
+			fmt.Println(2222)
 			return dto.ResponseGetGame{}, err
 		}
 	}
 
 	return responseCreateGame, nil
+}
+
+func RowToGame(row *sql.Row, requestCreateGame *dto.ResponseGetGame) error {
+	return row.Scan(&requestCreateGame.GameId, &requestCreateGame.WhiteUserId, &requestCreateGame.BlackUserId, &requestCreateGame.IsStarted, &requestCreateGame.IsEnded)
 }

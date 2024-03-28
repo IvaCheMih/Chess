@@ -2,6 +2,7 @@ package domains
 
 import (
 	"errors"
+	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -18,6 +19,7 @@ func CreateMigrationService() MigrationService {
 func (s *MigrationService) RunUp(postgresqlUrl string, pathToMigrations string) {
 	migration, err := migrate.New(pathToMigrations, postgresqlUrl)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 

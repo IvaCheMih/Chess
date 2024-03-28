@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,11 +21,13 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 
 	userRequestedColor, err2 := dto.GetRequestedColor(c)
 	if err1 != nil || err2 != nil {
+		fmt.Println(err1, err2)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
 	requestCreateGame, err := h.gameService.CreateGame(userId, userRequestedColor)
 	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -39,6 +42,8 @@ func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 	if err1 != nil || err2 != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
+
+	fmt.Println(-1)
 
 	responseGetBoard, err := h.gameService.GetBoard(gameId, userId)
 	if err != nil {
