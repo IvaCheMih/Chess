@@ -1,4 +1,24 @@
 basePath: /
+definitions:
+  dto.RequestPassword:
+    properties:
+      password:
+        type: string
+    type: object
+  dto.RequestUserIdAndPassword:
+    properties:
+      id:
+        type: integer
+      password:
+        type: string
+    type: object
+  dto.RequestedCreateGame:
+    properties:
+      id:
+        type: integer
+      isWhite:
+        type: boolean
+    type: object
 host: localhost:8082
 info:
   contact:
@@ -13,11 +33,18 @@ info:
   title: Fiber Swagger Example API
   version: "2.0"
 paths:
-  /lol/:
-    get:
+  /game/:
+    post:
       consumes:
-      - '*/*'
-      description: get the status of server.
+      - application/json
+      description: create new game.
+      parameters:
+      - description: request
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestedCreateGame'
       produces:
       - application/json
       responses:
@@ -26,14 +53,27 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Show the status of server.
+      security:
+      - JWT: []
+      summary: create new game.
       tags:
-      - lol
-  /test/:
+      - game
+  /game/:gameId/board:
     get:
       consumes:
-      - '*/*'
-      description: get the status of server.
+      - application/json
+      description: get board.
+      parameters:
+      - description: gameId
+        in: header
+        name: gameId
+        required: true
+        type: string
+      - description: userId
+        in: header
+        name: userId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -42,9 +82,64 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Show the status of server.
+      security:
+      - JWT: []
+      summary: get board.
       tags:
-      - test
+      - board
+  /session/:
+    post:
+      consumes:
+      - application/json
+      description: create new session.
+      parameters:
+      - description: request
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestUserIdAndPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: create new session.
+      tags:
+      - session
+  /user/:
+    post:
+      consumes:
+      - application/json
+      description: create new user.
+      parameters:
+      - description: request
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: create new user.
+      tags:
+      - user
 schemes:
 - http
+securityDefinitions:
+  JWT:
+    description: JWT security accessToken. Please add it in the format "Bearer {AccessToken}"
+      to authorize your requests.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

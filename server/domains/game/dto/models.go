@@ -1,6 +1,7 @@
 package dto
 
-type RequestedColor struct {
+type RequestedCreateGame struct {
+	Id      int
 	IsWhite bool
 }
 
@@ -19,4 +20,9 @@ type BoardCell struct {
 
 type ResponseGetBoard struct {
 	BoardCells []BoardCell
+}
+
+type RequestGetBoard struct {
+	GameId int
+	UserId int
 }

@@ -2,7 +2,7 @@ package dto
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
@@ -16,26 +16,43 @@ func GetClientId(c *fiber.Ctx) (int, error) {
 	return int(clientId), err
 }
 
-func GetRequestedColor(c *fiber.Ctx) (RequestedColor, error) {
+func GetRequestNewGame(c *fiber.Ctx) (RequestedCreateGame, error) {
 	body := c.Body()
 
-	var requestedColor RequestedColor
+	var request RequestedCreateGame
 
-	err := json.Unmarshal(body, &requestedColor)
+	err := json.Unmarshal(body, &request)
 
-	return requestedColor, err
+	return request, err
 }
 
-func GetGameId(c *fiber.Ctx) (int, error) {
-	reqHeaders, err := c.ParamsInt("gameId")
+func GetRequestGetBoard(c *fiber.Ctx) (RequestGetBoard, error) {
+	headers := c.GetReqHeaders()
 
-	fmt.Println(reqHeaders)
+	gameIdString := headers["Gameid"]
+	gameId, err1 := strconv.ParseInt(gameIdString[0], 10, 0)
 
-	//if len(reqHeaders["gameId"]) != 1 {
-	//	if gameId, err := strconv.Atoi(reqHeaders["gameId"][0]); gameId != 0 && err == nil {
-	//		return gameId, err
-	//	}
-	//}
+	userIdString := headers["Userid"]
+	userId, err2 := strconv.ParseInt(userIdString[0], 10, 0)
 
-	return reqHeaders, err
+	if err1 != nil || err2 != nil {
+		return RequestGetBoard{}, errors.New("headers error")
+	}
+
+	var request = RequestGetBoard{
+		GameId: int(gameId),
+		UserId: int(userId),
+	}
+
+	return request, nil
 }
+
+//func GetRequestGetBoard(c *fiber.Ctx) (RequestGetBoard, error) {
+//	body := c.Body()
+//
+//	var request RequestGetBoard
+//
+//	err := json.Unmarshal(body, &request)
+//
+//	return request, err
+//}

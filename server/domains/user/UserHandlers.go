@@ -17,17 +17,23 @@ func CreateUserHandlers(usersService *UsersService) UserHandlers {
 	}
 }
 
+// CreateSession godoc
+// @Summary create new session.
+// @Description create new session.
+// @Tags session
+// @Accept json
+// @Produce json
+// @Param Body body dto.RequestUserIdAndPassword true "request"
+// @Success 200 {object} map[string]interface{}
+// @Router /session/ [post]
 func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
-	clientId := dto.GetClientId(c)
 
-	fmt.Println(clientId)
-
-	clientPassword, err := dto.GetClientPassword(c)
+	request, err := dto.GetIdAndPassword(c)
 	if err != nil {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	if !h.usersService.CreateSession(clientId, clientPassword) {
+	if !h.usersService.CreateSession(request.Id, request.Password) {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
@@ -41,13 +47,23 @@ func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"token": t})
 }
 
+// CreateUser godoc
+// @Summary create new user.
+// @Description create new user.
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param    Body body  dto.RequestPassword true "request"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/ [post]
 func (h *UserHandlers) CreateUser(c *fiber.Ctx) error {
-	clientPassword, err := dto.GetClientPassword(c)
-	if err != nil {
+	clientPassword, err := dto.GetPassword(c)
+	if err != nil || clientPassword.Password == "" {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	userData, err := h.usersService.CreateUser(clientPassword)
+	userData, err := h.usersService.CreateUser(clientPassword.Password)
 	if err != nil {
 		return c.SendStatus(fiber.StatusNonAuthoritativeInformation)
 	}

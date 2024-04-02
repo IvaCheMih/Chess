@@ -30,6 +30,8 @@ func (g *GamesRepository) CreateGame(userId int, tx *sql.Tx) (dto.ResponseGetGam
 
 	err := RowToGame(row, &requestCreateGame)
 
+	fmt.Println(requestCreateGame)
+
 	return requestCreateGame, err
 }
 
@@ -37,7 +39,7 @@ func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (dto.ResponseGetGame, e
 	resultQuery, err := tx.Query(`
 		SELECT * FROM games
 		    where blackUserId = 0
-		    desc limit 1
+		    LIMIT 1 
 		`,
 	)
 
@@ -48,7 +50,7 @@ func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (dto.ResponseGetGame, e
 	var responseCreateGame dto.ResponseGetGame
 
 	for resultQuery.Next() {
-		err = resultQuery.Scan(&responseCreateGame)
+		err = resultQuery.Scan(&responseCreateGame.GameId, &responseCreateGame.WhiteUserId, &responseCreateGame.BlackUserId, &responseCreateGame.IsStarted, &responseCreateGame.IsEnded)
 		if err != nil {
 			fmt.Println(22)
 			return dto.ResponseGetGame{}, err
@@ -63,7 +65,8 @@ func (g *GamesRepository) JoinBlackToGame(gameId int, userId int, tx *sql.Tx) er
 	_, err := tx.Exec(`
 		update games
 		set blackUserId = $1
-			where id = $2`,
+			where id = $2
+		`,
 		userId,
 		gameId,
 	)

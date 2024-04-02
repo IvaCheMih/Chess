@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 )
 
@@ -20,7 +21,7 @@ func CreateGamesService(boardRepo *BoardCellsRepository, figureRepo *FiguresRepo
 	}
 }
 
-func (g *GamesService) CreateGame(userId int, userRequestedColor dto.RequestedColor) (dto.ResponseGetGame, error) {
+func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.ResponseGetGame, error) {
 	tx, err := g.gamesRepo.db.Begin()
 	if err != nil {
 		return dto.ResponseGetGame{}, err
@@ -30,7 +31,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor dto.RequestedCo
 
 	var requestCreateGame dto.ResponseGetGame
 
-	if userRequestedColor.IsWhite {
+	if userRequestedColor {
 		requestCreateGame, err = g.gamesRepo.CreateGame(userId, tx)
 	} else {
 		requestCreateGame, err = g.gamesRepo.FindNotStartedGame(tx)
@@ -42,10 +43,13 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor dto.RequestedCo
 	}
 
 	if err != nil {
+		fmt.Println(222)
 		return dto.ResponseGetGame{}, err
 	}
 
-	err = g.boardRepo.CreateNewBoardCells(requestCreateGame.GameId, tx)
+	if userRequestedColor {
+		err = g.boardRepo.CreateNewBoardCells(requestCreateGame.GameId, tx)
+	}
 	if err != nil {
 		return dto.ResponseGetGame{}, err
 	}
@@ -65,7 +69,7 @@ func (g *GamesService) GetBoard(gameId int, userId int) (dto.ResponseGetBoard, e
 
 	responseGetGame, err := g.gamesRepo.GetGame(gameId, tx)
 
-	if userId != responseGetGame.WhiteUserId || userId != responseGetGame.BlackUserId {
+	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
 		return dto.ResponseGetBoard{}, err
 	}
 
