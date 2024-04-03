@@ -42,7 +42,9 @@ CREATE TABLE moves (
       killedFigureId   integer      NOT NULL,
       newFigureId      integer      NOT NULL,
       isCheckWhite     BOOLEAN      NOT NULL,
+      whiteKingCell     integer      NOT NULL,
       isCheckBlack     BOOLEAN      NOT NULL,
+      blackKingCell     integer      NOT NULL,
 
       CONSTRAINT moves_pkey PRIMARY KEY (id)
 );

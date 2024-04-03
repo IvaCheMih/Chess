@@ -37,7 +37,11 @@ func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	token := jwt.New(jwt.SigningMethodHS256)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"userId": request.Id,
+		},
+	)
 
 	t, err := token.SignedString([]byte("secret"))
 	if err != nil {

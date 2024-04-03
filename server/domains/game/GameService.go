@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 )
@@ -21,7 +22,7 @@ func CreateGamesService(boardRepo *BoardCellsRepository, figureRepo *FiguresRepo
 	}
 }
 
-func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.ResponseGetGame, error) {
+func (g *GamesService) CreateGame(userId any, userRequestedColor bool) (dto.ResponseGetGame, error) {
 	tx, err := g.gamesRepo.db.Begin()
 	if err != nil {
 		return dto.ResponseGetGame{}, err
@@ -59,39 +60,124 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Resp
 	return requestCreateGame, err
 }
 
-func (g *GamesService) GetBoard(gameId int, userId int) (dto.ResponseGetBoard, error) {
+func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, error) {
 	tx, err := g.gamesRepo.db.Begin()
 	if err != nil {
-		return dto.ResponseGetBoard{}, err
+		return dto.GetBoardResponse{}, err
 	}
 
 	defer tx.Rollback()
 
-	responseGetGame, err := g.gamesRepo.GetGame(gameId, tx)
+	game, err := g.gamesRepo.GetById(gameId, tx)
 
-	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
-		return dto.ResponseGetBoard{}, err
+	if userId != game.WhiteUserId && userId != game.BlackUserId {
+		return dto.GetBoardResponse{}, err
 	}
 
-	boardCells, err := g.boardRepo.GetBoardCells(gameId, tx)
+	boardCells, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
-		return dto.ResponseGetBoard{}, err
+		return dto.GetBoardResponse{}, err
 	}
 
 	err = tx.Commit()
 
-	responseBoard := make([]dto.BoardCell, 64)
+	responseBoard := make([]dto.BoardCellEntity, 64)
 
 	for _, boardCell := range boardCells {
-		responseBoard[boardCell.IndexCell] = dto.BoardCell{boardCell.IndexCell, boardCell.FigureId}
-
+		responseBoard[boardCell.IndexCell] = dto.BoardCellEntity{boardCell.IndexCell, boardCell.FigureId}
 	}
 
-	var responseGetBoard = dto.ResponseGetBoard{
+	getBoardResponse := dto.GetBoardResponse{
 		BoardCells: responseBoard,
 	}
 
-	return responseGetBoard, err
+	return getBoardResponse, err
+}
+
+func (g *GamesService) GetHistory(gameId int, userId any) (dto.ResponseGetHistory, error) {
+	tx, err := g.gamesRepo.db.Begin()
+	if err != nil {
+		return dto.ResponseGetHistory{}, err
+	}
+
+	defer tx.Rollback()
+
+	responseGetGame, err := g.gamesRepo.GetById(gameId, tx)
+	if err != nil {
+		return dto.ResponseGetHistory{}, err
+	}
+
+	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
+		return dto.ResponseGetHistory{}, errors.New("This is not your game")
+	}
+
+	moves, err := g.movesRepo.Find(gameId, tx)
+	if err != nil {
+		return dto.ResponseGetHistory{}, err
+	}
+
+	var responseGetHistory = dto.ResponseGetHistory{
+		Moves: moves,
+	}
+
+	return responseGetHistory, err
+}
+
+func (g *GamesService) DoMove(gameId int, userId any, requestFromTo dto.RequestDoMove) (dto.ResponseDoMove, error) {
+	if !dto.CheckCorrectRequest(requestFromTo.From, requestFromTo.To) {
+		return dto.ResponseDoMove{}, errors.New("Move is not correct")
+	}
+
+	tx, err := g.gamesRepo.db.Begin()
+	if err != nil {
+		return dto.ResponseDoMove{}, err
+	}
+
+	defer tx.Rollback()
+
+	responseGetGame, err := g.gamesRepo.GetById(gameId, tx)
+	if err != nil {
+		return dto.ResponseDoMove{}, err
+	}
+
+	moves, err := g.movesRepo.Find(gameId, tx)
+	if err != nil {
+		return dto.ResponseDoMove{}, err
+	}
+
+	if err = CheckCorrectRequestSideUser(userId, responseGetGame, moves); err != nil {
+		return dto.ResponseDoMove{}, err
+	}
+
+	//boardCells, err := g.boardRepo.Find(gameId, tx)
+	//if err != nil {
+	//	return dto.ResponseDoMove{}, err
+	//}
+	//
+	//game := move_service.CreateGameStruct(responseGetGame, boardCells, moves[len(moves)])
+
+	var responseDoMove dto.ResponseDoMove
+
+	return responseDoMove, err
+}
+
+func CheckCorrectRequestSideUser(userId any, responseGetGame dto.ResponseGetGame, moves []dto.Move) error {
+	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
+		return errors.New("This is not your game")
+	}
+
+	if !responseGetGame.IsStarted || responseGetGame.IsEnded {
+		return errors.New("Game is not active")
+	}
+
+	if len(moves)%2 == 0 && userId != responseGetGame.WhiteUserId {
+		return errors.New("Its not your move now")
+	}
+
+	if len(moves)%2 != 0 && userId != responseGetGame.BlackUserId {
+		return errors.New("Its not your move now")
+	}
+	return nil
 }
 
 var startField = [][]int{

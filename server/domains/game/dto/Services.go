@@ -2,7 +2,6 @@ package dto
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
@@ -26,25 +25,27 @@ func GetRequestNewGame(c *fiber.Ctx) (RequestedCreateGame, error) {
 	return request, err
 }
 
-func GetRequestGetBoard(c *fiber.Ctx) (RequestGetBoard, error) {
-	headers := c.GetReqHeaders()
-
-	gameIdString := headers["Gameid"]
-	gameId, err1 := strconv.ParseInt(gameIdString[0], 10, 0)
-
-	userIdString := headers["Userid"]
-	userId, err2 := strconv.ParseInt(userIdString[0], 10, 0)
-
-	if err1 != nil || err2 != nil {
-		return RequestGetBoard{}, errors.New("headers error")
+func GetGameId(c *fiber.Ctx) (RequestGetBoard, error) {
+	gameId, err := c.ParamsInt("gameId")
+	if err != nil {
+		return RequestGetBoard{}, err
 	}
 
 	var request = RequestGetBoard{
-		GameId: int(gameId),
-		UserId: int(userId),
+		GameId: gameId,
 	}
 
 	return request, nil
+}
+
+func GetRequestDoMoveFromBody(c *fiber.Ctx) (RequestDoMove, error) {
+	body := c.Body()
+
+	var request RequestDoMove
+
+	err := json.Unmarshal(body, &request)
+
+	return request, err
 }
 
 //func GetRequestGetBoard(c *fiber.Ctx) (RequestGetBoard, error) {
@@ -56,3 +57,41 @@ func GetRequestGetBoard(c *fiber.Ctx) (RequestGetBoard, error) {
 //
 //	return request, err
 //}
+
+func IndexToCoordinates(index int) string {
+	y := int('8') - (index / 8)
+	x := (index % 8) + int('A')
+
+	return string(byte(x)) + string(byte(y))
+}
+
+func CoordinatesToIndex(coordinates string) int {
+	x := int(coordinates[0]) - int('A')
+	y := int('8') - int(coordinates[1])
+
+	return (y * 8) + x
+}
+
+func ParseMessageToMove(message string) (string, string) {
+	return message[0:2], message[3:]
+}
+
+func CheckCellOnBoardByIndex(index int) bool {
+	coordinates := IndexToCoordinates(index)
+	if coordinates[0] >= byte('A') && coordinates[0] <= byte('H') {
+		if coordinates[1] >= byte('1') && coordinates[1] <= byte('8') {
+			return true
+		}
+	}
+	return false
+}
+
+func CheckCorrectRequest(f, t string) bool {
+	from, to := CoordinatesToIndex(f), CoordinatesToIndex(t)
+
+	if !CheckCellOnBoardByIndex(from) || !CheckCellOnBoardByIndex(to) {
+		return false
+	}
+	return true
+
+}

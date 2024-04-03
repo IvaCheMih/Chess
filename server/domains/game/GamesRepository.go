@@ -17,7 +17,7 @@ func CreateGamesRepository(db *sql.DB) GamesRepository {
 	}
 }
 
-func (g *GamesRepository) CreateGame(userId int, tx *sql.Tx) (dto.ResponseGetGame, error) {
+func (g *GamesRepository) CreateGame(userId any, tx *sql.Tx) (dto.ResponseGetGame, error) {
 	row := tx.QueryRow(`
 		insert into games (whiteUserId)
 			values ($1)
@@ -61,10 +61,10 @@ func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (dto.ResponseGetGame, e
 
 }
 
-func (g *GamesRepository) JoinBlackToGame(gameId int, userId int, tx *sql.Tx) error {
+func (g *GamesRepository) JoinBlackToGame(gameId any, userId any, tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		update games
-		set blackUserId = $1
+		set blackUserId = $1, isStarted = true
 			where id = $2
 		`,
 		userId,
@@ -74,7 +74,7 @@ func (g *GamesRepository) JoinBlackToGame(gameId int, userId int, tx *sql.Tx) er
 	return err
 }
 
-func (g *GamesRepository) GetGame(gameId int, tx *sql.Tx) (dto.ResponseGetGame, error) {
+func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (dto.ResponseGetGame, error) {
 	resultQuery, err := tx.Query(`
 		SELECT * FROM games
 		    where id = $1

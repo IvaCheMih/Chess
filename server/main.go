@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	_ "github.com/IvaCheMih/chess/server/docs"
 	"github.com/IvaCheMih/chess/server/domains"
+	"github.com/IvaCheMih/chess/server/domains/auth"
 	"github.com/IvaCheMih/chess/server/domains/game"
 	"github.com/IvaCheMih/chess/server/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"log"
-	"time"
 )
 
 const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
@@ -19,11 +19,12 @@ var db *sql.DB
 
 var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
+var authHandlers auth.AuthHandlers
 
 func Init(postgresqlUrl string) {
 	migrationService := domains.CreateMigrationService()
 
-	time.Sleep(5 * time.Second)
+	//time.Sleep(5 * time.Second)
 
 	migrationService.RunUp(postgresqlUrl, "file://migrations/postgresql")
 
@@ -45,6 +46,10 @@ func Init(postgresqlUrl string) {
 
 	gamesService := game.CreateGamesService(&boardCellsRepository, &figuresRepository, &gamesRepository, &movesRepository)
 	gamesHandlers = game.CreateGamesHandlers(&gamesService)
+
+	authRepository := auth.CreateAuthRepository(db)
+	authService := auth.CreateAuthService(&authRepository)
+	authHandlers = auth.CreateAuthHandlers(&authService)
 }
 
 func Shutdown() {
@@ -92,9 +97,15 @@ func main() {
 
 	//server.Get("/user/:userId", userHandlers.GetUser)
 
-	server.Post("/game", gamesHandlers.CreateGame)
+	server.Post("/game", authHandlers.CheckAuth, gamesHandlers.CreateGame)
 
-	server.Get("/game/:gameId/board", gamesHandlers.GetBoard)
+	server.Get("/game/:gameId/board", authHandlers.CheckAuth, gamesHandlers.GetBoard)
+
+	//server.Get("/game/:gameId/history", gamesHandlers.GetHistory)
+
+	//server.Post("/game/:gameId/move", gamesHandlers.DoMove)
+
+	//server.Get("/game/:gameId/history", gamesHandlers.GetHistory)
 
 	//server.Get("/game/:gameId/board", func(c *fiber.Ctx) error {
 	//	clientId := GetClientId(c)

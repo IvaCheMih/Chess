@@ -49,7 +49,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RequestedCreateGame"
+                            "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame"
                         }
                     }
                 ],
@@ -64,14 +64,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/game/:gameId/board": {
+        "/game/:gameId/history": {
             "get": {
                 "security": [
                     {
                         "JWT": []
                     }
                 ],
-                "description": "get board.",
+                "description": "get history.",
                 "consumes": [
                     "application/json"
                 ],
@@ -79,9 +79,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "board"
+                    "history"
                 ],
-                "summary": "get board.",
+                "summary": "get history.",
                 "parameters": [
                     {
                         "type": "string",
@@ -104,6 +104,97 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/game/:gameId/move": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "do move.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "move"
+                ],
+                "summary": "do move.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "gameId",
+                        "name": "gameId",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "userId",
+                        "name": "userId",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "move",
+                        "name": "move",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/game/{gameId}/board": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get board.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board"
+                ],
+                "summary": "get board.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "gameId",
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse"
                         }
                     }
                 }
@@ -200,12 +291,42 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.RequestedCreateGame": {
+        "github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity": {
             "type": "object",
             "properties": {
-                "id": {
+                "figureId": {
                     "type": "integer"
                 },
+                "index": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse": {
+            "type": "object",
+            "properties": {
+                "boardCells": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity"
+                    }
+                }
+            }
+        },
+        "github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame": {
+            "type": "object",
+            "properties": {
                 "isWhite": {
                     "type": "boolean"
                 }

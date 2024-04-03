@@ -12,10 +12,29 @@ definitions:
       password:
         type: string
     type: object
-  dto.RequestedCreateGame:
+  github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity:
     properties:
-      id:
+      figureId:
         type: integer
+      index:
+        type: integer
+    type: object
+  github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse:
+    properties:
+      boardCells:
+        items:
+          $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity'
+        type: array
+    type: object
+  github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
+  github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame:
+    properties:
       isWhite:
         type: boolean
     type: object
@@ -44,7 +63,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/dto.RequestedCreateGame'
+          $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame'
       produces:
       - application/json
       responses:
@@ -58,11 +77,11 @@ paths:
       summary: create new game.
       tags:
       - game
-  /game/:gameId/board:
+  /game/:gameId/history:
     get:
       consumes:
       - application/json
-      description: get board.
+      description: get history.
       parameters:
       - description: gameId
         in: header
@@ -82,6 +101,64 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - JWT: []
+      summary: get history.
+      tags:
+      - history
+  /game/:gameId/move:
+    post:
+      consumes:
+      - application/json
+      description: do move.
+      parameters:
+      - description: gameId
+        in: header
+        name: gameId
+        required: true
+        type: string
+      - description: userId
+        in: header
+        name: userId
+        required: true
+        type: string
+      - description: move
+        in: body
+        name: move
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: do move.
+      tags:
+      - move
+  /game/{gameId}/board:
+    get:
+      consumes:
+      - application/json
+      description: get board.
+      parameters:
+      - description: gameId
+        in: path
+        name: gameId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse'
       security:
       - JWT: []
       summary: get board.
