@@ -23,7 +23,7 @@ type IsCheck struct {
 
 var FigureRepo = make(map[int]byte)
 
-func CreateGameStruct(game dto.ResponseGetGame, cells []models.BoardCell) Game {
+func CreateGameStruct(game dto.CreateGameResponse, cells []models.BoardCell) Game {
 
 	return Game{
 		N:             8,

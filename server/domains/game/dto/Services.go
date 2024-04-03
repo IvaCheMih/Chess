@@ -15,10 +15,10 @@ func GetClientId(c *fiber.Ctx) (int, error) {
 	return int(clientId), err
 }
 
-func GetRequestNewGame(c *fiber.Ctx) (RequestedCreateGame, error) {
+func GetRequestNewGame(c *fiber.Ctx) (CreateGameRequest, error) {
 	body := c.Body()
 
-	var request RequestedCreateGame
+	var request CreateGameRequest
 
 	err := json.Unmarshal(body, &request)
 
@@ -38,10 +38,10 @@ func GetGameId(c *fiber.Ctx) (RequestGetBoard, error) {
 	return request, nil
 }
 
-func GetRequestDoMoveFromBody(c *fiber.Ctx) (RequestDoMove, error) {
+func GetRequestDoMoveFromBody(c *fiber.Ctx) (DoMoveRequest, error) {
 	body := c.Body()
 
-	var request RequestDoMove
+	var request DoMoveRequest
 
 	err := json.Unmarshal(body, &request)
 

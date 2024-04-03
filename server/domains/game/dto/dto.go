@@ -1,10 +1,10 @@
 package dto
 
-type RequestedCreateGame struct {
+type CreateGameRequest struct {
 	IsWhite bool
 }
 
-type ResponseGetGame struct {
+type CreateGameResponse struct {
 	GameId        int
 	WhiteUserId   int
 	BlackUserId   int
@@ -15,6 +15,10 @@ type ResponseGetGame struct {
 	IsCheckBlack  bool
 	BlackKingCell int
 	Side          int
+}
+
+type RequestGetBoard struct {
+	GameId int
 }
 
 type BoardCellEntity struct {
@@ -41,19 +45,15 @@ type Move struct {
 	BlackKingCell  int
 }
 
-type ResponseGetHistory struct {
+type GetHistoryResponse struct {
 	Moves []Move
 }
 
-type RequestGetBoard struct {
-	GameId int
-}
-
-type RequestDoMove struct {
+type DoMoveRequest struct {
 	From string
 	To   string
 }
 
-type ResponseDoMove struct {
+type DoMoveResponse struct {
 	BoardCells []BoardCellEntity
 }

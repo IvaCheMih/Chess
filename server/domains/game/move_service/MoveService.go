@@ -6,7 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
-func CheckCorrectMove(responseGetGame dto.ResponseGetGame, boardCells []models.BoardCell, requestFromTo dto.RequestDoMove) bool {
+func CheckCorrectMove(responseGetGame dto.CreateGameResponse, boardCells []models.BoardCell, requestFromTo dto.DoMoveRequest) bool {
 	game := CreateGameStruct(responseGetGame, boardCells)
 
 	figure := game.GetFigureByIndex(game.CoordinatesToIndex(requestFromTo.From))
@@ -19,7 +19,7 @@ func CheckCorrectMove(responseGetGame dto.ResponseGetGame, boardCells []models.B
 	return true
 }
 
-func CheckIsItCheck(responseGetGame dto.ResponseGetGame, boardCells []models.BoardCell, from int, to int) (Game, bool) {
+func CheckIsItCheck(responseGetGame dto.CreateGameResponse, boardCells []models.BoardCell, from int, to int) (Game, bool) {
 	//cellFrom := boardCells[from]
 	//cellTo := boardCells[to]
 

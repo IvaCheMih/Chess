@@ -40,8 +40,8 @@ func (r *UsersRepository) GetClientPassword(clientId int, tx *sql.Tx) (string, e
 	return password, err
 }
 
-func (r *UsersRepository) CreateUser(password string, tx *sql.Tx) (dto.CreateUsersResponse, error) {
-	var response dto.CreateUsersResponse
+func (r *UsersRepository) CreateUser(password string, tx *sql.Tx) (dto.CreateUserResponse, error) {
+	var response dto.CreateUserResponse
 
 	row := tx.QueryRow(`
 		insert into users (password)

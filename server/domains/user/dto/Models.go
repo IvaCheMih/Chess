@@ -1,20 +1,20 @@
 package dto
 
-type CreateUsersResponse struct {
+type CreateSessionRequest struct {
 	Id       int    `json:"id"`
 	Password string `json:"password"`
 }
 
-type RequestUserIdAndPassword struct {
+type CreateSessionResponse struct {
 	Id       int    `json:"id"`
 	Password string `json:"password"`
 }
 
-type ResponseUserIdAndPassword struct {
-	Id       int    `json:"id"`
+type CreateUserRequest struct {
 	Password string `json:"password"`
 }
 
-type RequestPassword struct {
+type CreateUserResponse struct {
+	Id       int    `json:"id"`
 	Password string `json:"password"`
 }

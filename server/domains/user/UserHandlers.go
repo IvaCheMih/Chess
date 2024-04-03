@@ -23,7 +23,7 @@ func CreateUserHandlers(usersService *UsersService) UserHandlers {
 // @Tags session
 // @Accept json
 // @Produce json
-// @Param Body body dto.RequestUserIdAndPassword true "request"
+// @Param Body body dto.CreateSessionRequest true "request"
 // @Success 200 {object} map[string]interface{}
 // @Router /session/ [post]
 func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
@@ -57,7 +57,7 @@ func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param    Body body  dto.RequestPassword true "request"
+// @Param    Body body  dto.CreateUserRequest true "request"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/ [post]
 func (h *UserHandlers) CreateUser(c *fiber.Ctx) error {

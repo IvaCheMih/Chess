@@ -40,11 +40,11 @@ func (u *UsersService) CreateSession(clientId int, password string) bool {
 	return true
 }
 
-func (u *UsersService) CreateUser(password string) (dto.CreateUsersResponse, error) {
+func (u *UsersService) CreateUser(password string) (dto.CreateUserResponse, error) {
 	tx, err := u.usersRepo.db.Begin()
 	if err != nil {
 		fmt.Println(err)
-		return dto.CreateUsersResponse{}, err
+		return dto.CreateUserResponse{}, err
 	}
 
 	defer tx.Rollback()
@@ -52,13 +52,13 @@ func (u *UsersService) CreateUser(password string) (dto.CreateUsersResponse, err
 	query, err := u.usersRepo.CreateUser(password, tx)
 	if err != nil {
 		fmt.Println(err)
-		return dto.CreateUsersResponse{}, err
+		return dto.CreateUserResponse{}, err
 	}
 
 	err = tx.Commit()
 	if err != nil || query.Password != password {
 		fmt.Println(err)
-		return dto.CreateUsersResponse{}, err
+		return dto.CreateUserResponse{}, err
 	}
 
 	return query, err

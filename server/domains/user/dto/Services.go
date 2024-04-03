@@ -16,20 +16,20 @@ func GetClientId(c *fiber.Ctx) int {
 	return int(clientId)
 }
 
-func GetIdAndPassword(c *fiber.Ctx) (RequestUserIdAndPassword, error) {
+func GetIdAndPassword(c *fiber.Ctx) (CreateSessionRequest, error) {
 	body := c.Body()
 
-	var request RequestUserIdAndPassword
+	var request CreateSessionRequest
 
 	err := json.Unmarshal(body, &request)
 
 	return request, err
 }
 
-func GetPassword(c *fiber.Ctx) (RequestPassword, error) {
+func GetPassword(c *fiber.Ctx) (CreateUserRequest, error) {
 	body := c.Body()
 
-	var request RequestPassword
+	var request CreateUserRequest
 
 	err := json.Unmarshal(body, &request)
 
