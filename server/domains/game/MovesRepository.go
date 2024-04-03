@@ -3,6 +3,7 @@ package game
 import (
 	"database/sql"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 )
 
 type MovesRepository struct {
@@ -39,4 +40,25 @@ func (m *MovesRepository) Find(gameId int, tx *sql.Tx) ([]dto.Move, error) {
 	}
 
 	return moves, nil
+}
+
+func (m *MovesRepository) AddMove(gameId, from, to, figureId, killedFigureId int, isCheckWhite, isCheckBlack move_service.IsCheck, tx *sql.Tx) error {
+
+	err := tx.QueryRow(`
+		insert into moves (gameId, moveNumber,from_id,to_id,figureId, killedFigureId, isCheckWhite , whiteKingCell, isCheckBlack, blackKingCell)
+			values ($1, (SELECT MAX(moveNumber)+1 FROM moves),  $2, $3, $4, $5, $6, $7, $8,$9)
+			RETURNING *
+		`,
+		gameId,
+		from,
+		to,
+		figureId,
+		killedFigureId,
+		isCheckWhite.IsItCheck,
+		isCheckWhite.KingGameID,
+		isCheckBlack.IsItCheck,
+		isCheckBlack.KingGameID,
+	).Err()
+
+	return err
 }

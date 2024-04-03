@@ -1,5 +1,26 @@
 basePath: /
 definitions:
+  dto.BoardCellEntity:
+    properties:
+      figureId:
+        type: integer
+      index:
+        type: integer
+    type: object
+  dto.GetBoardResponse:
+    properties:
+      boardCells:
+        items:
+          $ref: '#/definitions/dto.BoardCellEntity'
+        type: array
+    type: object
+  dto.RequestDoMove:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
   dto.RequestPassword:
     properties:
       password:
@@ -12,28 +33,7 @@ definitions:
       password:
         type: string
     type: object
-  github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity:
-    properties:
-      figureId:
-        type: integer
-      index:
-        type: integer
-    type: object
-  github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse:
-    properties:
-      boardCells:
-        items:
-          $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity'
-        type: array
-    type: object
-  github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove:
-    properties:
-      from:
-        type: string
-      to:
-        type: string
-    type: object
-  github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame:
+  dto.RequestedCreateGame:
     properties:
       isWhite:
         type: boolean
@@ -63,7 +63,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame'
+          $ref: '#/definitions/dto.RequestedCreateGame'
       produces:
       - application/json
       responses:
@@ -127,7 +127,13 @@ paths:
         name: move
         required: true
         schema:
-          $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove'
+          $ref: '#/definitions/dto.RequestDoMove'
+      - description: userId
+        in: body
+        name: userId
+        required: true
+        schema:
+          type: string
       produces:
       - application/json
       responses:
@@ -158,7 +164,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse'
+            $ref: '#/definitions/dto.GetBoardResponse'
       security:
       - JWT: []
       summary: get board.

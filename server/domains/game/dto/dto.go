@@ -5,16 +5,16 @@ type RequestedCreateGame struct {
 }
 
 type ResponseGetGame struct {
-	GameId      int
-	WhiteUserId int
-	BlackUserId int
-	IsStarted   bool
-	IsEnded     bool
-}
-
-type BoardCell struct {
-	IndexCell int
-	FigureId  int
+	GameId        int
+	WhiteUserId   int
+	BlackUserId   int
+	IsStarted     bool
+	IsEnded       bool
+	IsCheckWhite  bool
+	WhiteKingCell int
+	IsCheckBlack  bool
+	BlackKingCell int
+	Side          int
 }
 
 type BoardCellEntity struct {
@@ -55,5 +55,5 @@ type RequestDoMove struct {
 }
 
 type ResponseDoMove struct {
-	BoardCells []BoardCell
+	BoardCells []BoardCellEntity
 }

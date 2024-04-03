@@ -49,7 +49,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame"
+                            "$ref": "#/definitions/dto.RequestedCreateGame"
                         }
                     }
                 ],
@@ -148,7 +148,16 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove"
+                            "$ref": "#/definitions/dto.RequestDoMove"
+                        }
+                    },
+                    {
+                        "description": "userId",
+                        "name": "userId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -194,7 +203,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse"
+                            "$ref": "#/definitions/dto.GetBoardResponse"
                         }
                     }
                 }
@@ -272,6 +281,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.BoardCellEntity": {
+            "type": "object",
+            "properties": {
+                "figureId": {
+                    "type": "integer"
+                },
+                "index": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetBoardResponse": {
+            "type": "object",
+            "properties": {
+                "boardCells": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.BoardCellEntity"
+                    }
+                }
+            }
+        },
+        "dto.RequestDoMove": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.RequestPassword": {
             "type": "object",
             "properties": {
@@ -291,40 +333,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity": {
-            "type": "object",
-            "properties": {
-                "figureId": {
-                    "type": "integer"
-                },
-                "index": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_com_IvaCheMih_chess_server_domains_game_dto.GetBoardResponse": {
-            "type": "object",
-            "properties": {
-                "boardCells": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_IvaCheMih_chess_server_domains_game_dto.BoardCellEntity"
-                    }
-                }
-            }
-        },
-        "github_com_IvaCheMih_chess_server_domains_game_dto.RequestDoMove": {
-            "type": "object",
-            "properties": {
-                "from": {
-                    "type": "string"
-                },
-                "to": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_IvaCheMih_chess_server_domains_game_dto.RequestedCreateGame": {
+        "dto.RequestedCreateGame": {
             "type": "object",
             "properties": {
                 "isWhite": {

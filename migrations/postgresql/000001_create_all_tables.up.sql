@@ -28,6 +28,11 @@ CREATE TABLE games (
     blackUserId integer       NOT NULL default 0,
     isStarted   BOOLEAN       NOT NULL default false,
     isEnded     BOOLEAN       NOT NULL default false,
+    isCheckWhite     BOOLEAN      NOT NULL,
+    whiteKingCell     integer      NOT NULL,
+    isCheckBlack     BOOLEAN      NOT NULL,
+    blackKingCell     integer      NOT NULL,
+    side     integer      NOT NULL,
 
     CONSTRAINT games_pkey PRIMARY KEY (id)
 );

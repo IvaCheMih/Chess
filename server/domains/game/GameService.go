@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 )
 
 type GamesService struct {
@@ -85,6 +86,7 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 
 	for _, boardCell := range boardCells {
 		responseBoard[boardCell.IndexCell] = dto.BoardCellEntity{boardCell.IndexCell, boardCell.FigureId}
+
 	}
 
 	getBoardResponse := dto.GetBoardResponse{
@@ -116,6 +118,8 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.ResponseGetHistor
 		return dto.ResponseGetHistory{}, err
 	}
 
+	err = tx.Commit()
+
 	var responseGetHistory = dto.ResponseGetHistory{
 		Moves: moves,
 	}
@@ -123,45 +127,91 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.ResponseGetHistor
 	return responseGetHistory, err
 }
 
-func (g *GamesService) DoMove(gameId int, userId any, requestFromTo dto.RequestDoMove) (dto.ResponseDoMove, error) {
-	if !dto.CheckCorrectRequest(requestFromTo.From, requestFromTo.To) {
-		return dto.ResponseDoMove{}, errors.New("Move is not correct")
+func (g *GamesService) DoMove(gameId int, userId any, requestFromTo dto.RequestDoMove) (dto.GetBoardResponse, error) {
+	if !CheckCorrectRequest(requestFromTo.From, requestFromTo.To) {
+		return dto.GetBoardResponse{}, errors.New("Move is not correct")
 	}
 
 	tx, err := g.gamesRepo.db.Begin()
 	if err != nil {
-		return dto.ResponseDoMove{}, err
+		return dto.GetBoardResponse{}, err
 	}
 
 	defer tx.Rollback()
 
 	responseGetGame, err := g.gamesRepo.GetById(gameId, tx)
 	if err != nil {
-		return dto.ResponseDoMove{}, err
+		return dto.GetBoardResponse{}, err
 	}
 
-	moves, err := g.movesRepo.Find(gameId, tx)
+	if err = CheckCorrectRequestSideUser(userId, responseGetGame); err != nil {
+		return dto.GetBoardResponse{}, err
+	}
+
+	boardCells, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
-		return dto.ResponseDoMove{}, err
+		return dto.GetBoardResponse{}, err
 	}
 
-	if err = CheckCorrectRequestSideUser(userId, responseGetGame, moves); err != nil {
-		return dto.ResponseDoMove{}, err
+	if !move_service.CheckCorrectMove(responseGetGame, boardCells, requestFromTo) {
+		return dto.GetBoardResponse{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
 
-	//boardCells, err := g.boardRepo.Find(gameId, tx)
-	//if err != nil {
-	//	return dto.ResponseDoMove{}, err
-	//}
-	//
-	//game := move_service.CreateGameStruct(responseGetGame, boardCells, moves[len(moves)])
+	from := CoordinatesToIndex(requestFromTo.From)
+	to := CoordinatesToIndex(requestFromTo.To)
 
-	var responseDoMove dto.ResponseDoMove
+	game, check := move_service.CheckIsItCheck(responseGetGame, boardCells, from, to)
 
-	return responseDoMove, err
+	if !check {
+		return dto.GetBoardResponse{}, errors.New("Move is not possible (CheckIsItCheck)")
+	}
+
+	err = g.movesRepo.AddMove(gameId, from, to, boardCells[from].FigureId, boardCells[to].FigureId, game.IsCheckWhite, game.IsCheckBlack, tx)
+	if err != nil {
+		return dto.GetBoardResponse{}, err
+	}
+
+	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
+	if err != nil {
+		return dto.GetBoardResponse{}, err
+	}
+
+	if boardCells[to].FigureId != 0 {
+		err = g.boardRepo.Delete(boardCells[to].Id, tx)
+
+		if err != nil {
+			return dto.GetBoardResponse{}, err
+		}
+	}
+
+	err = g.boardRepo.Update(boardCells[from].Id, to, tx)
+
+	if err != nil {
+		return dto.GetBoardResponse{}, err
+	}
+
+	boardCells, err = g.boardRepo.Find(gameId, tx)
+	if err != nil {
+		return dto.GetBoardResponse{}, err
+	}
+
+	err = tx.Commit()
+
+	responseBoard := make([]dto.BoardCellEntity, 64)
+
+	for _, boardCell := range boardCells {
+		responseBoard[boardCell.IndexCell] = dto.BoardCellEntity{boardCell.IndexCell, boardCell.FigureId}
+
+	}
+
+	getBoardResponse := dto.GetBoardResponse{
+		BoardCells: responseBoard,
+	}
+
+	return getBoardResponse, err
 }
 
-func CheckCorrectRequestSideUser(userId any, responseGetGame dto.ResponseGetGame, moves []dto.Move) error {
+func CheckCorrectRequestSideUser(userId any, responseGetGame dto.ResponseGetGame) error {
 	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
 		return errors.New("This is not your game")
 	}
@@ -170,14 +220,47 @@ func CheckCorrectRequestSideUser(userId any, responseGetGame dto.ResponseGetGame
 		return errors.New("Game is not active")
 	}
 
-	if len(moves)%2 == 0 && userId != responseGetGame.WhiteUserId {
+	if responseGetGame.WhiteUserId == responseGetGame.Side && userId != responseGetGame.WhiteUserId {
 		return errors.New("Its not your move now")
 	}
 
-	if len(moves)%2 != 0 && userId != responseGetGame.BlackUserId {
+	if responseGetGame.BlackUserId == responseGetGame.Side && userId != responseGetGame.BlackUserId {
 		return errors.New("Its not your move now")
 	}
 	return nil
+}
+
+func IndexToCoordinates(index int) string {
+	y := int('8') - (index / 8)
+	x := (index % 8) + int('A')
+
+	return string(byte(x)) + string(byte(y))
+}
+
+func CoordinatesToIndex(coordinates string) int {
+	x := int(coordinates[0]) - int('A')
+	y := int('8') - int(coordinates[1])
+
+	return (y * 8) + x
+}
+
+func CheckCellOnBoardByIndex(index int) bool {
+	coordinates := IndexToCoordinates(index)
+	if coordinates[0] >= byte('A') && coordinates[0] <= byte('H') {
+		if coordinates[1] >= byte('1') && coordinates[1] <= byte('8') {
+			return true
+		}
+	}
+	return false
+}
+
+func CheckCorrectRequest(f, t string) bool {
+	from, to := CoordinatesToIndex(f), CoordinatesToIndex(t)
+
+	if !CheckCellOnBoardByIndex(from) || !CheckCellOnBoardByIndex(to) {
+		return false
+	}
+	return true
 }
 
 var startField = [][]int{

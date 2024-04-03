@@ -2,8 +2,7 @@ package game
 
 import (
 	"database/sql"
-	"fmt"
-	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	"github.com/IvaCheMih/chess/server/domains/game/models"
 	_ "github.com/lib/pq"
 	"strconv"
 )
@@ -51,44 +50,81 @@ func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *sql.Tx) error
 		return err
 	}
 
-	fmt.Println(1)
 	return err
 }
 
-func (b *BoardCellsRepository) Find(gameId int, tx *sql.Tx) ([]dto.BoardCell, error) {
+func (b *BoardCellsRepository) Find(gameId int, tx *sql.Tx) ([]models.BoardCell, error) {
 	resultQuery, err := tx.Query(`
-		SELECT indexCell, figureId FROM boardCells
+		SELECT id, indexCell, figureId FROM boardCells
 		    where gameId = $1 ORDER BY indexCell
 		`,
 		gameId,
 	)
 
 	if err != nil {
-		return []dto.BoardCell{}, err
+		return []models.BoardCell{}, err
 	}
 
-	var cells []dto.BoardCell
+	var cells []models.BoardCell
 
 	for resultQuery.Next() {
-		var cell dto.BoardCell
-		err = resultQuery.Scan(&cell.IndexCell, &cell.FigureId)
+		var cell models.BoardCell
+
+		err = resultQuery.Scan(&cell.Id, &cell.IndexCell, &cell.FigureId)
 		if err != nil {
-			return []dto.BoardCell{}, err
+			return []models.BoardCell{}, err
 		}
+
 		cells = append(cells, cell)
 	}
 
 	return cells, nil
 }
 
-func GetCellsFromRows(rows *sql.Rows) ([]dto.BoardCell, error) {
-	var cells []dto.BoardCell
+func (b *BoardCellsRepository) Update(id, to int, tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		update boardCells
+		set indexCell = $1
+			where (id = $2)
+		`,
+		id,
+		to,
+	)
+
+	return err
+}
+
+func (b *BoardCellsRepository) Delete(id int, tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		DELETE FROM boardCells
+		       WHERE id = $1
+		`,
+		id,
+	)
+
+	return err
+}
+
+func (b *BoardCellsRepository) AddCell(gameId, tx *sql.Tx) error {
+
+	err := tx.QueryRow(`
+			INSERT INTO boardCells
+				(gameId, indexCell, figureId)
+				values ($1, $2, $3)
+				`,
+		gameId,
+	).Err()
+	return err
+}
+
+func GetCellsFromRows(rows *sql.Rows) ([]models.BoardCell, error) {
+	var cells []models.BoardCell
 
 	for rows.Next() {
-		var cell dto.BoardCell
+		var cell models.BoardCell
 		err := rows.Scan(&cell)
 		if err != nil {
-			return []dto.BoardCell{}, err
+			return []models.BoardCell{}, err
 		}
 		cells = append(cells, cell)
 	}

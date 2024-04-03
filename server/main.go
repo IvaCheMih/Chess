@@ -6,6 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/server/domains"
 	"github.com/IvaCheMih/chess/server/domains/auth"
 	"github.com/IvaCheMih/chess/server/domains/game"
+	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 	"github.com/IvaCheMih/chess/server/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -27,6 +28,8 @@ func Init(postgresqlUrl string) {
 	//time.Sleep(5 * time.Second)
 
 	migrationService.RunUp(postgresqlUrl, "file://migrations/postgresql")
+
+	move_service.FigureRepo = move_service.CreateFigureRepo()
 
 	var err error
 
@@ -101,11 +104,9 @@ func main() {
 
 	server.Get("/game/:gameId/board", authHandlers.CheckAuth, gamesHandlers.GetBoard)
 
-	//server.Get("/game/:gameId/history", gamesHandlers.GetHistory)
+	server.Get("/game/:gameId/history", authHandlers.CheckAuth, gamesHandlers.GetHistory)
 
-	//server.Post("/game/:gameId/move", gamesHandlers.DoMove)
-
-	//server.Get("/game/:gameId/history", gamesHandlers.GetHistory)
+	server.Post("/game/:gameId/move", authHandlers.CheckAuth, gamesHandlers.DoMove)
 
 	//server.Get("/game/:gameId/board", func(c *fiber.Ctx) error {
 	//	clientId := GetClientId(c)

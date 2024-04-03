@@ -81,8 +81,7 @@ func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param gameId header string true "gameId"
-// @Param userId header string true "userId"
+// @Param gameId path int true "gameId"
 // @Success 200 {object} map[string]interface{}
 // @Router /game/:gameId/history [get]
 func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
@@ -109,8 +108,7 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param gameId header string true "gameId"
-// @Param userId header string true "userId"
+// @Param gameId path int true "gameId"
 // @Param move body dto.RequestDoMove true "move"
 // @Success 200 {object} map[string]interface{}
 // @Router /game/:gameId/move [post]

@@ -2,8 +2,8 @@ package game
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 	_ "github.com/lib/pq"
 )
 
@@ -30,8 +30,6 @@ func (g *GamesRepository) CreateGame(userId any, tx *sql.Tx) (dto.ResponseGetGam
 
 	err := RowToGame(row, &requestCreateGame)
 
-	fmt.Println(requestCreateGame)
-
 	return requestCreateGame, err
 }
 
@@ -50,9 +48,19 @@ func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (dto.ResponseGetGame, e
 	var responseCreateGame dto.ResponseGetGame
 
 	for resultQuery.Next() {
-		err = resultQuery.Scan(&responseCreateGame.GameId, &responseCreateGame.WhiteUserId, &responseCreateGame.BlackUserId, &responseCreateGame.IsStarted, &responseCreateGame.IsEnded)
+		err = resultQuery.Scan(
+			&responseCreateGame.GameId,
+			&responseCreateGame.WhiteUserId,
+			&responseCreateGame.BlackUserId,
+			&responseCreateGame.IsStarted,
+			&responseCreateGame.IsEnded,
+			&responseCreateGame.IsCheckWhite,
+			&responseCreateGame.WhiteKingCell,
+			&responseCreateGame.IsCheckWhite,
+			&responseCreateGame.BlackKingCell,
+			&responseCreateGame.Side,
+		)
 		if err != nil {
-			fmt.Println(22)
 			return dto.ResponseGetGame{}, err
 		}
 	}
@@ -82,24 +90,49 @@ func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (dto.ResponseGetGame, 
 		gameId,
 	)
 
-	fmt.Println(resultQuery)
-
 	if err != nil {
-		fmt.Println(1111)
 		return dto.ResponseGetGame{}, err
 	}
 
 	var responseCreateGame dto.ResponseGetGame
 
 	for resultQuery.Next() {
-		err = resultQuery.Scan(&responseCreateGame.GameId, &responseCreateGame.WhiteUserId, &responseCreateGame.BlackUserId, &responseCreateGame.IsStarted, &responseCreateGame.IsEnded)
+		err = resultQuery.Scan(
+			&responseCreateGame.GameId,
+			&responseCreateGame.WhiteUserId,
+			&responseCreateGame.BlackUserId,
+			&responseCreateGame.IsStarted,
+			&responseCreateGame.IsEnded,
+			&responseCreateGame.IsCheckWhite,
+			&responseCreateGame.WhiteKingCell,
+			&responseCreateGame.IsCheckWhite,
+			&responseCreateGame.BlackKingCell,
+			&responseCreateGame.Side,
+		)
 		if err != nil {
-			fmt.Println(2222)
 			return dto.ResponseGetGame{}, err
 		}
 	}
 
 	return responseCreateGame, nil
+}
+
+func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		update games
+		set (isCheckWhite, whiteKingCell ,isCheckBlack ,blackKingCell, side)
+		 	values ($1, $2, $3, $4, $5)
+			where id = $6
+		`,
+		isCheckWhite.IsItCheck,
+		isCheckWhite.KingGameID,
+		isCheckBlack.IsItCheck,
+		isCheckBlack.KingGameID,
+		side,
+		gameId,
+	)
+
+	return err
 }
 
 func RowToGame(row *sql.Row, requestCreateGame *dto.ResponseGetGame) error {
