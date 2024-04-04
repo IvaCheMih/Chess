@@ -24,8 +24,12 @@ func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *sql.Tx) error
 	baseInsertQuery := "INSERT INTO boardCells (gameId, indexCell, figureId) values ($1, $2, $3)"
 
 	for index, cell := range startField {
-		baseInsertQuery += ", ($" + strconv.Itoa(index*3+1) + ",$" + strconv.Itoa(index*3+2) + ", $" + strconv.Itoa(index*3+3) + ")"
 		baseParams = append(baseParams, gameId, cell[0], cell[1])
+		if index == 0 {
+			continue
+		}
+		baseInsertQuery += ", ($" + strconv.Itoa(index*3+1) + ",$" + strconv.Itoa(index*3+2) + ", $" + strconv.Itoa(index*3+3) + ")"
+
 	}
 
 	err = tx.QueryRow(baseInsertQuery, baseParams...).Err()
@@ -53,7 +57,7 @@ func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *sql.Tx) error
 	return err
 }
 
-func (b *BoardCellsRepository) Find(gameId int, tx *sql.Tx) ([]models.BoardCell, error) {
+func (b *BoardCellsRepository) Find(gameId int, tx *sql.Tx) (models.Board, error) {
 	resultQuery, err := tx.Query(`
 		SELECT id, indexCell, figureId FROM boardCells
 		    where gameId = $1 ORDER BY indexCell
@@ -61,24 +65,28 @@ func (b *BoardCellsRepository) Find(gameId int, tx *sql.Tx) ([]models.BoardCell,
 		gameId,
 	)
 
+	defer resultQuery.Close()
+
 	if err != nil {
-		return []models.BoardCell{}, err
+		return models.Board{}, err
 	}
 
-	var cells []models.BoardCell
+	var board = models.Board{
+		Cells: map[int]*models.Cell{},
+	}
 
 	for resultQuery.Next() {
-		var cell models.BoardCell
+		var cell models.Cell
 
 		err = resultQuery.Scan(&cell.Id, &cell.IndexCell, &cell.FigureId)
 		if err != nil {
-			return []models.BoardCell{}, err
+			return models.Board{}, err
 		}
 
-		cells = append(cells, cell)
+		board.Cells[cell.IndexCell] = &cell
 	}
 
-	return cells, nil
+	return board, nil
 }
 
 func (b *BoardCellsRepository) Update(id, to int, tx *sql.Tx) error {
@@ -87,8 +95,8 @@ func (b *BoardCellsRepository) Update(id, to int, tx *sql.Tx) error {
 		set indexCell = $1
 			where (id = $2)
 		`,
-		id,
 		to,
+		id,
 	)
 
 	return err
@@ -117,17 +125,19 @@ func (b *BoardCellsRepository) AddCell(gameId, tx *sql.Tx) error {
 	return err
 }
 
-func GetCellsFromRows(rows *sql.Rows) ([]models.BoardCell, error) {
-	var cells []models.BoardCell
+func GetCellsFromRows(rows *sql.Rows) (models.Board, error) {
+	var board models.Board
 
 	for rows.Next() {
-		var cell models.BoardCell
+		var cell models.Cell
+
 		err := rows.Scan(&cell)
 		if err != nil {
-			return []models.BoardCell{}, err
+			return models.Board{}, err
 		}
-		cells = append(cells, cell)
+
+		board.Cells[cell.IndexCell] = &cell
 	}
 
-	return cells, nil
+	return board, nil
 }

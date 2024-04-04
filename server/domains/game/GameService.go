@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
@@ -80,7 +81,7 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 		return dto.GetBoardResponse{}, err
 	}
 
-	boardCells, err := g.boardRepo.Find(gameId, tx)
+	board, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
 		return dto.GetBoardResponse{}, err
 	}
@@ -89,8 +90,8 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
-	for _, boardCell := range boardCells {
-		responseBoard[boardCell.IndexCell] = dto.BoardCellEntity{boardCell.IndexCell, boardCell.FigureId}
+	for index, cell := range board.Cells {
+		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
 
 	}
 
@@ -157,49 +158,69 @@ func (g *GamesService) DoMove(gameId int, userId any, requestFromTo dto.DoMoveRe
 		return dto.GetBoardResponse{}, err
 	}
 
-	boardCells, err := g.boardRepo.Find(gameId, tx)
+	board, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
 		return dto.GetBoardResponse{}, err
 	}
 
-	if !move_service.CheckCorrectMove(responseGetGame, boardCells, requestFromTo) {
+	if !move_service.CheckCorrectMove(responseGetGame, board, requestFromTo) {
 		return dto.GetBoardResponse{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
 
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	game, check := move_service.CheckIsItCheck(responseGetGame, boardCells, from, to)
+	fmt.Println(207)
+
+	game, check := move_service.CheckIsItCheck(responseGetGame, board, from, to)
+
+	fmt.Println(208)
 
 	if !check {
 		return dto.GetBoardResponse{}, errors.New("Move is not possible (CheckIsItCheck)")
 	}
 
-	err = g.movesRepo.AddMove(gameId, from, to, boardCells[from].FigureId, boardCells[to].FigureId, game.IsCheckWhite, game.IsCheckBlack, tx)
+	err = g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, tx)
 	if err != nil {
+		fmt.Println(err)
 		return dto.GetBoardResponse{}, err
+	}
+
+	fmt.Println(209)
+
+	if game.Side == *game.WhiteClientId {
+		game.Side = *game.BlackClientId
+	} else {
+		game.Side = *game.WhiteClientId
 	}
 
 	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
 	if err != nil {
+		fmt.Print(err)
 		return dto.GetBoardResponse{}, err
 	}
 
-	if boardCells[to].FigureId != 0 {
-		err = g.boardRepo.Delete(boardCells[to].Id, tx)
+	fmt.Println(210)
+
+	if board.Cells[to] != nil {
+		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
 
 		if err != nil {
 			return dto.GetBoardResponse{}, err
 		}
 	}
 
-	err = g.boardRepo.Update(boardCells[from].Id, to, tx)
+	fmt.Println(211)
+
+	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
 
 	if err != nil {
 		return dto.GetBoardResponse{}, err
 	}
 
-	boardCells, err = g.boardRepo.Find(gameId, tx)
+	fmt.Println(212)
+
+	board, err = g.boardRepo.Find(gameId, tx)
 	if err != nil {
 		return dto.GetBoardResponse{}, err
 	}
@@ -208,8 +229,8 @@ func (g *GamesService) DoMove(gameId int, userId any, requestFromTo dto.DoMoveRe
 
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
-	for _, boardCell := range boardCells {
-		responseBoard[boardCell.IndexCell] = dto.BoardCellEntity{boardCell.IndexCell, boardCell.FigureId}
+	for index, cell := range board.Cells {
+		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
 
 	}
 

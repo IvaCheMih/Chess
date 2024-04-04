@@ -1,9 +1,13 @@
 package models
 
-type BoardCell struct {
+type Cell struct {
 	Id        int
 	IndexCell int
 	FigureId  int
+}
+
+type Board struct {
+	Cells map[int]*Cell
 }
 
 type Move struct {

@@ -80,8 +80,7 @@ func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (models.CreateGameResp
 func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		update games
-		set (isCheckWhite, whiteKingCell ,isCheckBlack ,blackKingCell, side)
-		 	values ($1, $2, $3, $4, $5)
+		set isCheckWhite = $1, whiteKingCell = $2,isCheckBlack = $3,blackKingCell=$4, side =$5 
 			where id = $6
 		`,
 		isCheckWhite.IsItCheck,
@@ -96,5 +95,21 @@ func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move
 }
 
 func RowToGame(row *sql.Row, requestCreateGame *models.CreateGameResponse) error {
-	return row.Scan(&requestCreateGame.GameId, &requestCreateGame.WhiteUserId, &requestCreateGame.BlackUserId, &requestCreateGame.IsStarted, &requestCreateGame.IsEnded)
+	return row.Scan(
+		&requestCreateGame.GameId,
+
+		&requestCreateGame.WhiteUserId,
+		&requestCreateGame.BlackUserId,
+
+		&requestCreateGame.IsStarted,
+		&requestCreateGame.IsEnded,
+
+		&requestCreateGame.IsCheckWhite,
+		&requestCreateGame.WhiteKingCell,
+
+		&requestCreateGame.IsCheckBlack,
+		&requestCreateGame.BlackKingCell,
+
+		&requestCreateGame.Side,
+	)
 }

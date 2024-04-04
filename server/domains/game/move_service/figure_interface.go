@@ -1,6 +1,7 @@
 package move_service
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
@@ -11,9 +12,11 @@ type Figure interface {
 	GetPossibleMoves(*Game) *TheoryMoves
 	ChangeGameIndex(int)
 	GetGameIndex() int
+	Delete()
 }
 
-func CreateDefaultField(cells []models.BoardCell) []*Figure {
+func CreateDefaultField(board models.Board) map[int]*Figure {
+
 	//startField := []byte{
 	//	'r', 'k', 'b', 'q', 'K', 'b', 'k', 'r',
 	//	'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
@@ -24,15 +27,18 @@ func CreateDefaultField(cells []models.BoardCell) []*Figure {
 	//	'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
 	//	'r', 'k', 'b', 'q', 'K', 'b', 'k', 'r',
 	//}
-	field := []*Figure{}
 
-	for _, cell := range cells {
+	field := map[int]*Figure{}
+
+	fmt.Println(field)
+
+	for _, cell := range board.Cells {
 		isWhite := false
 		if cell.FigureId <= 6 {
 			isWhite = true
 		}
 
-		field = append(field, CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell))
+		field[cell.IndexCell] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell)
 	}
 
 	return field

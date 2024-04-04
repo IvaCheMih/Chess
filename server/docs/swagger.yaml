@@ -7,6 +7,30 @@ definitions:
       index:
         type: integer
     type: object
+  dto.CreateGameRequest:
+    properties:
+      isWhite:
+        type: boolean
+    type: object
+  dto.CreateSessionRequest:
+    properties:
+      id:
+        type: integer
+      password:
+        type: string
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      password:
+        type: string
+    type: object
+  dto.DoMoveRequest:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
   dto.GetBoardResponse:
     properties:
       boardCells:
@@ -14,29 +38,39 @@ definitions:
           $ref: '#/definitions/dto.BoardCellEntity'
         type: array
     type: object
-  dto.RequestDoMove:
+  dto.GetHistoryResponse:
     properties:
+      moves:
+        items:
+          $ref: '#/definitions/dto.Move'
+        type: array
+    type: object
+  dto.Move:
+    properties:
+      blackKingCell:
+        type: integer
+      figureId:
+        type: integer
       from:
-        type: string
-      to:
-        type: string
-    type: object
-  dto.RequestPassword:
-    properties:
-      password:
-        type: string
-    type: object
-  dto.RequestUserIdAndPassword:
-    properties:
+        type: integer
+      gameId:
+        type: integer
       id:
         type: integer
-      password:
-        type: string
-    type: object
-  dto.RequestedCreateGame:
-    properties:
-      isWhite:
+      isCheckBlack:
         type: boolean
+      isCheckWhite:
+        type: boolean
+      killedFigureId:
+        type: integer
+      moveNumber:
+        type: integer
+      newFigureId:
+        type: integer
+      to:
+        type: integer
+      whiteKingCell:
+        type: integer
     type: object
 host: localhost:8082
 info:
@@ -63,7 +97,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/dto.RequestedCreateGame'
+          $ref: '#/definitions/dto.CreateGameRequest'
       produces:
       - application/json
       responses:
@@ -77,76 +111,6 @@ paths:
       summary: create new game.
       tags:
       - game
-  /game/:gameId/history:
-    get:
-      consumes:
-      - application/json
-      description: get history.
-      parameters:
-      - description: gameId
-        in: header
-        name: gameId
-        required: true
-        type: string
-      - description: userId
-        in: header
-        name: userId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - JWT: []
-      summary: get history.
-      tags:
-      - history
-  /game/:gameId/move:
-    post:
-      consumes:
-      - application/json
-      description: do move.
-      parameters:
-      - description: gameId
-        in: header
-        name: gameId
-        required: true
-        type: string
-      - description: userId
-        in: header
-        name: userId
-        required: true
-        type: string
-      - description: move
-        in: body
-        name: move
-        required: true
-        schema:
-          $ref: '#/definitions/dto.RequestDoMove'
-      - description: userId
-        in: body
-        name: userId
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - JWT: []
-      summary: do move.
-      tags:
-      - move
   /game/{gameId}/board:
     get:
       consumes:
@@ -170,6 +134,58 @@ paths:
       summary: get board.
       tags:
       - board
+  /game/{gameId}/history:
+    get:
+      consumes:
+      - application/json
+      description: get history.
+      parameters:
+      - description: gameId
+        in: path
+        name: gameId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetHistoryResponse'
+      security:
+      - JWT: []
+      summary: get history.
+      tags:
+      - history
+  /game/{gameId}/move:
+    post:
+      consumes:
+      - application/json
+      description: do move.
+      parameters:
+      - description: gameId
+        in: path
+        name: gameId
+        required: true
+        type: integer
+      - description: move
+        in: body
+        name: move
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DoMoveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetBoardResponse'
+      security:
+      - JWT: []
+      summary: do move.
+      tags:
+      - move
   /session/:
     post:
       consumes:
@@ -181,7 +197,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/dto.RequestUserIdAndPassword'
+          $ref: '#/definitions/dto.CreateSessionRequest'
       produces:
       - application/json
       responses:
@@ -204,7 +220,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/dto.RequestPassword'
+          $ref: '#/definitions/dto.CreateUserRequest'
       produces:
       - application/json
       responses:

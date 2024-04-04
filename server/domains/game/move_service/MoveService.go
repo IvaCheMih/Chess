@@ -6,35 +6,58 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
-func CheckCorrectMove(responseGetGame dto.CreateGameResponse, boardCells []models.BoardCell, requestFromTo dto.DoMoveRequest) bool {
-	game := CreateGameStruct(responseGetGame, boardCells)
+func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, requestFromTo dto.DoMoveRequest) bool {
+	fmt.Println(300)
+	game := CreateGameStruct(responseGetGame, board)
+	fmt.Println(301)
 
 	figure := game.GetFigureByIndex(game.CoordinatesToIndex(requestFromTo.From))
+	fmt.Println(302)
 
 	possibleMoves := (*figure).GetPossibleMoves(&game)
+	fmt.Println(303)
 
 	if !CheckMove(possibleMoves, game.CoordinatesToIndex(requestFromTo.To)) {
 		return false
 	}
+	fmt.Println(304)
+
 	return true
 }
 
-func CheckIsItCheck(responseGetGame dto.CreateGameResponse, boardCells []models.BoardCell, from int, to int) (Game, bool) {
+func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) (Game, bool) {
 	//cellFrom := boardCells[from]
 	//cellTo := boardCells[to]
 
-	boardCells[to].FigureId = boardCells[from].FigureId
+	fmt.Println(400)
 
-	gameAfterMove := CreateGameStruct(responseGetGame, boardCells)
+	gameAfterMove := CreateGameStruct(responseGetGame, board)
 
+	for i, fig := range gameAfterMove.Figures {
+		if fig != nil {
+			fmt.Println(" ", i, ":", (*fig).GetType())
+		} else {
+			fmt.Println(" ", i, ": нет ")
+		}
+	}
+
+	fmt.Println(401)
+
+	gameAfterMove.ChangeToAndFrom(to, from)
+
+	fmt.Println(402)
 	figure := gameAfterMove.GetFigureByIndex(to)
-	(*figure).ChangeGameIndex(to)
+	fmt.Println(4022)
+	if figure != nil {
+		gameAfterMove.ChangeKingGameID(figure)
+	}
 
-	gameAfterMove.ChangeKingGameID(figure)
+	fmt.Println(403)
 
 	if gameAfterMove.CheckIsCheck() {
 		return Game{}, false
 	}
+	fmt.Println(404)
 	return gameAfterMove, true
 }
 

@@ -21,3 +21,7 @@ func (figure *BaseFigure) ChangeGameIndex(toIndex int) {
 func (figure *BaseFigure) GetGameIndex() int {
 	return figure.GameIndex
 }
+
+func (figure *BaseFigure) Delete() {
+	figure = nil
+}

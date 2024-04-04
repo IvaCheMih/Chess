@@ -46,115 +46,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RequestedCreateGame"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/game/:gameId/history": {
-            "get": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "description": "get history.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "history"
-                ],
-                "summary": "get history.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "gameId",
-                        "name": "gameId",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "userId",
-                        "name": "userId",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/game/:gameId/move": {
-            "post": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "description": "do move.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "move"
-                ],
-                "summary": "do move.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "gameId",
-                        "name": "gameId",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "userId",
-                        "name": "userId",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "move",
-                        "name": "move",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.RequestDoMove"
-                        }
-                    },
-                    {
-                        "description": "userId",
-                        "name": "userId",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.CreateGameRequest"
                         }
                     }
                 ],
@@ -206,6 +98,89 @@
                 }
             }
         },
+        "/game/{gameId}/history": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get history.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "get history.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "gameId",
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/game/{gameId}/move": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "do move.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "move"
+                ],
+                "summary": "do move.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "gameId",
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "move",
+                        "name": "move",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DoMoveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetBoardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/session/": {
             "post": {
                 "description": "create new session.",
@@ -226,7 +201,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RequestUserIdAndPassword"
+                            "$ref": "#/definitions/dto.CreateSessionRequest"
                         }
                     }
                 ],
@@ -261,7 +236,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RequestPassword"
+                            "$ref": "#/definitions/dto.CreateUserRequest"
                         }
                     }
                 ],
@@ -289,6 +264,44 @@
                 }
             }
         },
+        "dto.CreateGameRequest": {
+            "type": "object",
+            "properties": {
+                "isWhite": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.CreateSessionRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DoMoveRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.GetBoardResponse": {
             "type": "object",
             "properties": {
@@ -300,41 +313,55 @@
                 }
             }
         },
-        "dto.RequestDoMove": {
+        "dto.GetHistoryResponse": {
             "type": "object",
             "properties": {
-                "from": {
-                    "type": "string"
+                "moves": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Move"
+                    }
+                }
+            }
+        },
+        "dto.Move": {
+            "type": "object",
+            "properties": {
+                "blackKingCell": {
+                    "type": "integer"
                 },
-                "to": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.RequestPassword": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.RequestUserIdAndPassword": {
-            "type": "object",
-            "properties": {
+                "figureId": {
+                    "type": "integer"
+                },
+                "from": {
+                    "type": "integer"
+                },
+                "gameId": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.RequestedCreateGame": {
-            "type": "object",
-            "properties": {
-                "isWhite": {
+                "isCheckBlack": {
                     "type": "boolean"
+                },
+                "isCheckWhite": {
+                    "type": "boolean"
+                },
+                "killedFigureId": {
+                    "type": "integer"
+                },
+                "moveNumber": {
+                    "type": "integer"
+                },
+                "newFigureId": {
+                    "type": "integer"
+                },
+                "to": {
+                    "type": "integer"
+                },
+                "whiteKingCell": {
+                    "type": "integer"
                 }
             }
         }

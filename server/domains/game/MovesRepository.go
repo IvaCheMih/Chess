@@ -3,6 +3,7 @@ package game
 import (
 	"database/sql"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 )
 
@@ -42,23 +43,35 @@ func (m *MovesRepository) Find(gameId int, tx *sql.Tx) ([]dto.Move, error) {
 	return moves, nil
 }
 
-func (m *MovesRepository) AddMove(gameId, from, to, figureId, killedFigureId int, isCheckWhite, isCheckBlack move_service.IsCheck, tx *sql.Tx) error {
+func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, tx *sql.Tx) error {
 
-	err := tx.QueryRow(`
-		insert into moves (gameId, moveNumber,from_id,to_id,figureId, killedFigureId, isCheckWhite , whiteKingCell, isCheckBlack, blackKingCell)
-			values ($1, (SELECT MAX(moveNumber)+1 FROM moves),  $2, $3, $4, $5, $6, $7, $8,$9)
-			RETURNING *
+	killedFigureId := 0
+	if board.Cells[to] != nil {
+		killedFigureId = board.Cells[to].FigureId
+	}
+
+	row, err := tx.Query(`
+		insert into moves (gameId,moveNumber, from_id,to_id,figureId, killedFigureId, newFigureId, isCheckWhite , whiteKingCell, isCheckBlack, blackKingCell)
+			values ($1,(SELECT COUNT(*) FROM moves WHERE gameId = $2)+1, $3, $4, $5, $6, $7, $8,$9,$10,$11)
 		`,
+		gameId,
 		gameId,
 		from,
 		to,
-		figureId,
+		board.Cells[from].FigureId,
 		killedFigureId,
+		0,
 		isCheckWhite.IsItCheck,
 		isCheckWhite.KingGameID,
 		isCheckBlack.IsItCheck,
 		isCheckBlack.KingGameID,
-	).Err()
+	)
+
+	if err != nil {
+		return err
+	}
+
+	row.Close()
 
 	return err
 }

@@ -10,7 +10,7 @@ type Game struct {
 	N             int
 	WhiteClientId *int
 	BlackClientId *int
-	Figures       []*Figure
+	Figures       map[int]*Figure
 	IsCheckWhite  IsCheck
 	IsCheckBlack  IsCheck
 	Side          int
@@ -23,13 +23,13 @@ type IsCheck struct {
 
 var FigureRepo = make(map[int]byte)
 
-func CreateGameStruct(game dto.CreateGameResponse, cells []models.BoardCell) Game {
+func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 
 	return Game{
 		N:             8,
 		WhiteClientId: &game.WhiteUserId,
 		BlackClientId: &game.BlackUserId,
-		Figures:       CreateDefaultField(cells),
+		Figures:       CreateDefaultField(board),
 		IsCheckWhite:  IsCheck{game.IsCheckWhite, game.WhiteKingCell},
 		IsCheckBlack:  IsCheck{game.IsCheckBlack, game.BlackKingCell},
 	}
@@ -39,17 +39,17 @@ func CreateFigureRepo() map[int]byte {
 	var figureRepo = make(map[int]byte)
 
 	figureRepo[1] = 'r'
-	figureRepo[2] = 'h'
+	figureRepo[2] = 'k'
 	figureRepo[3] = 'b'
 	figureRepo[4] = 'q'
-	figureRepo[5] = 'k'
+	figureRepo[5] = 'K'
 	figureRepo[6] = 'p'
 
 	figureRepo[7] = 'r'
-	figureRepo[8] = 'h'
+	figureRepo[8] = 'k'
 	figureRepo[9] = 'b'
 	figureRepo[10] = 'q'
-	figureRepo[11] = 'k'
+	figureRepo[11] = 'K'
 	figureRepo[12] = 'p'
 
 	return figureRepo
@@ -307,6 +307,25 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 	}
 	fmt.Println("Начало пешечной проверки")
 	return false
+}
+
+func (g *Game) ChangeToAndFrom(to int, from int) {
+	figureTo := g.GetFigureByIndex(to)
+
+	fmt.Println(500)
+
+	if figureTo != nil {
+		(*figureTo).Delete()
+	}
+
+	fmt.Println(501)
+
+	figureFrom := g.GetFigureByIndex(from)
+
+	fmt.Println(503)
+
+	(*figureFrom).ChangeGameIndex(to)
+	fmt.Println(504)
 }
 
 var TheoryKnightSteps = []int{
