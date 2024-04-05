@@ -23,8 +23,8 @@ func CreateGamesHandlers(gameService *GamesService) GamesHandlers {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param Body body dto.CreateGameRequest true "request"
-// @Success 200 {object} map[string]interface{}
+// @Param game body dto.CreateGameRequest true "request"
+// @Success 200 {object} dto.CreateGameResponse
 // @Router /game/ [post]
 func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 	request, err := dto.GetRequestNewGame(c)
@@ -43,7 +43,7 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.JSON(fiber.Map{"gameId": responseCreateGame.GameId})
+	return c.JSON(responseCreateGame)
 
 }
 
@@ -101,7 +101,7 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 	return c.JSON(responseGetHistory)
 }
 
-// DoMove godoc
+// Move godoc
 // @Summary do move.
 // @Description do move.
 // @Tags move
@@ -110,9 +110,9 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 // @Security       JWT
 // @Param gameId path int true "gameId"
 // @Param move body dto.DoMoveRequest true "move"
-// @Success 200 {object}  dto.GetBoardResponse
+// @Success 200 {object}  dto.Move
 // @Router /game/{gameId}/move [post]
-func (h *GamesHandlers) DoMove(c *fiber.Ctx) error {
+func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 	request, err := dto.GetGameId(c)
 	if err != nil {
 		fmt.Println(err)
@@ -129,12 +129,12 @@ func (h *GamesHandlers) DoMove(c *fiber.Ctx) error {
 
 	fmt.Println(100)
 
-	responseDoMove, err := h.gameService.DoMove(request.GameId, userId, requestDoMove)
+	responseMove, err := h.gameService.Move(request.GameId, userId, requestDoMove)
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
 	fmt.Println(101)
 
-	return c.JSON(responseDoMove)
+	return c.JSON(responseMove)
 }

@@ -25,8 +25,6 @@ var authHandlers auth.AuthHandlers
 func Init(postgresqlUrl string) {
 	migrationService := domains.CreateMigrationService()
 
-	//time.Sleep(5 * time.Second)
-
 	migrationService.RunUp(postgresqlUrl, "file://migrations/postgresql")
 
 	move_service.FigureRepo = move_service.CreateFigureRepo()
@@ -80,7 +78,6 @@ func Shutdown() {
 //	@name                       Authorization
 //	@description                JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.
 func main() {
-	// add swagger !!!!!!!!!!
 
 	Init(connect)
 
@@ -98,93 +95,13 @@ func main() {
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
 	}))
 
-	//server.Get("/user/:userId", userHandlers.GetUser)
-
 	server.Post("/game", authHandlers.CheckAuth, gamesHandlers.CreateGame)
 
 	server.Get("/game/:gameId/board", authHandlers.CheckAuth, gamesHandlers.GetBoard)
 
 	server.Get("/game/:gameId/history", authHandlers.CheckAuth, gamesHandlers.GetHistory)
 
-	server.Post("/game/:gameId/move", authHandlers.CheckAuth, gamesHandlers.DoMove)
-
-	//server.Get("/game/:gameId/board", func(c *fiber.Ctx) error {
-	//	clientId := GetClientId(c)
-	//	gameId, _ := c.ParamsInt("gameId")
-	//
-	//	if !game.IsGameMember(clientId) {
-	//		server.SendMessage(clientId, "get-board", "Вы не имеете доступа игре")
-	//		return
-	//	}
-	//
-	//	board := game.GetBoard()
-	//
-	//	server.SendMessage(clientId, "get-board", board)
-	//})
-	//
-	//server.Get("/game/:gameId/side", func(c *fiber.Ctx) error {
-	//	if !game.IsGameMember(clientId) {
-	//		server.SendMessage(clientId, "get-move-side", "Вы не имеете доступа игре")
-	//		return
-	//	}
-	//
-	//	server.SendMessage(clientId, "get-move-side", game.GetMoveSide())
-	//})
-	//
-	//server.Get("/game/:gameId/history", func(c *fiber.Ctx) error {
-	//	if !game.IsGameMember(clientId) {
-	//		server.SendMessage(clientId, "get-history", "Вы не имеете доступа игре")
-	//		return
-	//	}
-	//
-	//	server.SendMessage(clientId, "get-history", game.GetHistoryString())
-	//})
-	//
-	//server.Post("/game/:gameId/give-up", func(c *fiber.Ctx) error {
-	//	if !game.IsGameMember(clientId) {
-	//		server.SendMessage(clientId, "give-up", "Вы не имеете доступа игре")
-	//		return
-	//	}
-	//
-	//	game.IsEnded = true
-	//
-	//	if game.WhiteClientId != nil {
-	//		server.SendMessage(*game.WhiteClientId, "give-up", "GAME OVER!")
-	//	}
-	//	if game.BlackClientId != nil {
-	//		server.SendMessage(*game.BlackClientId, "give-up", "GAME OVER!")
-	//	}
-	//})
-	//
-	//server.Post("/game/:gameId/move", func(c *fiber.Ctx) error {
-	//	if !game.IsGameMember(clientId) {
-	//		server.SendMessage(clientId, "do-move", "Вы не имеете доступа игре")
-	//		return
-	//	}
-	//
-	//	if game.GetMoveSide() == "white" && clientId != *game.WhiteClientId {
-	//		server.SendMessage(clientId, "do-move", "Сейчас ход противника")
-	//		return
-	//	}
-	//
-	//	if game.GetMoveSide() == "black" && clientId != *game.BlackClientId {
-	//		server.SendMessage(clientId, "do-move", "Сейчас ход противника")
-	//		return
-	//	}
-	//
-	//	if !game.CheckCorrectRequest(message) {
-	//		server.SendMessage(clientId, "do-move", "Невозможный ход! Введите корректный ход:")
-	//		return
-	//	}
-	//
-	//	if !game.DoStep(message) {
-	//		server.SendMessage(clientId, "do-move", "Невозможный ход! Введите корректный ход:")
-	//		return
-	//	}
-	//
-	//	server.SendMessage(*game.WhiteClientId, "do-move", game.GetBoard())
-	//	server.SendMessage(*game.BlackClientId, "do-move", game.GetBoard())
-	//})
+	server.Post("/game/:gameId/move", authHandlers.CheckAuth, gamesHandlers.Move)
 
 	if err := server.Listen(":8082"); err != nil {
 		log.Fatal(err)
