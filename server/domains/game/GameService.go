@@ -179,7 +179,11 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	fmt.Println(207)
 
+	fmt.Println(responseGetGame.Side)
+
 	game, check := move_service.CheckIsItCheck(responseGetGame, board, from, to)
+
+	fmt.Println(game.Side)
 
 	fmt.Println(208)
 
@@ -196,10 +200,13 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	fmt.Println(209)
 
 	if game.Side == *game.WhiteClientId {
+		fmt.Println(*game.BlackClientId, "    dddddddddddddddddddddddddd")
 		game.Side = *game.BlackClientId
 	} else {
 		game.Side = *game.WhiteClientId
 	}
+
+	fmt.Println(game.Side, "    dddddddddddddddddddddddddd")
 
 	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
 	if err != nil {
@@ -224,6 +231,10 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	if err != nil {
 		return models.Move{}, err
 	}
+
+	err = tx.Commit()
+
+	fmt.Println(212)
 
 	return responseMove, err
 }

@@ -32,6 +32,7 @@ func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 		Figures:       CreateDefaultField(board),
 		IsCheckWhite:  IsCheck{game.IsCheckWhite, game.WhiteKingCell},
 		IsCheckBlack:  IsCheck{game.IsCheckBlack, game.BlackKingCell},
+		Side:          game.Side,
 	}
 }
 

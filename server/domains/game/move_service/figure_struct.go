@@ -119,6 +119,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Up = append(theoryMoves.Up, index)
 			theoryMoves.Mu.Unlock()
+			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
@@ -134,6 +135,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Down = append(theoryMoves.Down, index)
 			theoryMoves.Mu.Unlock()
+			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
@@ -149,6 +151,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Right = append(theoryMoves.Right, index)
 			theoryMoves.Mu.Unlock()
+			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
@@ -164,6 +167,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Left = append(theoryMoves.Left, index)
 			theoryMoves.Mu.Unlock()
+			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
