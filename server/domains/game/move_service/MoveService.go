@@ -6,7 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
-func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, requestFromTo dto.DoMoveRequest) bool {
+func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, requestFromTo dto.DoMoveBody) bool {
 	fmt.Println(300)
 	game := CreateGameStruct(responseGetGame, board)
 	fmt.Println(301)

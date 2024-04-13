@@ -23,7 +23,7 @@ func CreateGamesHandlers(gameService *GamesService) GamesHandlers {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param game body dto.CreateGameRequest true "request"
+// @Param game body dto.CreateGameBody true "request"
 // @Success 200 {object} dto.CreateGameResponse
 // @Router /game/ [post]
 func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
@@ -54,7 +54,7 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param gameId path int true "gameId"
+// @Param gameId path dto.GetGameIdParam true "gameId"
 // @Success 200 {object} dto.GetBoardResponse
 // @Router /game/{gameId}/board [get]
 func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
@@ -81,7 +81,7 @@ func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param gameId path int true "gameId"
+// @Param gameId path dto.GetGameIdParam true "gameId"
 // @Success 200 {object}  dto.GetHistoryResponse
 // @Router /game/{gameId}/history [get]
 func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
@@ -108,8 +108,8 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param gameId path int true "gameId"
-// @Param move body dto.DoMoveRequest true "move"
+// @Param gameId path dto.GetGameIdParam true "gameId"
+// @Param move body dto.DoMoveBody true "move"
 // @Success 200 {object}  dto.Move
 // @Router /game/{gameId}/move [post]
 func (h *GamesHandlers) Move(c *fiber.Ctx) error {

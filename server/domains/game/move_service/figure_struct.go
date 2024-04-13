@@ -1,6 +1,9 @@
 package move_service
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 type FigurePawn struct {
 	BaseFigure
@@ -36,6 +39,7 @@ type TheoryMoves struct {
 	DR    []int
 	DL    []int
 	Kn    []int
+	Mu    sync.Mutex
 }
 
 func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
@@ -91,53 +95,79 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 }
 
 func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
-	up := []int{}
-
-	for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
-		if !figure.AddMove(game, index) {
-			break
-		}
-		up = append(up, index)
-	}
-
-	down := []int{}
-
-	for index := figure.GameIndex - game.N; game.CheckCellOnBoardByIndex(index); index -= game.N {
-		if !figure.AddMove(game, index) {
-			break
-		}
-		down = append(up, index)
-	}
-
-	right := []int{}
-
-	for index := figure.GameIndex + 1; game.CheckCellOnBoardByIndex(index); index++ {
-		if !figure.AddMove(game, index) {
-			break
-		}
-		right = append(up, index)
-	}
-
-	left := []int{}
-
-	for index := figure.GameIndex - 1; game.CheckCellOnBoardByIndex(index); index-- {
-		if !figure.AddMove(game, index) {
-			break
-		}
-		left = append(up, index)
-	}
-
 	var theoryMoves = TheoryMoves{
-		Up:    up,
-		Down:  down,
-		Right: right,
-		Left:  left,
+		Up:    []int{},
+		Down:  []int{},
+		Right: []int{},
+		Left:  []int{},
 		UR:    nil,
 		UL:    nil,
 		DR:    nil,
 		DL:    nil,
 		Kn:    nil,
+		Mu:    sync.Mutex{},
 	}
+
+	wg := sync.WaitGroup{}
+
+	go func() {
+		wg.Add(1)
+		for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Up = append(theoryMoves.Up, index)
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
+
+	go func() {
+		wg.Add(1)
+
+		for index := figure.GameIndex - game.N; game.CheckCellOnBoardByIndex(index); index -= game.N {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Down = append(theoryMoves.Down, index)
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
+
+	go func() {
+		wg.Add(1)
+
+		for index := figure.GameIndex + 1; game.CheckCellOnBoardByIndex(index); index++ {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Right = append(theoryMoves.Right, index)
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
+
+	go func() {
+		wg.Add(1)
+
+		for index := figure.GameIndex - 1; game.CheckCellOnBoardByIndex(index); index-- {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Left = append(theoryMoves.Left, index)
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
 
 	return &theoryMoves
 }
@@ -183,135 +213,207 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	index := figure.GameIndex
 
-	upRight := []int{}
-
-	for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
-		if figure.AddMove(game, index+i*(game.N+1)) {
-			upRight = append(upRight, index+i*(game.N+1))
-		}
-	}
-
-	upLeft := []int{}
-
-	for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
-		if figure.AddMove(game, index+i*(game.N-1)) {
-			upLeft = append(upLeft, index+i*(game.N-1))
-		}
-	}
-
-	downLeft := []int{}
-
-	for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
-		if figure.AddMove(game, index-i*(game.N-1)) {
-			downLeft = append(downLeft, index-i*(game.N-1))
-		}
-	}
-
-	downRight := []int{}
-
-	for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
-		if figure.AddMove(game, index-i*(game.N+1)) {
-			downRight = append(downRight, index-i*(game.N+1))
-		}
-	}
-
 	var theoryMoves = TheoryMoves{
 		Up:    nil,
 		Down:  nil,
 		Right: nil,
 		Left:  nil,
-		UR:    upRight,
-		UL:    upLeft,
-		DR:    downRight,
-		DL:    downLeft,
+		UR:    []int{},
+		UL:    []int{},
+		DR:    []int{},
+		DL:    []int{},
 		Kn:    nil,
+		Mu:    sync.Mutex{},
 	}
+
+	wg := sync.WaitGroup{}
+
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
+			if !figure.AddMove(game, index+i*(game.N+1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
+
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
+			if !figure.AddMove(game, index+i*(game.N-1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.UL = append(theoryMoves.UL, index+i*(game.N-1))
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
+			if !figure.AddMove(game, index-i*(game.N-1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.DL = append(theoryMoves.DL, index-i*(game.N-1))
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
+
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
+			if !figure.AddMove(game, index-i*(game.N+1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.DR = append(theoryMoves.DR, index-i*(game.N+1))
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+
+	}()
+
+	wg.Wait()
 
 	return &theoryMoves
 }
 
 func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
-	up := []int{}
-
-	for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
-		if !figure.AddMove(game, index) {
-			break
-		}
-		up = append(up, index)
+	var theoryMoves = TheoryMoves{
+		Up:    []int{},
+		Down:  []int{},
+		Right: []int{},
+		Left:  []int{},
+		UR:    []int{},
+		UL:    []int{},
+		DR:    []int{},
+		DL:    []int{},
+		Kn:    nil,
+		Mu:    sync.Mutex{},
 	}
 
-	down := []int{}
+	wg := sync.WaitGroup{}
 
-	for index := figure.GameIndex - game.N; game.CheckCellOnBoardByIndex(index); index -= game.N {
-		if !figure.AddMove(game, index) {
-			break
+	go func() {
+		wg.Add(1)
+		for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Up = append(theoryMoves.Up, index)
+			theoryMoves.Mu.Unlock()
 		}
-		down = append(up, index)
-	}
+		wg.Done()
+	}()
 
-	right := []int{}
-
-	for index := figure.GameIndex + 1; game.CheckCellOnBoardByIndex(index); index++ {
-		if !figure.AddMove(game, index) {
-			break
+	go func() {
+		wg.Add(1)
+		for index := figure.GameIndex - game.N; game.CheckCellOnBoardByIndex(index); index -= game.N {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Down = append(theoryMoves.Down, index)
+			theoryMoves.Mu.Unlock()
 		}
-		right = append(up, index)
-	}
+		wg.Done()
+	}()
 
-	left := []int{}
+	go func() {
+		wg.Add(1)
+		for index := figure.GameIndex + 1; game.CheckCellOnBoardByIndex(index); index++ {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Right = append(theoryMoves.Right, index)
+			theoryMoves.Mu.Unlock()
 
-	for index := figure.GameIndex - 1; game.CheckCellOnBoardByIndex(index); index-- {
-		if !figure.AddMove(game, index) {
-			break
 		}
-		left = append(up, index)
-	}
+		wg.Done()
+	}()
+
+	go func() {
+		wg.Add(1)
+		for index := figure.GameIndex - 1; game.CheckCellOnBoardByIndex(index); index-- {
+			if !figure.AddMove(game, index) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.Left = append(theoryMoves.Left, index)
+			theoryMoves.Mu.Unlock()
+		}
+		wg.Done()
+	}()
 
 	index := figure.GameIndex
 
-	upRight := []int{}
-
-	for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
-		if figure.AddMove(game, index+i*(game.N+1)) {
-			upRight = append(upRight, index+i*(game.N+1))
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
+			if !figure.AddMove(game, index+i*(game.N+1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+			theoryMoves.Mu.Unlock()
 		}
-	}
+		wg.Done()
 
-	upLeft := []int{}
+	}()
 
-	for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
-		if figure.AddMove(game, index+i*(game.N-1)) {
-			upLeft = append(upLeft, index+i*(game.N-1))
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
+			if !figure.AddMove(game, index+i*(game.N-1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.UL = append(theoryMoves.UL, index+i*(game.N-1))
+			theoryMoves.Mu.Unlock()
 		}
-	}
+		wg.Done()
 
-	downLeft := []int{}
+	}()
 
-	for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
-		if figure.AddMove(game, index-i*(game.N-1)) {
-			downLeft = append(downLeft, index-i*(game.N-1))
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
+			if !figure.AddMove(game, index-i*(game.N-1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.DL = append(theoryMoves.DL, index-i*(game.N-1))
+			theoryMoves.Mu.Unlock()
 		}
-	}
+		wg.Done()
+	}()
 
-	downRight := []int{}
-
-	for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
-		if figure.AddMove(game, index-i*(game.N+1)) {
-			downRight = append(downRight, index-i*(game.N+1))
+	go func() {
+		wg.Add(1)
+		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
+			if !figure.AddMove(game, index-i*(game.N+1)) {
+				break
+			}
+			theoryMoves.Mu.Lock()
+			theoryMoves.DR = append(theoryMoves.DR, index-i*(game.N+1))
+			theoryMoves.Mu.Unlock()
 		}
-	}
+		wg.Done()
+	}()
 
-	var theoryMoves = TheoryMoves{
-		Up:    up,
-		Down:  down,
-		Right: right,
-		Left:  left,
-		UR:    upRight,
-		UL:    upLeft,
-		DR:    downRight,
-		DL:    downLeft,
-		Kn:    nil,
-	}
+	wg.Wait()
 
 	return &theoryMoves
 }

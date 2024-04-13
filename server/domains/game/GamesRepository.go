@@ -17,7 +17,7 @@ func CreateGamesRepository(db *sql.DB) GamesRepository {
 	}
 }
 
-func (g *GamesRepository) CreateGame(userId any, tx *sql.Tx) (models.CreateGameResponse, error) {
+func (g *GamesRepository) CreateGame(userId any, tx *sql.Tx) (models.Game, error) {
 	row := tx.QueryRow(`
 		insert into games (whiteUserId)
 			values ($1)
@@ -26,14 +26,14 @@ func (g *GamesRepository) CreateGame(userId any, tx *sql.Tx) (models.CreateGameR
 		userId,
 	)
 
-	var requestCreateGame models.CreateGameResponse
+	var requestCreateGame models.Game
 
 	err := RowToGame(row, &requestCreateGame)
 
 	return requestCreateGame, err
 }
 
-func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (models.CreateGameResponse, error) {
+func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (models.Game, error) {
 	row := tx.QueryRow(`
 		SELECT * FROM games
 		    where blackUserId = 0
@@ -41,7 +41,7 @@ func (g *GamesRepository) FindNotStartedGame(tx *sql.Tx) (models.CreateGameRespo
 		`,
 	)
 
-	var requestCreateGame models.CreateGameResponse
+	var requestCreateGame models.Game
 
 	err := RowToGame(row, &requestCreateGame)
 
@@ -62,7 +62,7 @@ func (g *GamesRepository) JoinBlackToGame(gameId any, userId any, tx *sql.Tx) er
 	return err
 }
 
-func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (models.CreateGameResponse, error) {
+func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (models.Game, error) {
 	row := tx.QueryRow(`
 		SELECT * FROM games
 		    where id = $1
@@ -70,7 +70,7 @@ func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (models.CreateGameResp
 		gameId,
 	)
 
-	var requestCreateGame models.CreateGameResponse
+	var requestCreateGame models.Game
 
 	err := RowToGame(row, &requestCreateGame)
 
@@ -94,7 +94,7 @@ func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move
 	return err
 }
 
-func RowToGame(row *sql.Row, requestCreateGame *models.CreateGameResponse) error {
+func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
 	return row.Scan(
 		&requestCreateGame.GameId,
 

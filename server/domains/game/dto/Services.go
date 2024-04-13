@@ -15,43 +15,43 @@ func GetClientId(c *fiber.Ctx) (int, error) {
 	return int(clientId), err
 }
 
-func GetRequestNewGame(c *fiber.Ctx) (CreateGameRequest, error) {
+func GetRequestNewGame(c *fiber.Ctx) (CreateGameBody, error) {
 	body := c.Body()
 
-	var request CreateGameRequest
+	var request CreateGameBody
 
 	err := json.Unmarshal(body, &request)
 
 	return request, err
 }
 
-func GetGameId(c *fiber.Ctx) (RequestGetBoard, error) {
+func GetGameId(c *fiber.Ctx) (GetGameIdParam, error) {
 	gameId, err := c.ParamsInt("gameId")
 	if err != nil {
-		return RequestGetBoard{}, err
+		return GetGameIdParam{}, err
 	}
 
-	var request = RequestGetBoard{
+	var request = GetGameIdParam{
 		GameId: gameId,
 	}
 
 	return request, nil
 }
 
-func GetRequestDoMoveFromBody(c *fiber.Ctx) (DoMoveRequest, error) {
+func GetRequestDoMoveFromBody(c *fiber.Ctx) (DoMoveBody, error) {
 	body := c.Body()
 
-	var request DoMoveRequest
+	var request DoMoveBody
 
 	err := json.Unmarshal(body, &request)
 
 	return request, err
 }
 
-//func GetRequestGetBoard(c *fiber.Ctx) (RequestGetBoard, error) {
+//func GetRequestGetBoard(c *fiber.Ctx) (GetGameIdParam, error) {
 //	body := c.Body()
 //
-//	var request RequestGetBoard
+//	var request GetGameIdParam
 //
 //	err := json.Unmarshal(body, &request)
 //

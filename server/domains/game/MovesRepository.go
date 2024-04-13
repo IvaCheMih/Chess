@@ -2,7 +2,6 @@ package game
 
 import (
 	"database/sql"
-	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 )
@@ -17,7 +16,7 @@ func CreateMovesRepository(db *sql.DB) MovesRepository {
 	}
 }
 
-func (m *MovesRepository) Find(gameId int, tx *sql.Tx) ([]dto.Move, error) {
+func (m *MovesRepository) Find(gameId int, tx *sql.Tx) ([]models.Move, error) {
 	rows, err := tx.Query(`
 		SELECT * FROM moves
 		    where gameId = $1 ORDER BY moveNumber
@@ -26,17 +25,17 @@ func (m *MovesRepository) Find(gameId int, tx *sql.Tx) ([]dto.Move, error) {
 	)
 
 	if err != nil {
-		return []dto.Move{}, err
+		return []models.Move{}, err
 	}
 
-	var moves []dto.Move
+	var moves []models.Move
 
 	err = FromRowsToMove(rows, &moves)
 
 	return moves, nil
 }
 
-func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, tx *sql.Tx) (dto.Move, error) {
+func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, tx *sql.Tx) (models.Move, error) {
 
 	killedFigureId := 0
 	if board.Cells[to] != nil {
@@ -64,10 +63,10 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 	defer rows.Close()
 
 	if err != nil {
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
-	var moves []dto.Move
+	var moves []models.Move
 
 	err = FromRowsToMove(rows, &moves)
 
@@ -76,11 +75,11 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 	return move, err
 }
 
-func FromRowsToMove(rows *sql.Rows, movesOut *[]dto.Move) error {
-	var moves []dto.Move
+func FromRowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
+	var moves []models.Move
 
 	for rows.Next() {
-		var move dto.Move
+		var move models.Move
 		err := rows.Scan(&move.Id, &move.GameId, &move.MoveNumber, &move.From, &move.To, &move.FigureId, &move.KilledFigureId, &move.NewFigureId, &move.IsCheckWhite, &move.WhiteKingCell, &move.IsCheckBlack, &move.BlackKingCell)
 		if err != nil {
 			return err

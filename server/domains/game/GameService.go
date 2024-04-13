@@ -133,14 +133,14 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.GetHistoryRespons
 	return responseGetHistory, err
 }
 
-func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequest) (dto.Move, error) {
+func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody) (models.Move, error) {
 	if !CheckCorrectRequest(requestFromTo.From, requestFromTo.To) {
-		return dto.Move{}, errors.New("Move is not correct")
+		return models.Move{}, errors.New("Move is not correct")
 	}
 
 	tx, err := g.gamesRepo.db.Begin()
 	if err != nil {
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	defer tx.Rollback()
@@ -149,7 +149,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequ
 
 	response, err := g.gamesRepo.GetById(gameId, tx)
 	if err != nil {
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	var responseGetGame dto.CreateGameResponse
@@ -160,18 +160,18 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequ
 
 	if err = CheckCorrectRequestSideUser(userId, responseGetGame); err != nil {
 		fmt.Println(err)
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	fmt.Println(202)
 
 	board, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	if !move_service.CheckCorrectMove(responseGetGame, board, requestFromTo) {
-		return dto.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
+		return models.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
 
 	from := CoordinatesToIndex(requestFromTo.From)
@@ -184,13 +184,13 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequ
 	fmt.Println(208)
 
 	if !check {
-		return dto.Move{}, errors.New("Move is not possible (CheckIsItCheck)")
+		return models.Move{}, errors.New("Move is not possible (CheckIsItCheck)")
 	}
 
 	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, tx)
 	if err != nil {
 		fmt.Println(err)
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	fmt.Println(209)
@@ -204,7 +204,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequ
 	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
 	if err != nil {
 		fmt.Print(err)
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	fmt.Println(210)
@@ -213,7 +213,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequ
 		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
 
 		if err != nil {
-			return dto.Move{}, err
+			return models.Move{}, err
 		}
 	}
 
@@ -222,7 +222,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveRequ
 	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
 
 	if err != nil {
-		return dto.Move{}, err
+		return models.Move{}, err
 	}
 
 	return responseMove, err
@@ -280,7 +280,7 @@ func CheckCorrectRequest(f, t string) bool {
 	return true
 }
 
-func FromModelsToDtoCreateGame(response models.CreateGameResponse, createGameResponse *dto.CreateGameResponse) {
+func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.CreateGameResponse) {
 	createGameResponse.GameId = response.GameId
 	createGameResponse.Side = response.Side
 

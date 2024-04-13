@@ -25,7 +25,7 @@ type Move struct {
 	BlackKingCell  int
 }
 
-type CreateGameResponse struct {
+type Game struct {
 	GameId        int
 	WhiteUserId   int
 	BlackUserId   int
