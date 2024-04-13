@@ -45,11 +45,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "request",
-                        "name": "Body",
+                        "name": "game",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateGameRequest"
+                            "$ref": "#/definitions/dto.CreateGameBody"
                         }
                     }
                 ],
@@ -57,8 +57,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.CreateGameResponse"
                         }
                     }
                 }
@@ -85,10 +84,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "gameId",
                         "name": "gameId",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     }
                 ],
                 "responses": {
@@ -122,10 +119,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "gameId",
                         "name": "gameId",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     }
                 ],
                 "responses": {
@@ -159,10 +154,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "gameId",
                         "name": "gameId",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "description": "move",
@@ -170,7 +163,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.DoMoveRequest"
+                            "$ref": "#/definitions/dto.DoMoveBody"
                         }
                     }
                 ],
@@ -178,7 +171,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetBoardResponse"
+                            "$ref": "#/definitions/models.Move"
                         }
                     }
                 }
@@ -200,7 +193,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "request",
-                        "name": "Body",
+                        "name": "session",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -212,8 +205,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.CreateSessionResponse"
                         }
                     }
                 }
@@ -235,7 +227,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "request",
-                        "name": "Body",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -247,8 +239,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.CreateUserResponse"
                         }
                     }
                 }
@@ -267,11 +258,46 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateGameRequest": {
+        "dto.CreateGameBody": {
             "type": "object",
             "properties": {
                 "isWhite": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.CreateGameResponse": {
+            "type": "object",
+            "properties": {
+                "blackKingCell": {
+                    "type": "integer"
+                },
+                "blackUserId": {
+                    "type": "integer"
+                },
+                "gameId": {
+                    "type": "integer"
+                },
+                "isCheckBlack": {
+                    "type": "boolean"
+                },
+                "isCheckWhite": {
+                    "type": "boolean"
+                },
+                "isEnded": {
+                    "type": "boolean"
+                },
+                "isStarted": {
+                    "type": "boolean"
+                },
+                "side": {
+                    "type": "integer"
+                },
+                "whiteKingCell": {
+                    "type": "integer"
+                },
+                "whiteUserId": {
+                    "type": "integer"
                 }
             }
         },
@@ -286,6 +312,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateSessionResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateUserRequest": {
             "type": "object",
             "properties": {
@@ -294,7 +328,18 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.DoMoveRequest": {
+        "dto.CreateUserResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DoMoveBody": {
             "type": "object",
             "properties": {
                 "from": {
@@ -322,12 +367,12 @@ const docTemplate = `{
                 "moves": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.Move"
+                        "$ref": "#/definitions/models.Move"
                     }
                 }
             }
         },
-        "dto.Move": {
+        "models.Move": {
             "type": "object",
             "properties": {
                 "blackKingCell": {

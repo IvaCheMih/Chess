@@ -7,10 +7,33 @@ definitions:
       index:
         type: integer
     type: object
-  dto.CreateGameRequest:
+  dto.CreateGameBody:
     properties:
       isWhite:
         type: boolean
+    type: object
+  dto.CreateGameResponse:
+    properties:
+      blackKingCell:
+        type: integer
+      blackUserId:
+        type: integer
+      gameId:
+        type: integer
+      isCheckBlack:
+        type: boolean
+      isCheckWhite:
+        type: boolean
+      isEnded:
+        type: boolean
+      isStarted:
+        type: boolean
+      side:
+        type: integer
+      whiteKingCell:
+        type: integer
+      whiteUserId:
+        type: integer
     type: object
   dto.CreateSessionRequest:
     properties:
@@ -19,12 +42,24 @@ definitions:
       password:
         type: string
     type: object
+  dto.CreateSessionResponse:
+    properties:
+      token:
+        type: string
+    type: object
   dto.CreateUserRequest:
     properties:
       password:
         type: string
     type: object
-  dto.DoMoveRequest:
+  dto.CreateUserResponse:
+    properties:
+      id:
+        type: integer
+      password:
+        type: string
+    type: object
+  dto.DoMoveBody:
     properties:
       from:
         type: string
@@ -42,10 +77,10 @@ definitions:
     properties:
       moves:
         items:
-          $ref: '#/definitions/dto.Move'
+          $ref: '#/definitions/models.Move'
         type: array
     type: object
-  dto.Move:
+  models.Move:
     properties:
       blackKingCell:
         type: integer
@@ -94,18 +129,17 @@ paths:
       parameters:
       - description: request
         in: body
-        name: Body
+        name: game
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateGameRequest'
+          $ref: '#/definitions/dto.CreateGameBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.CreateGameResponse'
       security:
       - JWT: []
       summary: create new game.
@@ -117,10 +151,8 @@ paths:
       - application/json
       description: get board.
       parameters:
-      - description: gameId
-        in: path
+      - in: path
         name: gameId
-        required: true
         type: integer
       produces:
       - application/json
@@ -140,10 +172,8 @@ paths:
       - application/json
       description: get history.
       parameters:
-      - description: gameId
-        in: path
+      - in: path
         name: gameId
-        required: true
         type: integer
       produces:
       - application/json
@@ -163,24 +193,22 @@ paths:
       - application/json
       description: do move.
       parameters:
-      - description: gameId
-        in: path
+      - in: path
         name: gameId
-        required: true
         type: integer
       - description: move
         in: body
         name: move
         required: true
         schema:
-          $ref: '#/definitions/dto.DoMoveRequest'
+          $ref: '#/definitions/dto.DoMoveBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetBoardResponse'
+            $ref: '#/definitions/models.Move'
       security:
       - JWT: []
       summary: do move.
@@ -194,7 +222,7 @@ paths:
       parameters:
       - description: request
         in: body
-        name: Body
+        name: session
         required: true
         schema:
           $ref: '#/definitions/dto.CreateSessionRequest'
@@ -204,8 +232,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.CreateSessionResponse'
       summary: create new session.
       tags:
       - session
@@ -217,7 +244,7 @@ paths:
       parameters:
       - description: request
         in: body
-        name: Body
+        name: user
         required: true
         schema:
           $ref: '#/definitions/dto.CreateUserRequest'
@@ -227,8 +254,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.CreateUserResponse'
       summary: create new user.
       tags:
       - user

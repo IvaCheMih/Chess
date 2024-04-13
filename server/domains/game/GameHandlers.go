@@ -110,7 +110,7 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 // @Security       JWT
 // @Param gameId path dto.GetGameIdParam true "gameId"
 // @Param move body dto.DoMoveBody true "move"
-// @Success 200 {object}  dto.Move
+// @Success 200 {object}  models.Move
 // @Router /game/{gameId}/move [post]
 func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 	request, err := dto.GetGameId(c)
