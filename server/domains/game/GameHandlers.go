@@ -127,14 +127,10 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 
 	userId := c.Context().Value("userId")
 
-	fmt.Println(100)
-
 	responseMove, err := h.gameService.Move(request.GameId, userId, requestDoMove)
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-
-	fmt.Println(101)
 
 	return c.JSON(responseMove)
 }

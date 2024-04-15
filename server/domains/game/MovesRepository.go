@@ -2,7 +2,6 @@ package game
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 )
@@ -64,8 +63,6 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 	var move models.Move
 
 	err := FromRowToMove(row, &move)
-
-	fmt.Println(move)
 
 	return move, err
 }

@@ -313,20 +313,13 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureTo := g.GetFigureByIndex(to)
 
-	fmt.Println(500)
-
 	if figureTo != nil {
 		(*figureTo).Delete()
 	}
 
-	fmt.Println(501)
-
 	figureFrom := g.GetFigureByIndex(from)
 
-	fmt.Println(503)
-
 	(*figureFrom).ChangeGameIndex(to)
-	fmt.Println(504)
 }
 
 var TheoryKnightSteps = []int{
@@ -338,4 +331,11 @@ var TheoryKnightSteps = []int{
 	-8 + 2,
 	8 - 2,
 	-8 - 2,
+}
+
+func IndexToCoordinates(index int) string {
+	y := int('8') - (index / 8)
+	x := (index % 8) + int('A')
+
+	return string(byte(x)) + string(byte(y))
 }

@@ -119,7 +119,6 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Up = append(theoryMoves.Up, index)
 			theoryMoves.Mu.Unlock()
-			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
@@ -135,7 +134,6 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Down = append(theoryMoves.Down, index)
 			theoryMoves.Mu.Unlock()
-			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
@@ -151,7 +149,6 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Right = append(theoryMoves.Right, index)
 			theoryMoves.Mu.Unlock()
-			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
@@ -167,16 +164,19 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 			theoryMoves.Mu.Lock()
 			theoryMoves.Left = append(theoryMoves.Left, index)
 			theoryMoves.Mu.Unlock()
-			fmt.Println(game.IndexToCoordinates(index))
 		}
 		wg.Done()
 
 	}()
 
+	wg.Wait()
+
 	return &theoryMoves
 }
 
 func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
+	index := figure.GameIndex
+
 	theorySteps := []int{
 		(2 * game.N) + 1,
 		(2 * game.N) - 1,
@@ -190,12 +190,11 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 	kn := []int{}
 
 	for _, step := range theorySteps {
-
-		if game.CheckCellOnBoardByIndex(step) {
-			if (*game.GetFigureByIndex(step)).IsWhite() == (*figure).IsWhite() {
+		if game.CheckCellOnBoardByIndex(index + step) {
+			if game.GetFigureByIndex(index+step) != nil && (*game.GetFigureByIndex(index + step)).IsWhite() == (*figure).IsWhite() {
 				continue
 			}
-			kn = append(kn, step)
+			kn = append(kn, index+step)
 		}
 	}
 
@@ -217,6 +216,8 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	index := figure.GameIndex
 
+	fmt.Println(index)
+
 	var theoryMoves = TheoryMoves{
 		Up:    nil,
 		Down:  nil,
@@ -232,62 +233,88 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	wg := sync.WaitGroup{}
 
+	wg.Add(1)
+
 	go func() {
-		wg.Add(1)
 		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
-			if !figure.AddMove(game, index+i*(game.N+1)) {
+			add, _continue := figure.AddMove(game, index+i*(game.N+1))
+
+			if add {
+				theoryMoves.Mu.Lock()
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.Mu.Unlock()
+			}
+
+			if !_continue {
 				break
 			}
-			theoryMoves.Mu.Lock()
-			theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
-			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
 
 	}()
 
+	wg.Add(1)
+
 	go func() {
-		wg.Add(1)
 		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
-			if !figure.AddMove(game, index+i*(game.N-1)) {
+			add, _continue := figure.AddMove(game, index+i*(game.N-1))
+
+			if add {
+				theoryMoves.Mu.Lock()
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.Mu.Unlock()
+			}
+
+			if !_continue {
 				break
 			}
-			theoryMoves.Mu.Lock()
-			theoryMoves.UL = append(theoryMoves.UL, index+i*(game.N-1))
-			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
 	}()
 
+	wg.Add(1)
+
 	go func() {
-		wg.Add(1)
 		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
-			if !figure.AddMove(game, index-i*(game.N-1)) {
+			add, _continue := figure.AddMove(game, index-i*(game.N-1))
+
+			if add {
+				theoryMoves.Mu.Lock()
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.Mu.Unlock()
+			}
+
+			if !_continue {
 				break
 			}
-			theoryMoves.Mu.Lock()
-			theoryMoves.DL = append(theoryMoves.DL, index-i*(game.N-1))
-			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
 
 	}()
 
+	wg.Add(1)
+
 	go func() {
-		wg.Add(1)
 		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
-			if !figure.AddMove(game, index-i*(game.N+1)) {
+			add, _continue := figure.AddMove(game, index-i*(game.N+1))
+
+			if add {
+				theoryMoves.Mu.Lock()
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.Mu.Unlock()
+			}
+
+			if !_continue {
 				break
 			}
-			theoryMoves.Mu.Lock()
-			theoryMoves.DR = append(theoryMoves.DR, index-i*(game.N+1))
-			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
 
 	}()
 
 	wg.Wait()
+
+	fmt.Println(theoryMoves)
 
 	return &theoryMoves
 }
@@ -514,12 +541,17 @@ func (figure *FigureRook) AddMove(game *Game, index int) bool {
 	return true
 }
 
-func (figure *FigureBishop) AddMove(game *Game, index int) bool {
+func (figure *FigureBishop) AddMove(game *Game, index int) (bool, bool) {
 	fig := game.GetFigureByIndex(index)
 	if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
-		return false
+		return false, false
 	}
-	return true
+
+	if fig != nil && (*fig).IsWhite() != (*figure).IsWhite() {
+		return true, false
+	}
+
+	return true, true
 }
 
 func (figure *FigureQueen) AddMove(game *Game, index int) bool {

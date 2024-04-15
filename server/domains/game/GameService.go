@@ -138,14 +138,14 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, errors.New("Move is not correct")
 	}
 
+	fmt.Println(100)
+
 	tx, err := g.gamesRepo.db.Begin()
 	if err != nil {
 		return models.Move{}, err
 	}
 
 	defer tx.Rollback()
-
-	fmt.Println(200)
 
 	response, err := g.gamesRepo.GetById(gameId, tx)
 	if err != nil {
@@ -154,16 +154,18 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	var responseGetGame dto.CreateGameResponse
 
-	fmt.Println(201)
+	fmt.Println(101)
 
 	FromModelsToDtoCreateGame(response, &responseGetGame)
+
+	fmt.Println(102)
 
 	if err = CheckCorrectRequestSideUser(userId, responseGetGame); err != nil {
 		fmt.Println(err)
 		return models.Move{}, err
 	}
 
-	fmt.Println(202)
+	fmt.Println(103)
 
 	board, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
@@ -174,18 +176,12 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
 
+	fmt.Println(104)
+
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	fmt.Println(207)
-
-	fmt.Println(responseGetGame.Side)
-
 	game, check := move_service.CheckIsItCheck(responseGetGame, board, from, to)
-
-	fmt.Println(game.Side)
-
-	fmt.Println(208)
 
 	if !check {
 		return models.Move{}, errors.New("Move is not possible (CheckIsItCheck)")
@@ -197,24 +193,17 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	fmt.Println(209)
-
 	if game.Side == *game.WhiteClientId {
-		fmt.Println(*game.BlackClientId, "    dddddddddddddddddddddddddd")
 		game.Side = *game.BlackClientId
 	} else {
 		game.Side = *game.WhiteClientId
 	}
-
-	fmt.Println(game.Side, "    dddddddddddddddddddddddddd")
 
 	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
 	if err != nil {
 		fmt.Print(err)
 		return models.Move{}, err
 	}
-
-	fmt.Println(210)
 
 	if board.Cells[to] != nil {
 		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
@@ -224,17 +213,40 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		}
 	}
 
-	fmt.Println(211)
-
 	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
+	if err != nil {
+		return models.Move{}, err
+	}
 
+	cells, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
 
 	err = tx.Commit()
 
-	fmt.Println(212)
+	responseBoard := make([]dto.BoardCellEntity, 64)
+
+	for index, cell := range cells.Cells {
+		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
+
+	}
+
+	getBoardResponse := dto.GetBoardResponse{
+		BoardCells: responseBoard,
+	}
+
+	for i := 0; i < 64; i++ {
+		if i%8 == 0 {
+			fmt.Print("\n")
+		}
+
+		if getBoardResponse.BoardCells[i].FigureId == 0 {
+			fmt.Print(0)
+		} else {
+			fmt.Print(string(move_service.FigureRepo[getBoardResponse.BoardCells[i].FigureId]))
+		}
+	}
 
 	return responseMove, err
 }

@@ -1,7 +1,6 @@
 package move_service
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
@@ -29,8 +28,6 @@ func CreateDefaultField(board models.Board) map[int]*Figure {
 	//}
 
 	field := map[int]*Figure{}
-
-	fmt.Println(field)
 
 	for _, cell := range board.Cells {
 		isWhite := false
