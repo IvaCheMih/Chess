@@ -29,13 +29,14 @@ func CreateDefaultField(board models.Board) map[int]*Figure {
 
 	field := map[int]*Figure{}
 
-	for _, cell := range board.Cells {
-		isWhite := false
-		if cell.FigureId <= 6 {
-			isWhite = true
-		}
+	for i := 0; i < 144; i++ {
+		if realIndex, ok := VirtualFieldMap[i]; ok {
+			cell := board.Cells[realIndex]
 
-		field[cell.IndexCell] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell)
+			isWhite := cell.FigureId <= 6
+
+			field[i] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell)
+		}
 	}
 
 	return field
@@ -77,4 +78,41 @@ func CreateFigure1(_type byte, isWhite bool, index int) Figure {
 		return &FigureKing{bf}
 	}
 	return nil
+}
+
+var VirtualFieldMap map[int]int
+
+func CreateVirtualFieldMap() {
+
+	for i := 26; i < 34; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 38; i < 46; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 50; i < 58; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 62; i < 70; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 74; i < 82; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 86; i < 94; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 98; i < 106; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
+
+	for i := 110; i < 118; i++ {
+		VirtualFieldMap[i] = FromVirtualToReal(i)
+	}
 }

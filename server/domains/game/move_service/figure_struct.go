@@ -113,6 +113,10 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	go func() {
 		wg.Add(1)
 		for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
+			if _, ok := VirtualFieldMap[index]; !ok {
+				break
+			}
+
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -190,7 +194,9 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 	kn := []int{}
 
 	for _, step := range theorySteps {
-		if game.CheckCellOnBoardByIndex(index + step) {
+		if _, ok := VirtualFieldMap[index+step]; !ok {
+			continue
+		} else {
 			if game.GetFigureByIndex(index+step) != nil && (*game.GetFigureByIndex(index + step)).IsWhite() == (*figure).IsWhite() {
 				continue
 			}
@@ -216,8 +222,6 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	index := figure.GameIndex
 
-	fmt.Println(index)
-
 	var theoryMoves = TheoryMoves{
 		Up:    nil,
 		Down:  nil,
@@ -236,7 +240,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
+		for i := 1; IsOnRealBoard(index + i*(game.N+1)); i++ {
 			add, _continue := figure.AddMove(game, index+i*(game.N+1))
 
 			if add {
@@ -256,7 +260,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
+		for i := 1; IsOnRealBoard(index + i*(game.N-1)); i++ {
 			add, _continue := figure.AddMove(game, index+i*(game.N-1))
 
 			if add {
@@ -275,7 +279,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
+		for i := 1; IsOnRealBoard(index - i*(game.N-1)); i++ {
 			add, _continue := figure.AddMove(game, index-i*(game.N-1))
 
 			if add {
@@ -295,7 +299,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
+		for i := 1; IsOnRealBoard(index - i*(game.N+1)); i++ {
 			add, _continue := figure.AddMove(game, index-i*(game.N+1))
 
 			if add {
@@ -337,7 +341,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
+		for index := figure.GameIndex + game.N; IsOnRealBoard(index); index += game.N {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -350,7 +354,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex - game.N; game.CheckCellOnBoardByIndex(index); index -= game.N {
+		for index := figure.GameIndex - game.N; IsOnRealBoard(index); index -= game.N {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -363,7 +367,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex + 1; game.CheckCellOnBoardByIndex(index); index++ {
+		for index := figure.GameIndex + 1; IsOnRealBoard(index); index++ {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -377,7 +381,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex - 1; game.CheckCellOnBoardByIndex(index); index-- {
+		for index := figure.GameIndex - 1; IsOnRealBoard(index); index-- {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -392,7 +396,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N+1)); i++ {
+		for i := 1; IsOnRealBoard(index + i*(game.N+1)); i++ {
 			if !figure.AddMove(game, index+i*(game.N+1)) {
 				break
 			}
@@ -406,7 +410,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; game.CheckCellOnBoardByIndex(index + i*(game.N-1)); i++ {
+		for i := 1; IsOnRealBoard(index + i*(game.N-1)); i++ {
 			if !figure.AddMove(game, index+i*(game.N-1)) {
 				break
 			}
@@ -420,7 +424,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N-1)); i++ {
+		for i := 1; IsOnRealBoard(index - i*(game.N-1)); i++ {
 			if !figure.AddMove(game, index-i*(game.N-1)) {
 				break
 			}
@@ -433,7 +437,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; game.CheckCellOnBoardByIndex(index - i*(game.N+1)); i++ {
+		for i := 1; IsOnRealBoard(index - i*(game.N+1)); i++ {
 			if !figure.AddMove(game, index-i*(game.N+1)) {
 				break
 			}
@@ -465,7 +469,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 	k := []int{}
 
 	for _, move := range theorySteps {
-		if game.CheckCellOnBoardByIndex(index+move) && figure.AddMove(game, index+move) {
+		if IsOnRealBoard(index+move) && figure.AddMove(game, index+move) {
 			for _, move1 := range theorySteps {
 				if move1+move != 0 &&
 					(*game.GetFigureByIndex(index + move + move1)).GetType() != 'K' &&
@@ -568,4 +572,9 @@ func (figure *FigureKing) AddMove(game *Game, index int) bool {
 		return false
 	}
 	return true
+}
+
+func IsOnRealBoard(index int) bool {
+	_, ok := VirtualFieldMap[index]
+	return ok
 }

@@ -6,25 +6,32 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
-func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, requestFromTo dto.DoMoveBody) bool {
+func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, fromReal int, toReal int) bool {
+
+	from := FromRealToVirtualIndex(fromReal)
+	to := FromRealToVirtualIndex(toReal)
+
 	game := CreateGameStruct(responseGetGame, board)
 
-	figure := game.GetFigureByIndex(game.CoordinatesToIndex(requestFromTo.From))
+	figure := game.GetFigureByIndex(from)
 
 	possibleMoves := (*figure).GetPossibleMoves(&game)
 
 	printMoves(possibleMoves)
 
-	if !CheckMove(possibleMoves, game.CoordinatesToIndex(requestFromTo.To)) {
+	if !CheckMove(possibleMoves, to) {
 		return false
 	}
 
 	return true
 }
 
-func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) (Game, bool) {
+func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, fromReal int, toReal int) (Game, bool) {
 	//cellFrom := boardCells[from]
 	//cellTo := boardCells[to]
+
+	from := FromRealToVirtualIndex(fromReal)
+	to := FromRealToVirtualIndex(toReal)
 
 	gameAfterMove := CreateGameStruct(responseGetGame, board)
 
@@ -39,6 +46,9 @@ func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, 
 	if gameAfterMove.CheckIsCheck() {
 		return Game{}, false
 	}
+
+
+	gameAfterMove -> real board
 
 	return gameAfterMove, true
 }
@@ -121,31 +131,39 @@ func CheckMove(possibleMoves *TheoryMoves, to int) bool {
 
 func printMoves(possibleMoves *TheoryMoves) {
 	for _, v := range possibleMoves.Down {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.Up {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.Left {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.Right {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.DL {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.DR {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.UR {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.UL {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.Kn {
-		fmt.Print(IndexToCoordinates(v), " ")
+		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
 	}
 
+}
+
+func FromRealToVirtualIndex(x int) int {
+	return x + 24 + 4*(x/8) + 2
+}
+
+func FromVirtualToReal(x int) int{
+	return x - 26 - 4*(x/12)
 }

@@ -28,6 +28,7 @@ func Init(postgresqlUrl string) {
 	migrationService.RunUp(postgresqlUrl, "file://migrations/postgresql")
 
 	move_service.FigureRepo = move_service.CreateFigureRepo()
+	move_service.CreateVirtualFieldMap()
 
 	var err error
 
