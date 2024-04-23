@@ -49,33 +49,39 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	} else {
 		n = -1
 	}
+
 	vert := []int{}
 	index := figure.GameIndex
-	if game.CheckCellOnBoardByIndex(index-n*game.N) && game.GetFigureByIndex(index-n*game.N) == nil {
-		vert = append(vert, index-n*game.N)
+
+	fmt.Println("ind", index)
+
+	fmt.Println(game.IndexToCoordinates(FromVirtualToReal(index)))
+
+	if IsOnRealBoard(index-n*game.M) && game.GetFigureByIndex(index-n*game.M) == nil {
+		vert = append(vert, index-n*game.M)
 	}
-	if n == 1 && game.IndexToCoordinates(index)[1] == '2' {
-		if game.GetFigureByIndex(index-n*game.N) == nil && game.GetFigureByIndex(index-n*2*game.N) == nil {
-			vert = append(vert, index-n*2*game.N)
+	if n == 1 && game.IndexToCoordinates(FromVirtualToReal(index))[1] == '2' {
+		if game.GetFigureByIndex(index-n*game.M) == nil && game.GetFigureByIndex(index-n*2*game.M) == nil {
+			vert = append(vert, index-n*2*game.M)
 		}
 	}
-	if n == -1 && game.IndexToCoordinates(index)[1] == '7' {
-		if game.GetFigureByIndex(index-n*game.N) == nil && game.GetFigureByIndex(index-n*2*game.N) == nil {
-			vert = append(vert, index-n*2*game.N)
+	if n == -1 && game.IndexToCoordinates(FromVirtualToReal(index))[1] == '7' {
+		if game.GetFigureByIndex(index-n*game.M) == nil && game.GetFigureByIndex(index-n*2*game.M) == nil {
+			vert = append(vert, index-n*2*game.M)
 		}
 	}
 	left := []int{}
-	if game.CheckCellOnBoardByIndex(index-n*(game.N+1)) && game.GetFigureByIndex(index-n*(game.N+1)) != nil {
-		if figure.IsWhite() != (*game.GetFigureByIndex(index - n*(game.N+1))).IsWhite() {
+	if IsOnRealBoard(index-n*(game.M+1)) && game.GetFigureByIndex(index-n*(game.M+1)) != nil {
+		if figure.IsWhite() != (*game.GetFigureByIndex(index - n*(game.M+1))).IsWhite() {
 			fmt.Println("пешка пытается кушоц налево")
-			left = append(left, index-n*(game.N+1))
+			left = append(left, index-n*(game.M+1))
 		}
 	}
 	right := []int{}
-	if game.CheckCellOnBoardByIndex(index-n*(game.N-1)) && game.GetFigureByIndex(index-n*(game.N-1)) != nil {
-		if figure.IsWhite() != (*game.GetFigureByIndex(index - n*(game.N-1))).IsWhite() {
+	if IsOnRealBoard(index-n*(game.M-1)) && game.GetFigureByIndex(index-n*(game.M-1)) != nil {
+		if figure.IsWhite() != (*game.GetFigureByIndex(index - n*(game.M-1))).IsWhite() {
 			fmt.Println("пешка пытается кушоц направо")
-			right = append(right, index-n*(game.N-1))
+			right = append(right, index-n*(game.M-1))
 		}
 	}
 
@@ -112,10 +118,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex + game.N; game.CheckCellOnBoardByIndex(index); index += game.N {
-			if _, ok := VirtualFieldMap[index]; !ok {
-				break
-			}
+		for index := figure.GameIndex + game.M; IsOnRealBoard(index); index += game.M {
 
 			if !figure.AddMove(game, index) {
 				break
@@ -131,7 +134,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	go func() {
 		wg.Add(1)
 
-		for index := figure.GameIndex - game.N; game.CheckCellOnBoardByIndex(index); index -= game.N {
+		for index := figure.GameIndex - game.M; IsOnRealBoard(index); index -= game.M {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -146,7 +149,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	go func() {
 		wg.Add(1)
 
-		for index := figure.GameIndex + 1; game.CheckCellOnBoardByIndex(index); index++ {
+		for index := figure.GameIndex + 1; IsOnRealBoard(index); index++ {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -161,7 +164,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	go func() {
 		wg.Add(1)
 
-		for index := figure.GameIndex - 1; game.CheckCellOnBoardByIndex(index); index-- {
+		for index := figure.GameIndex - 1; IsOnRealBoard(index); index-- {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -182,14 +185,14 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 	index := figure.GameIndex
 
 	theorySteps := []int{
-		(2 * game.N) + 1,
-		(2 * game.N) - 1,
-		(-1)*(2*game.N) + 1,
-		(-1)*(2*game.N) - 1,
-		game.N + 2,
-		-game.N + 2,
-		game.N - 2,
-		-game.N - 2,
+		(2 * game.M) + 1,
+		(2 * game.M) - 1,
+		(-1)*(2*game.M) + 1,
+		(-1)*(2*game.M) - 1,
+		game.M + 2,
+		-game.M + 2,
+		game.M - 2,
+		-game.M - 2,
 	}
 	kn := []int{}
 
@@ -240,12 +243,12 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; IsOnRealBoard(index + i*(game.N+1)); i++ {
-			add, _continue := figure.AddMove(game, index+i*(game.N+1))
+		for i := 1; IsOnRealBoard(index + i*(game.M+1)); i++ {
+			add, _continue := figure.AddMove(game, index+i*(game.M+1))
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
 				theoryMoves.Mu.Unlock()
 			}
 
@@ -260,12 +263,12 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; IsOnRealBoard(index + i*(game.N-1)); i++ {
-			add, _continue := figure.AddMove(game, index+i*(game.N-1))
+		for i := 1; IsOnRealBoard(index + i*(game.M-1)); i++ {
+			add, _continue := figure.AddMove(game, index+i*(game.M-1))
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
 				theoryMoves.Mu.Unlock()
 			}
 
@@ -279,12 +282,12 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; IsOnRealBoard(index - i*(game.N-1)); i++ {
-			add, _continue := figure.AddMove(game, index-i*(game.N-1))
+		for i := 1; IsOnRealBoard(index - i*(game.M-1)); i++ {
+			add, _continue := figure.AddMove(game, index-i*(game.M-1))
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
 				theoryMoves.Mu.Unlock()
 			}
 
@@ -299,12 +302,12 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	wg.Add(1)
 
 	go func() {
-		for i := 1; IsOnRealBoard(index - i*(game.N+1)); i++ {
-			add, _continue := figure.AddMove(game, index-i*(game.N+1))
+		for i := 1; IsOnRealBoard(index - i*(game.M+1)); i++ {
+			add, _continue := figure.AddMove(game, index-i*(game.M+1))
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
 				theoryMoves.Mu.Unlock()
 			}
 
@@ -341,7 +344,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex + game.N; IsOnRealBoard(index); index += game.N {
+		for index := figure.GameIndex + game.M; IsOnRealBoard(index); index += game.M {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -354,7 +357,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for index := figure.GameIndex - game.N; IsOnRealBoard(index); index -= game.N {
+		for index := figure.GameIndex - game.M; IsOnRealBoard(index); index -= game.M {
 			if !figure.AddMove(game, index) {
 				break
 			}
@@ -396,12 +399,12 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; IsOnRealBoard(index + i*(game.N+1)); i++ {
-			if !figure.AddMove(game, index+i*(game.N+1)) {
+		for i := 1; IsOnRealBoard(index + i*(game.M+1)); i++ {
+			if !figure.AddMove(game, index+i*(game.M+1)) {
 				break
 			}
 			theoryMoves.Mu.Lock()
-			theoryMoves.UR = append(theoryMoves.UR, index+i*(game.N+1))
+			theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
 			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
@@ -410,12 +413,12 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; IsOnRealBoard(index + i*(game.N-1)); i++ {
-			if !figure.AddMove(game, index+i*(game.N-1)) {
+		for i := 1; IsOnRealBoard(index + i*(game.M-1)); i++ {
+			if !figure.AddMove(game, index+i*(game.M-1)) {
 				break
 			}
 			theoryMoves.Mu.Lock()
-			theoryMoves.UL = append(theoryMoves.UL, index+i*(game.N-1))
+			theoryMoves.UL = append(theoryMoves.UL, index+i*(game.M-1))
 			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
@@ -424,12 +427,12 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; IsOnRealBoard(index - i*(game.N-1)); i++ {
-			if !figure.AddMove(game, index-i*(game.N-1)) {
+		for i := 1; IsOnRealBoard(index - i*(game.M-1)); i++ {
+			if !figure.AddMove(game, index-i*(game.M-1)) {
 				break
 			}
 			theoryMoves.Mu.Lock()
-			theoryMoves.DL = append(theoryMoves.DL, index-i*(game.N-1))
+			theoryMoves.DL = append(theoryMoves.DL, index-i*(game.M-1))
 			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
@@ -437,12 +440,12 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	go func() {
 		wg.Add(1)
-		for i := 1; IsOnRealBoard(index - i*(game.N+1)); i++ {
-			if !figure.AddMove(game, index-i*(game.N+1)) {
+		for i := 1; IsOnRealBoard(index - i*(game.M+1)); i++ {
+			if !figure.AddMove(game, index-i*(game.M+1)) {
 				break
 			}
 			theoryMoves.Mu.Lock()
-			theoryMoves.DR = append(theoryMoves.DR, index-i*(game.N+1))
+			theoryMoves.DR = append(theoryMoves.DR, index-i*(game.M+1))
 			theoryMoves.Mu.Unlock()
 		}
 		wg.Done()
@@ -455,14 +458,14 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 
 func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 	theorySteps := []int{
-		game.N,
-		game.N + 1,
-		game.N - 1,
+		game.M,
+		game.M + 1,
+		game.M - 1,
 		-1,
 		1,
-		-game.N,
-		-game.N - 1,
-		-game.N + 1,
+		-game.M,
+		-game.M - 1,
+		-game.M + 1,
 	}
 
 	index := figure.GameIndex
@@ -576,5 +579,6 @@ func (figure *FigureKing) AddMove(game *Game, index int) bool {
 
 func IsOnRealBoard(index int) bool {
 	_, ok := VirtualFieldMap[index]
+
 	return ok
 }

@@ -1,6 +1,7 @@
 package move_service
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
@@ -30,12 +31,18 @@ func CreateDefaultField(board models.Board) map[int]*Figure {
 	field := map[int]*Figure{}
 
 	for i := 0; i < 144; i++ {
+		fmt.Println("for: ", i)
 		if realIndex, ok := VirtualFieldMap[i]; ok {
-			cell := board.Cells[realIndex]
+			fmt.Println("realInd: ", realIndex)
+			cell, oK := board.Cells[realIndex]
+
+			if !oK {
+				continue
+			}
 
 			isWhite := cell.FigureId <= 6
 
-			field[i] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell)
+			field[i] = CreateFigure(FigureRepo[cell.FigureId], isWhite, FromRealToVirtualIndex(cell.IndexCell))
 		}
 	}
 
@@ -80,7 +87,7 @@ func CreateFigure1(_type byte, isWhite bool, index int) Figure {
 	return nil
 }
 
-var VirtualFieldMap map[int]int
+var VirtualFieldMap = map[int]int{}
 
 func CreateVirtualFieldMap() {
 

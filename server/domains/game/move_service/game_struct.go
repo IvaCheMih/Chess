@@ -8,6 +8,7 @@ import (
 
 type Game struct {
 	N             int
+	M             int
 	WhiteClientId *int
 	BlackClientId *int
 	Figures       map[int]*Figure
@@ -27,6 +28,7 @@ func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 
 	return Game{
 		N:             8,
+		M:             12,
 		WhiteClientId: &game.WhiteUserId,
 		BlackClientId: &game.BlackUserId,
 		Figures:       CreateDefaultField(board),
@@ -321,6 +323,30 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureFrom := g.GetFigureByIndex(from)
 
 	(*figureFrom).ChangeGameIndex(to)
+}
+
+func (g *Game) VirtualBoardToReal() {
+	realGame := map[int]*Figure{}
+
+	fmt.Println(400)
+
+	for i := 24; i < 118; i++ {
+		if ind, ok := VirtualFieldMap[i]; ok {
+			if g.Figures[ind] == nil {
+				continue
+			}
+
+			(*g.Figures[ind]).ChangeGameIndex(FromVirtualToReal(ind))
+			realGame[FromVirtualToReal(ind)] = g.Figures[ind]
+		}
+	}
+
+	fmt.Println(401)
+
+	g.Figures = realGame
+
+	g.IsCheckWhite.KingGameID = FromVirtualToReal(g.IsCheckWhite.KingGameID)
+	g.IsCheckBlack.KingGameID = FromVirtualToReal(g.IsCheckBlack.KingGameID)
 }
 
 var TheoryKnightSteps = []int{

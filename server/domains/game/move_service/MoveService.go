@@ -8,20 +8,32 @@ import (
 
 func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, fromReal int, toReal int) bool {
 
+	fmt.Println(200)
+
 	from := FromRealToVirtualIndex(fromReal)
 	to := FromRealToVirtualIndex(toReal)
 
+	fmt.Println(201)
+
 	game := CreateGameStruct(responseGetGame, board)
+
+	fmt.Println(202)
 
 	figure := game.GetFigureByIndex(from)
 
+	fmt.Println(203)
+
 	possibleMoves := (*figure).GetPossibleMoves(&game)
+
+	fmt.Println(204)
 
 	printMoves(possibleMoves)
 
 	if !CheckMove(possibleMoves, to) {
 		return false
 	}
+
+	fmt.Println(205)
 
 	return true
 }
@@ -47,8 +59,11 @@ func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, 
 		return Game{}, false
 	}
 
+	fmt.Println(300)
 
-	gameAfterMove -> real board
+	gameAfterMove.VirtualBoardToReal()
+
+	fmt.Println(301)
 
 	return gameAfterMove, true
 }
@@ -131,31 +146,31 @@ func CheckMove(possibleMoves *TheoryMoves, to int) bool {
 
 func printMoves(possibleMoves *TheoryMoves) {
 	for _, v := range possibleMoves.Down {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.Up {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.Left {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.Right {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.DL {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.DR {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.UR {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.UL {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 	for _, v := range possibleMoves.Kn {
-		fmt.Print(IndexToCoordinates(FromRealToVirtualIndex(v)), " ")
+		fmt.Print(IndexToCoordinates(FromVirtualToReal(v)), " ")
 	}
 
 }
@@ -164,6 +179,6 @@ func FromRealToVirtualIndex(x int) int {
 	return x + 24 + 4*(x/8) + 2
 }
 
-func FromVirtualToReal(x int) int{
-	return x - 26 - 4*(x/12)
+func FromVirtualToReal(x int) int {
+	return x - 26 - 4*((x/12)-2)
 }
