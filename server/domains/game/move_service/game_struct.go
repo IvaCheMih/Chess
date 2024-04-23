@@ -31,7 +31,7 @@ func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 		M:             12,
 		WhiteClientId: &game.WhiteUserId,
 		BlackClientId: &game.BlackUserId,
-		Figures:       CreateDefaultField(board),
+		Figures:       CreateField(board),
 		IsCheckWhite:  IsCheck{game.IsCheckWhite, FromRealToVirtualIndex(game.WhiteKingCell)},
 		IsCheckBlack:  IsCheck{game.IsCheckBlack, FromRealToVirtualIndex(game.BlackKingCell)},
 		Side:          game.Side,

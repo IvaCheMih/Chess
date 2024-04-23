@@ -57,8 +57,8 @@ func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *sql.Tx) error
 	return err
 }
 
-func (b *BoardCellsRepository) Find(gameId int, tx *sql.Tx) (models.Board, error) {
-	resultQuery, err := tx.Query(`
+func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
+	resultQuery, err := b.db.Query(`
 		SELECT id, indexCell, figureId FROM boardCells
 		    where gameId = $1 ORDER BY indexCell
 		`,

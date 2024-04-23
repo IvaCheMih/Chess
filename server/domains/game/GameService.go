@@ -82,7 +82,7 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 		return dto.GetBoardResponse{}, err
 	}
 
-	board, err := g.boardRepo.Find(gameId, tx)
+	board, err := g.boardRepo.Find(gameId)
 	if err != nil {
 		return dto.GetBoardResponse{}, err
 	}
@@ -135,11 +135,19 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.GetHistoryRespons
 }
 
 func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody) (models.Move, error) {
+	cells, err := g.boardRepo.Find(gameId)
+	if err != nil {
+		return models.Move{}, err
+	}
+
+	board, err := g.boardRepo.Find(gameId)
+	if err != nil {
+		return models.Move{}, err
+	}
+
 	if !CheckCorrectRequest(requestFromTo.From, requestFromTo.To) {
 		return models.Move{}, errors.New("Move is not correct")
 	}
-
-	fmt.Println(100)
 
 	response, err := g.gamesRepo.GetById(gameId)
 	if err != nil {
@@ -155,21 +163,10 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	var responseGetGame dto.CreateGameResponse
 
-	fmt.Println(101)
-
 	FromModelsToDtoCreateGame(response, &responseGetGame)
-
-	fmt.Println(102)
 
 	if err = CheckCorrectRequestSideUser(userId, responseGetGame); err != nil {
 		fmt.Println(err)
-		return models.Move{}, err
-	}
-
-	fmt.Println(103)
-
-	board, err := g.boardRepo.Find(gameId, tx)
-	if err != nil {
 		return models.Move{}, err
 	}
 
@@ -179,8 +176,6 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	if !move_service.CheckCorrectMove(responseGetGame, board, from, to) {
 		return models.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
-
-	fmt.Println(104)
 
 	game, check := move_service.CheckIsItCheck(responseGetGame, board, from, to)
 
@@ -215,11 +210,6 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
-	if err != nil {
-		return models.Move{}, err
-	}
-
-	cells, err := g.boardRepo.Find(gameId, tx)
 	if err != nil {
 		return models.Move{}, err
 	}

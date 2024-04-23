@@ -8,32 +8,20 @@ import (
 
 func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, fromReal int, toReal int) bool {
 
-	fmt.Println(200)
-
 	from := FromRealToVirtualIndex(fromReal)
 	to := FromRealToVirtualIndex(toReal)
 
-	fmt.Println(201)
-
 	game := CreateGameStruct(responseGetGame, board)
-
-	fmt.Println(202)
 
 	figure := game.GetFigureByIndex(from)
 
-	fmt.Println(203)
-
 	possibleMoves := (*figure).GetPossibleMoves(&game)
-
-	fmt.Println(204)
 
 	printMoves(possibleMoves)
 
 	if !CheckMove(possibleMoves, to) {
 		return false
 	}
-
-	fmt.Println(205)
 
 	return true
 }
@@ -59,11 +47,7 @@ func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, 
 		return Game{}, false
 	}
 
-	fmt.Println(300)
-
 	gameAfterMove.VirtualBoardToReal()
-
-	fmt.Println(301)
 
 	return gameAfterMove, true
 }

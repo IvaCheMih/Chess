@@ -1,7 +1,6 @@
 package move_service
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
@@ -15,7 +14,7 @@ type Figure interface {
 	Delete()
 }
 
-func CreateDefaultField(board models.Board) map[int]*Figure {
+func CreateField(board models.Board) map[int]*Figure {
 
 	//startField := []byte{
 	//	'r', 'k', 'b', 'q', 'K', 'b', 'k', 'r',
@@ -30,10 +29,8 @@ func CreateDefaultField(board models.Board) map[int]*Figure {
 
 	field := map[int]*Figure{}
 
-	for i := 0; i < 144; i++ {
-		fmt.Println("for: ", i)
+	for i := 22; i < 120; i++ {
 		if realIndex, ok := VirtualFieldMap[i]; ok {
-			fmt.Println("realInd: ", realIndex)
 			cell, oK := board.Cells[realIndex]
 
 			if !oK {
