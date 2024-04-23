@@ -225,6 +225,8 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 	index := figure.GameIndex
 
+	fmt.Println(game.IndexToCoordinates(FromVirtualToReal(index)))
+
 	var theoryMoves = TheoryMoves{
 		Up:    nil,
 		Down:  nil,
@@ -268,7 +270,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
+				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M-1))
 				theoryMoves.Mu.Unlock()
 			}
 
@@ -287,7 +289,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
+				theoryMoves.UR = append(theoryMoves.UR, index-i*(game.M-1))
 				theoryMoves.Mu.Unlock()
 			}
 
@@ -307,7 +309,7 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 
 			if add {
 				theoryMoves.Mu.Lock()
-				theoryMoves.UR = append(theoryMoves.UR, index+i*(game.M+1))
+				theoryMoves.UR = append(theoryMoves.UR, index-i*(game.M+1))
 				theoryMoves.Mu.Unlock()
 			}
 
