@@ -116,8 +116,9 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	wg := sync.WaitGroup{}
 
+	wg.Add(4)
+
 	go func() {
-		wg.Add(1)
 		for index := figure.GameIndex + game.M; IsOnRealBoard(index); index += game.M {
 
 			if !figure.AddMove(game, index) {
@@ -132,7 +133,6 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 
 		for index := figure.GameIndex - game.M; IsOnRealBoard(index); index -= game.M {
 			if !figure.AddMove(game, index) {
@@ -147,7 +147,6 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 
 		for index := figure.GameIndex + 1; IsOnRealBoard(index); index++ {
 			if !figure.AddMove(game, index) {
@@ -162,7 +161,6 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 
 		for index := figure.GameIndex - 1; IsOnRealBoard(index); index-- {
 			if !figure.AddMove(game, index) {
@@ -343,9 +341,9 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}
 
 	wg := sync.WaitGroup{}
+	wg.Add(8)
 
 	go func() {
-		wg.Add(1)
 		for index := figure.GameIndex + game.M; IsOnRealBoard(index); index += game.M {
 			if !figure.AddMove(game, index) {
 				break
@@ -358,7 +356,6 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 		for index := figure.GameIndex - game.M; IsOnRealBoard(index); index -= game.M {
 			if !figure.AddMove(game, index) {
 				break
@@ -371,7 +368,6 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 		for index := figure.GameIndex + 1; IsOnRealBoard(index); index++ {
 			if !figure.AddMove(game, index) {
 				break
@@ -385,7 +381,6 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 		for index := figure.GameIndex - 1; IsOnRealBoard(index); index-- {
 			if !figure.AddMove(game, index) {
 				break
@@ -400,7 +395,6 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	index := figure.GameIndex
 
 	go func() {
-		wg.Add(1)
 		for i := 1; IsOnRealBoard(index + i*(game.M+1)); i++ {
 			if !figure.AddMove(game, index+i*(game.M+1)) {
 				break
@@ -414,7 +408,6 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 		for i := 1; IsOnRealBoard(index + i*(game.M-1)); i++ {
 			if !figure.AddMove(game, index+i*(game.M-1)) {
 				break
@@ -428,7 +421,6 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
 		for i := 1; IsOnRealBoard(index - i*(game.M-1)); i++ {
 			if !figure.AddMove(game, index-i*(game.M-1)) {
 				break
@@ -441,7 +433,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	}()
 
 	go func() {
-		wg.Add(1)
+
 		for i := 1; IsOnRealBoard(index - i*(game.M+1)); i++ {
 			if !figure.AddMove(game, index-i*(game.M+1)) {
 				break

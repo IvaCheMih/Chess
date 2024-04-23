@@ -104,6 +104,8 @@ func main() {
 
 	server.Post("/game/:gameId/move", authHandlers.CheckAuth, gamesHandlers.Move)
 
+	server.Post("/game/:gameId/give-up", authHandlers.CheckAuth, gamesHandlers.GiveUp)
+
 	if err := server.Listen(":8082"); err != nil {
 		log.Fatal(err)
 	}

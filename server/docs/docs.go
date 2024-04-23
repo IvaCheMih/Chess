@@ -98,6 +98,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/game/{gameId}/give-up": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "do give-up.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "move"
+                ],
+                "summary": "do give-up.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "gameId",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Game"
+                        }
+                    }
+                }
+            }
+        },
         "/game/{gameId}/history": {
             "get": {
                 "security": [
@@ -369,6 +404,41 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.Move"
                     }
+                }
+            }
+        },
+        "models.Game": {
+            "type": "object",
+            "properties": {
+                "blackKingCell": {
+                    "type": "integer"
+                },
+                "blackUserId": {
+                    "type": "integer"
+                },
+                "gameId": {
+                    "type": "integer"
+                },
+                "isCheckBlack": {
+                    "type": "boolean"
+                },
+                "isCheckWhite": {
+                    "type": "boolean"
+                },
+                "isEnded": {
+                    "type": "boolean"
+                },
+                "isStarted": {
+                    "type": "boolean"
+                },
+                "side": {
+                    "type": "integer"
+                },
+                "whiteKingCell": {
+                    "type": "integer"
+                },
+                "whiteUserId": {
+                    "type": "integer"
                 }
             }
         },

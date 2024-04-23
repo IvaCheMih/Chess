@@ -80,6 +80,29 @@ definitions:
           $ref: '#/definitions/models.Move'
         type: array
     type: object
+  models.Game:
+    properties:
+      blackKingCell:
+        type: integer
+      blackUserId:
+        type: integer
+      gameId:
+        type: integer
+      isCheckBlack:
+        type: boolean
+      isCheckWhite:
+        type: boolean
+      isEnded:
+        type: boolean
+      isStarted:
+        type: boolean
+      side:
+        type: integer
+      whiteKingCell:
+        type: integer
+      whiteUserId:
+        type: integer
+    type: object
   models.Move:
     properties:
       blackKingCell:
@@ -166,6 +189,27 @@ paths:
       summary: get board.
       tags:
       - board
+  /game/{gameId}/give-up:
+    post:
+      consumes:
+      - application/json
+      description: do give-up.
+      parameters:
+      - in: path
+        name: gameId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Game'
+      security:
+      - JWT: []
+      summary: do give-up.
+      tags:
+      - move
   /game/{gameId}/history:
     get:
       consumes:

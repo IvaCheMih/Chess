@@ -62,8 +62,8 @@ func (g *GamesRepository) JoinBlackToGame(gameId any, userId any, tx *sql.Tx) er
 	return err
 }
 
-func (g *GamesRepository) GetById(gameId int, tx *sql.Tx) (models.Game, error) {
-	row := tx.QueryRow(`
+func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
+	row := g.db.QueryRow(`
 		SELECT * FROM games
 		    where id = $1
 		`,
@@ -92,6 +92,32 @@ func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move
 	)
 
 	return err
+}
+
+func (g *GamesRepository) Update(game models.Game, tx *sql.Tx) (models.Game, error) {
+	row := tx.QueryRow(`
+		update games
+		set whiteUserId = $1, blackUserId =$2,isStarted =$3, isEnded= $4, isCheckWhite = $5, whiteKingCell = $6,isCheckBlack = $7,blackKingCell=$8, side =$9 
+			where id = $10
+		RETURNING *
+		`,
+		game.WhiteUserId,
+		game.BlackUserId,
+		game.IsStarted,
+		game.IsEnded,
+		game.IsCheckWhite,
+		game.WhiteKingCell,
+		game.IsCheckBlack,
+		game.BlackKingCell,
+		game.Side,
+		game.GameId,
+	)
+
+	var modelGame models.Game
+
+	err := RowToGame(row, &modelGame)
+
+	return modelGame, err
 }
 
 func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
