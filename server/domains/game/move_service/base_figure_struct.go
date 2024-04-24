@@ -1,9 +1,9 @@
 package move_service
 
 type BaseFigure struct {
-	IsItWhite bool
-	Type      byte
-	GameIndex int
+	IsItWhite      bool
+	Type           byte
+	CellCoordinate []int
 }
 
 func (figure *BaseFigure) IsWhite() bool {
@@ -14,12 +14,12 @@ func (figure *BaseFigure) GetType() byte {
 	return figure.Type
 }
 
-func (figure *BaseFigure) ChangeGameIndex(toIndex int) {
-	figure.GameIndex = toIndex
+func (figure *BaseFigure) ChangeGameIndex(toCoordinate []int) {
+	figure.CellCoordinate = toCoordinate
 }
 
-func (figure *BaseFigure) GetGameIndex() int {
-	return figure.GameIndex
+func (figure *BaseFigure) GetGameIndex() []int {
+	return figure.CellCoordinate
 }
 
 func (figure *BaseFigure) Delete() {

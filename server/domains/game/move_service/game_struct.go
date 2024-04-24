@@ -62,6 +62,11 @@ func (game *Game) GetFigureByIndex(index int) *Figure {
 	return game.Figures[index]
 }
 
+func (game *Game) GetFigureByFieldCoordinates(crd []int) *Figure {
+	index := FieldCoordinatesToIndex(crd)
+	return game.Figures[index]
+}
+
 func (game *Game) GetFigureByCoordinates(coordinates string) *Figure {
 	index := game.CoordinatesToIndex(coordinates)
 

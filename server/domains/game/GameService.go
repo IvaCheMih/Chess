@@ -321,6 +321,7 @@ func CheckCorrectRequest(f, t string) bool {
 }
 
 func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.CreateGameResponse) {
+
 	createGameResponse.GameId = response.GameId
 	createGameResponse.Side = response.Side
 

@@ -9,8 +9,8 @@ type Figure interface {
 	ToString() string
 	GetType() byte
 	GetPossibleMoves(*Game) *TheoryMoves
-	ChangeGameIndex(int)
-	GetGameIndex() int
+	ChangeGameIndex([]int)
+	GetGameIndex() []int
 	Delete()
 }
 
@@ -29,18 +29,12 @@ func CreateField(board models.Board) map[int]*Figure {
 
 	field := map[int]*Figure{}
 
-	for i := 22; i < 120; i++ {
-		if realIndex, ok := VirtualFieldMap[i]; ok {
-			cell, oK := board.Cells[realIndex]
+	for _, cell := range board.Cells {
 
-			if !oK {
-				continue
-			}
+		isWhite := cell.FigureId <= 6
 
-			isWhite := cell.FigureId <= 6
+		field[cell.IndexCell] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell)
 
-			field[i] = CreateFigure(FigureRepo[cell.FigureId], isWhite, FromRealToVirtualIndex(cell.IndexCell))
-		}
 	}
 
 	return field
@@ -55,7 +49,10 @@ func FigureToString(figure *Figure) string {
 }
 
 func CreateFigure(_type byte, isWhite bool, index int) *Figure {
-	figure := CreateFigure1(_type, isWhite, index)
+
+	coordinates := IndexToFieldCoordinates(index)
+
+	figure := CreateFigure1(_type, isWhite, coordinates)
 
 	if figure == nil {
 		return nil
@@ -64,8 +61,8 @@ func CreateFigure(_type byte, isWhite bool, index int) *Figure {
 	return &figure
 }
 
-func CreateFigure1(_type byte, isWhite bool, index int) Figure {
-	var bf = BaseFigure{isWhite, _type, index}
+func CreateFigure1(_type byte, isWhite bool, coordinates []int) Figure {
+	var bf = BaseFigure{isWhite, _type, coordinates}
 	//var tm = TheoryMoves{nil, nil, nil, nil, nil, nil, nil, nil, nil}
 	switch _type {
 	case 'p':
@@ -119,4 +116,15 @@ func CreateVirtualFieldMap() {
 	for i := 110; i < 118; i++ {
 		VirtualFieldMap[i] = FromVirtualToReal(i)
 	}
+}
+
+func IndexToFieldCoordinates(ind int) []int {
+	x := ind % 8
+	y := ind / 8
+
+	return []int{x, y}
+}
+
+func FieldCoordinatesToIndex(coordinates []int) int {
+	return coordinates[1]*8 + coordinates[0]
 }
