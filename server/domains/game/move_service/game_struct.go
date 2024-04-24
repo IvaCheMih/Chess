@@ -102,9 +102,9 @@ func (game *Game) ChangeKingGameID(figure *Figure) {
 		return
 	}
 	if (*figure).IsWhite() {
-		game.IsCheckWhite.KingGameID = (*figure).GetGameIndex()
+		game.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetGameIndex())
 	} else {
-		game.IsCheckBlack.KingGameID = (*figure).GetGameIndex()
+		game.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetGameIndex())
 	}
 }
 
@@ -168,8 +168,10 @@ func (game *Game) CheckKnightAttack(index int) bool {
 func (game *Game) CheckDiagonalAttack(index int) bool {
 	fmt.Println("Начало диаг проверки")
 
-	for i := 1; IsOnRealBoard(index + i*(game.M+1)); i++ {
-		isCheck, endFor := game.CheckAttackCell(index, index+i*(game.M+1), 'b')
+	crd := IndexToFieldCoordinates(index)
+
+	for i := 1; IsOnRealBoard([]int{crd[0] + 1, crd[1] + 1}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + 1, crd[1] + 1}, 'b')
 		if isCheck {
 			return true
 		}
@@ -178,20 +180,8 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 		}
 	}
 
-	for i := 1; IsOnRealBoard(index + i*(game.M-1)); i++ {
-		fmt.Println(IndexToCoordinates(FromVirtualToReal(index + i*(game.M-1))))
-		isCheck, endFor := game.CheckAttackCell(index, index+i*(game.M-1), 'b')
-		if isCheck {
-			fmt.Println("лево вниз король атакован с поля:", IndexToCoordinates(FromVirtualToReal(index+i*(game.M-1))))
-			return true
-		}
-		if endFor {
-			break
-		}
-	}
-
-	for i := 1; IsOnRealBoard(index - i*(game.M-1)); i++ {
-		isCheck, endFor := game.CheckAttackCell(index, index-i*(game.M-1), 'b')
+	for i := 1; IsOnRealBoard([]int{crd[0] + 1, crd[1] - 1}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + 1, crd[1] - 1}, 'b')
 		if isCheck {
 			return true
 		}
@@ -200,8 +190,18 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 		}
 	}
 
-	for i := 1; IsOnRealBoard(index - i*(game.M+1)); i++ {
-		isCheck, endFor := game.CheckAttackCell(index, index-i*(game.M+1), 'b')
+	for i := 1; IsOnRealBoard([]int{crd[0] - 1, crd[1] + 1}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - 1, crd[1] + 1}, 'b')
+		if isCheck {
+			return true
+		}
+		if endFor {
+			break
+		}
+	}
+
+	for i := 1; IsOnRealBoard([]int{crd[0] - 1, crd[1] - 1}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - 1, crd[1] - 1}, 'b')
 		if isCheck {
 			return true
 		}
@@ -214,10 +214,12 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 }
 
 func (game *Game) CheckVertGorAttack(index int) bool {
+	crd := IndexToFieldCoordinates(index)
+
 	fmt.Println("Начало верт проверки")
-	for i := 1; IsOnRealBoard(index + i); i++ {
+	for i := 1; IsOnRealBoard([]int{crd[0], crd[1] + 1}); i++ {
 		fmt.Println(index + i)
-		isCheck, endFor := game.CheckAttackCell(index, index+i, 'r')
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0], crd[1] + 1}, 'r')
 		if isCheck {
 			return true
 		}
@@ -227,8 +229,8 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	}
 
 	fmt.Println("направо нет шаха")
-	for i := 1; IsOnRealBoard(index - i); i++ {
-		isCheck, endFor := game.CheckAttackCell(index, index-i, 'r')
+	for i := 1; IsOnRealBoard([]int{crd[0], crd[1] - 1}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0], crd[1] - 1}, 'r')
 		if isCheck {
 			return true
 		}
@@ -238,8 +240,8 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	}
 
 	fmt.Println("налево нет шаха")
-	for i := 1; IsOnRealBoard(index + i*game.M); i++ {
-		isCheck, endFor := game.CheckAttackCell(index, index+i*game.M, 'r')
+	for i := 1; IsOnRealBoard([]int{crd[0] + 1, crd[1]}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + 1, crd[1]}, 'r')
 		if isCheck {
 			return true
 		}
@@ -248,8 +250,8 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 		}
 	}
 	fmt.Println("вверх нет шаха")
-	for i := 1; IsOnRealBoard(index - i*game.M); i++ {
-		isCheck, endFor := game.CheckAttackCell(index, index-i*game.M, 'r')
+	for i := 1; IsOnRealBoard([]int{crd[0] - 1, crd[1]}); i++ {
+		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - 1, crd[1]}, 'r')
 		if isCheck {
 			return true
 		}
@@ -286,34 +288,35 @@ func (game *Game) CheckAttackCell(indexKing int, indexCell int, triggerFigure by
 
 func (game *Game) CheckPawnAttack(indexKing int) bool {
 	fmt.Println("Начало пешечной проверки")
-	king := game.GetFigureByIndex(indexKing)
+	crd := IndexToFieldCoordinates(indexKing)
+	king := game.GetFigureByFieldCoordinates(crd)
 
-	if (*king).IsWhite() && IsOnRealBoard(indexKing+game.M+1) {
-		if fig := game.GetFigureByIndex(indexKing + game.M + 1); fig != nil {
+	if (*king).IsWhite() && IsOnRealBoard([]int{crd[0], crd[1] + 1}) {
+		if fig := game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] + 1}); fig != nil {
 			if (*fig).IsWhite() != (*king).IsWhite() {
 				return true
 			}
 		}
 	}
 
-	if (*king).IsWhite() && IsOnRealBoard(indexKing+game.M-1) {
-		if fig := game.GetFigureByIndex(indexKing + game.M - 1); fig != nil {
+	if (*king).IsWhite() && IsOnRealBoard([]int{crd[0], crd[1] - 1}) {
+		if fig := game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - 1}); fig != nil {
 			if (*fig).IsWhite() != (*king).IsWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsWhite() && IsOnRealBoard(indexKing-game.M-1) {
-		if fig := game.GetFigureByIndex(indexKing - game.M - 1); fig != nil {
+	if !(*king).IsWhite() && IsOnRealBoard([]int{crd[0] + 1, crd[1]}) {
+		if fig := game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1]}); fig != nil {
 			if (*fig).IsWhite() != (*king).IsWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsWhite() && IsOnRealBoard(indexKing-game.M+1) {
-		if fig := game.GetFigureByIndex(indexKing - game.M + 1); fig != nil {
+	if !(*king).IsWhite() && IsOnRealBoard([]int{crd[0] - 1, crd[1]}) {
+		if fig := game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1]}); fig != nil {
 			if (*fig).IsWhite() != (*king).IsWhite() {
 				return true
 			}
