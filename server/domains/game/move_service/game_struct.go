@@ -264,20 +264,18 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	return false
 }
 
-func (game *Game) CheckAttackCell(indexKing int, indexCell int, triggerFigure byte) (bool, bool) {
+func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, triggerFigure byte) (bool, bool) {
 
-	king := game.GetFigureByIndex(indexKing)
+	king := game.GetFigureByFieldCoordinates(kingCoordinate)
+	fig := game.GetFigureByFieldCoordinates(cellCoordinate)
 
-	fmt.Println("поле короля: ", IndexToCoordinates(FromVirtualToReal(indexKing)))
-
-	if game.GetFigureByIndex(indexCell) == nil {
-		fmt.Println(IndexToCoordinates(FromVirtualToReal(indexCell)), "тут нет фигур, продолжаем")
+	if fig == nil {
 		return false, false
 	}
-	if fig := game.GetFigureByIndex(indexCell); (*fig).IsWhite() == (*king).IsWhite() {
+	if (*fig).IsWhite() == (*king).IsWhite() {
 		return false, true
 	}
-	if fig := game.GetFigureByIndex(indexCell); (*fig).IsWhite() != (*king).IsWhite() {
+	if (*fig).IsWhite() != (*king).IsWhite() {
 		if (*fig).GetType() == triggerFigure || (*fig).GetType() == 'q' {
 			return true, true
 		}
@@ -328,47 +326,48 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 
 func (g *Game) ChangeToAndFrom(to int, from int) {
 
-	figureTo := g.GetFigureByIndex(to)
+	coordinateTo := IndexToFieldCoordinates(to)
+	coordinateFrom := IndexToFieldCoordinates(from)
+
+	figureTo := g.GetFigureByFieldCoordinates(coordinateTo)
 
 	if figureTo != nil {
 		(*figureTo).Delete()
 	}
 
-	figureFrom := g.GetFigureByIndex(from)
+	figureFrom := g.GetFigureByFieldCoordinates(coordinateFrom)
 
-	(*figureFrom).ChangeGameIndex(to)
+	(*figureFrom).ChangeGameIndex(coordinateTo)
 
 	g.Figures[to] = g.Figures[from]
 	g.Figures[from] = nil
 
 	figureTo = g.GetFigureByIndex(to)
-
-	fmt.Println("фигрура теперь на поле ", IndexToCoordinates(FromVirtualToReal((*figureTo).GetGameIndex())))
 }
 
-func (g *Game) VirtualBoardToReal() {
-	realGame := map[int]*Figure{}
-
-	fmt.Println(400)
-
-	for i := 24; i < 118; i++ {
-		if ind, ok := VirtualFieldMap[i]; ok {
-			if g.Figures[ind] == nil {
-				continue
-			}
-
-			(*g.Figures[ind]).ChangeGameIndex(FromVirtualToReal(ind))
-			realGame[FromVirtualToReal(ind)] = g.Figures[ind]
-		}
-	}
-
-	fmt.Println(401)
-
-	g.Figures = realGame
-
-	g.IsCheckWhite.KingGameID = FromVirtualToReal(g.IsCheckWhite.KingGameID)
-	g.IsCheckBlack.KingGameID = FromVirtualToReal(g.IsCheckBlack.KingGameID)
-}
+//func (g *Game) VirtualBoardToReal() {
+//	realGame := map[int]*Figure{}
+//
+//	fmt.Println(400)
+//
+//	for i := 24; i < 118; i++ {
+//		if ind, ok := VirtualFieldMap[i]; ok {
+//			if g.Figures[ind] == nil {
+//				continue
+//			}
+//
+//			(*g.Figures[ind]).ChangeGameIndex(FromVirtualToReal(ind))
+//			realGame[FromVirtualToReal(ind)] = g.Figures[ind]
+//		}
+//	}
+//
+//	fmt.Println(401)
+//
+//	g.Figures = realGame
+//
+//	g.IsCheckWhite.KingGameID = FromVirtualToReal(g.IsCheckWhite.KingGameID)
+//	g.IsCheckBlack.KingGameID = FromVirtualToReal(g.IsCheckBlack.KingGameID)
+//}
 
 var TheoryKnightSteps = []int{
 	(2 * 8) + 1,

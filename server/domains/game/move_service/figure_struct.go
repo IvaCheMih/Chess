@@ -42,6 +42,7 @@ type TheoryMoves struct {
 
 func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	n := 0
+	
 	if figure.IsWhite() {
 		n = 1
 	} else {
@@ -54,11 +55,13 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	if IsOnRealBoard([]int{crd[0], crd[1] - n}) && game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - n}) == nil {
 		vert = append(vert, []int{crd[0], crd[1] - n})
 	}
+
 	if n == 1 && crd[1] == 6 {
 		if game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - n}) == nil && game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - 2*n}) == nil {
 			vert = append(vert, []int{crd[0], crd[1] - 2*n})
 		}
 	}
+
 	if n == -1 && crd[1] == 1 {
 		if game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - n}) == nil && game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - 2*n}) == nil {
 			vert = append(vert, []int{crd[0], crd[1] - 2*n})

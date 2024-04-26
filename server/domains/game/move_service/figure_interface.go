@@ -81,43 +81,6 @@ func CreateFigure1(_type byte, isWhite bool, coordinates []int) Figure {
 	return nil
 }
 
-var VirtualFieldMap = map[int]int{}
-
-func CreateVirtualFieldMap() {
-
-	for i := 26; i < 34; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 38; i < 46; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 50; i < 58; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 62; i < 70; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 74; i < 82; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 86; i < 94; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 98; i < 106; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-
-	for i := 110; i < 118; i++ {
-		VirtualFieldMap[i] = FromVirtualToReal(i)
-	}
-}
-
 func IndexToFieldCoordinates(ind int) []int {
 	x := ind % 8
 	y := ind / 8
