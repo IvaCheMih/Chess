@@ -18,7 +18,7 @@
         },
         "version": "2.0"
     },
-    "host": "localhost:8082",
+    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/game/": {
@@ -110,7 +110,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "move"
+                    "give-up"
                 ],
                 "summary": "do give-up.",
                 "parameters": [

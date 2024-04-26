@@ -130,7 +130,7 @@ definitions:
       whiteKingCell:
         type: integer
     type: object
-host: localhost:8082
+host: localhost:8080
 info:
   contact:
     email: support@swagger.io
@@ -209,7 +209,7 @@ paths:
       - JWT: []
       summary: do give-up.
       tags:
-      - move
+      - give-up
   /game/{gameId}/history:
     get:
       consumes:

@@ -12,9 +12,11 @@ import (
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"log"
+	"os"
+	"time"
 )
 
-const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
+//const connect = "postgres://user:pass@localhost:8080/test?sslmode=disable"
 
 var db *sql.DB
 
@@ -22,7 +24,16 @@ var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
-func Init(postgresqlUrl string) {
+func Init() {
+
+	postgresqlUrl, exists := os.LookupEnv("POSTGRES_URL")
+
+	if !exists {
+		panic("postgresqlUrl is not found")
+	}
+
+	time.Sleep(5 * time.Second)
+
 	migrationService := domains.CreateMigrationService()
 
 	migrationService.RunUp(postgresqlUrl, "file://migrations/postgresql")
@@ -69,7 +80,7 @@ func Shutdown() {
 // @license.name 				Apache 2.0
 // @license.url 				http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 						localhost:8082
+// @host 						localhost:8080
 // @BasePath 					/
 // @schemes 					http
 //
@@ -79,7 +90,7 @@ func Shutdown() {
 //	@description                JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.
 func main() {
 
-	Init(connect)
+	Init()
 
 	defer Shutdown()
 
@@ -105,7 +116,7 @@ func main() {
 
 	server.Post("/game/:gameId/give-up", authHandlers.CheckAuth, gamesHandlers.GiveUp)
 
-	if err := server.Listen(":8082"); err != nil {
+	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)
 	}
 
