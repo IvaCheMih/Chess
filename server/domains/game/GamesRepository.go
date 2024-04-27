@@ -2,7 +2,6 @@ package game
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 	_ "github.com/lib/pq"
@@ -65,13 +64,9 @@ func (g *GamesRepository) FindNotStartedGame(color bool, tx *sql.Tx) (models.Gam
 		)
 	}
 
-	fmt.Println(201)
-
 	if row.Err() != nil && row.Err().Error() == "sql: no rows in result set" {
 		return models.Game{}, row.Err()
 	}
-
-	fmt.Println(202)
 
 	var requestCreateGame models.Game
 

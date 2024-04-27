@@ -35,8 +35,6 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 
 	userId := c.Context().Value("userId")
 
-	fmt.Println(userId)
-
 	responseCreateGame, err := h.gameService.CreateGame(userId, request.IsWhite)
 	if err != nil {
 		fmt.Println(err)
@@ -68,6 +66,7 @@ func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 
 	getBoardResponse, err := h.gameService.GetBoard(request.GameId, userId)
 	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -95,6 +94,7 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 
 	responseGetHistory, err := h.gameService.GetHistory(request.GameId, userId)
 	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -129,6 +129,7 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 
 	responseMove, err := h.gameService.Move(request.GameId, userId, requestDoMove)
 	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -156,6 +157,7 @@ func (h *GamesHandlers) GiveUp(c *fiber.Ctx) error {
 
 	responseMove, err := h.gameService.GiveUp(request.GameId, userId)
 	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 

@@ -34,25 +34,18 @@ func (g *GamesService) CreateGame(userId any, userRequestedColor bool) (dto.Crea
 
 	var createGameResponse dto.CreateGameResponse
 
-	fmt.Println(100)
-
 	response, err := g.gamesRepo.FindNotStartedGame(userRequestedColor, tx)
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		return dto.CreateGameResponse{}, err
 	}
 
-	fmt.Println(100)
-
 	if err != nil && err.Error() == "sql: no rows in result set" {
-		fmt.Println(101)
-
 		response, err = g.gamesRepo.CreateGame(userId, userRequestedColor, tx)
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
 
 	} else {
-		fmt.Println(102)
 
 		response, err = g.gamesRepo.JoinToGame(response.GameId, userRequestedColor, userId, tx)
 	}
@@ -188,7 +181,6 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, tx)
 	if err != nil {
-		fmt.Println(err)
 		return models.Move{}, err
 	}
 
@@ -200,7 +192,6 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
 	if err != nil {
-		fmt.Print(err)
 		return models.Move{}, err
 	}
 
