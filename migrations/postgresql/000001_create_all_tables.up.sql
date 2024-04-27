@@ -69,6 +69,3 @@ INSERT INTO figures (id, type, isWhite) VALUES (10, 'q', true);
 INSERT INTO figures (id, type, isWhite) VALUES (11, 'K', true);
 INSERT INTO figures (id, type, isWhite) VALUES (12, 'p', true);
 
--- insert into moves (gameId,moveNumber, from_id,to_id,figureId, killedFigureId, newFigureId, isCheckWhite , whiteKingCell, isCheckBlack, blackKingCell)
---         values (0, 0, 0, 0, 0, 0, 0, false,0,false,0);
-
