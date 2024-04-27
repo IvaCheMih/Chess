@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-//const connect = "postgres://user:pass@localhost:8080/test?sslmode=disable"
+//const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
 
 var db *sql.DB
 
@@ -33,6 +33,8 @@ func Init() {
 	}
 
 	time.Sleep(5 * time.Second)
+
+	//postgresqlUrl := connect
 
 	migrationService := domains.CreateMigrationService()
 

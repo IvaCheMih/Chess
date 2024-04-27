@@ -34,22 +34,30 @@ func (g *GamesService) CreateGame(userId any, userRequestedColor bool) (dto.Crea
 
 	var createGameResponse dto.CreateGameResponse
 
-	if userRequestedColor {
-		response, err := g.gamesRepo.CreateGame(userId, tx)
-		if err != nil {
-			return dto.CreateGameResponse{}, err
-		}
+	fmt.Println(100)
 
-		FromModelsToDtoCreateGame(response, &createGameResponse)
-	} else {
-		response, err := g.gamesRepo.FindNotStartedGame(tx)
-		if err != nil {
-			return dto.CreateGameResponse{}, err
-		}
-
-		FromModelsToDtoCreateGame(response, &createGameResponse)
-		err = g.gamesRepo.JoinBlackToGame(createGameResponse.GameId, userId, tx)
+	response, err := g.gamesRepo.FindNotStartedGame(userRequestedColor, tx)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return dto.CreateGameResponse{}, err
 	}
+
+	fmt.Println(100)
+
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		fmt.Println(101)
+
+		response, err = g.gamesRepo.CreateGame(userId, userRequestedColor, tx)
+		if err != nil {
+			return dto.CreateGameResponse{}, err
+		}
+
+	} else {
+		fmt.Println(102)
+
+		response, err = g.gamesRepo.JoinToGame(response.GameId, userRequestedColor, userId, tx)
+	}
+
+	FromModelsToDtoCreateGame(response, &createGameResponse)
 
 	if err != nil {
 		return dto.CreateGameResponse{}, err
@@ -135,11 +143,6 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.GetHistoryRespons
 }
 
 func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody) (models.Move, error) {
-	cells, err := g.boardRepo.Find(gameId)
-	if err != nil {
-		return models.Move{}, err
-	}
-
 	board, err := g.boardRepo.Find(gameId)
 	if err != nil {
 		return models.Move{}, err
@@ -217,6 +220,11 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	err = tx.Commit()
 
 	responseBoard := make([]dto.BoardCellEntity, 64)
+
+	cells, err := g.boardRepo.Find(gameId)
+	if err != nil {
+		return models.Move{}, err
+	}
 
 	for index, cell := range cells.Cells {
 		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}

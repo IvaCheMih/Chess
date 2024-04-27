@@ -42,7 +42,7 @@ type TheoryMoves struct {
 
 func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	n := 0
-	
+
 	if figure.IsWhite() {
 		n = 1
 	} else {

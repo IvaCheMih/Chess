@@ -6,10 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
-func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, fromReal int, toReal int) bool {
-
-	from := FromRealToVirtualIndex(fromReal)
-	to := FromRealToVirtualIndex(toReal)
+func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) bool {
 
 	game := CreateGameStruct(responseGetGame, board)
 
@@ -26,12 +23,9 @@ func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board
 	return true
 }
 
-func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, fromReal int, toReal int) (Game, bool) {
+func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) (Game, bool) {
 	//cellFrom := boardCells[from]
 	//cellTo := boardCells[to]
-
-	from := FromRealToVirtualIndex(fromReal)
-	to := FromRealToVirtualIndex(toReal)
 
 	gameAfterMove := CreateGameStruct(responseGetGame, board)
 
@@ -159,12 +153,4 @@ func printMoves(possibleMoves *TheoryMoves) {
 		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
 	}
 
-}
-
-func FromRealToVirtualIndex(x int) int {
-	return x + 24 + 4*(x/8) + 2
-}
-
-func FromVirtualToReal(x int) int {
-	return x - 26 - 4*((x/12)-2)
 }
