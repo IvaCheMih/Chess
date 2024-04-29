@@ -40,7 +40,7 @@ CREATE TABLE games (
 CREATE TABLE moves (
       id               serial       NOT NULL,
       gameId           integer      NOT NULL default 0,
-      moveNumber       integer      NOT NULL default 0,
+      moveNumber       integer      NOT NULL default (SELECT COUNT(*) FROM moves WHERE gameId = moves.gameId)+1,
       from_id          integer      NOT NULL default 0,
       to_id            integer      NOT NULL default 0,
       figureId         integer      NOT NULL default 0,

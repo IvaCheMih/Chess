@@ -122,19 +122,14 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 	return game, err
 }
 
-func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *sql.Tx) error {
-	_, err := tx.Exec(`
-		update games
-		set isCheckWhite = $1, whiteKingCell = $2,isCheckBlack = $3,blackKingCell=$4, side =$5 
-			where id = $6
-		`,
-		isCheckWhite.IsItCheck,
-		isCheckWhite.KingGameID,
-		isCheckBlack.IsItCheck,
-		isCheckBlack.KingGameID,
-		side,
-		gameId,
-	)
+func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *gorm.DB) error {
+	err := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{
+		"isCheckWhite":  isCheckWhite.IsItCheck,
+		"whiteKingCell": isCheckWhite.KingGameID,
+		"isCheckBlack":  isCheckBlack.IsItCheck,
+		"blackKingCell": isCheckBlack.KingGameID,
+		"side":          side,
+	}).Error
 
 	return err
 }

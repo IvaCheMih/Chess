@@ -52,39 +52,16 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 	return models.Board{Cells: cells}, err
 }
 
-func (b *BoardCellsRepository) Update(id, to int, tx *sql.Tx) error {
-	_, err := tx.Exec(`
-		update boardCells
-		set indexCell = $1
-			where (id = $2)
-		`,
-		to,
-		id,
-	)
+func (b *BoardCellsRepository) Update(id, to int, tx *gorm.DB) error {
+	err := b.db.Model(&models.Cell{}).Where("id=?", id).Updates(map[string]interface{}{"indexCell": to}).Error
 
 	return err
 }
 
-func (b *BoardCellsRepository) Delete(id int, tx *sql.Tx) error {
-	_, err := tx.Exec(`
-		DELETE FROM boardCells
-		       WHERE id = $1
-		`,
-		id,
-	)
+func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
 
-	return err
-}
+	err := tx.Delete(&models.Cell{}, id).Error
 
-func (b *BoardCellsRepository) AddCell(gameId, tx *sql.Tx) error {
-
-	err := tx.QueryRow(`
-			INSERT INTO boardCells
-				(gameId, indexCell, figureId)
-				values ($1, $2, $3)
-				`,
-		gameId,
-	).Err()
 	return err
 }
 

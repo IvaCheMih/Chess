@@ -135,13 +135,6 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	tx, err := g.gamesRepo.db.Begin()
-	if err != nil {
-		return models.Move{}, err
-	}
-
-	defer tx.Rollback()
-
 	var responseGetGame dto.CreateGameResponse
 
 	FromModelsToDtoCreateGame(response, &responseGetGame)
@@ -162,6 +155,17 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	if !check {
 		return models.Move{}, errors.New("Move is not possible (CheckIsItCheck)")
+	}
+
+	tx := g.gamesRepo.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if tx.Error != nil {
+		return models.Move{}, err
 	}
 
 	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, tx)
@@ -193,7 +197,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	err = tx.Commit()
+	tx.Commit()
 
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
@@ -228,7 +232,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 func (g *GamesService) GiveUp(gameId int, userId any) (models.Game, error) {
 
-	game, err = g.gamesRepo.UpdateIsEnded(gameId)
+	game, err := g.gamesRepo.UpdateIsEnded(gameId)
 	if err != nil {
 		return models.Game{}, err
 	}

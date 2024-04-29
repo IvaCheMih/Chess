@@ -5,6 +5,8 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	"strconv"
 )
 
 type MovesRepository struct {
@@ -36,34 +38,37 @@ func (m *MovesRepository) Find(gameId int) ([]models.Move, error) {
 	return moves, nil
 }
 
-func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, tx *sql.Tx) (models.Move, error) {
-
+func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, tx *gorm.DB) (models.Move, error) {
 	killedFigureId := 0
 	if board.Cells[to] != nil {
 		killedFigureId = board.Cells[to].FigureId
 	}
 
-	row := tx.QueryRow(`
-		insert into moves (gameId,moveNumber, from_id,to_id,figureId, killedFigureId, newFigureId, isCheckWhite , whiteKingCell, isCheckBlack, blackKingCell)
-			values ($1,(SELECT COUNT(*) FROM moves WHERE gameId = $2)+1, $3, $4, $5, $6, $7, $8,$9,$10,$11)
-		RETURNING *
-		`,
-		gameId,
-		gameId,
-		from,
-		to,
-		board.Cells[from].FigureId,
-		killedFigureId,
-		0,
-		isCheckWhite.IsItCheck,
-		isCheckWhite.KingGameID,
-		isCheckBlack.IsItCheck,
-		isCheckBlack.KingGameID,
-	)
+	moveNumQueryString := "(SELECT COUNT(*) FROM moves WHERE gameId = "
+	moveNumQueryString += strconv.Itoa(gameId)
+	moveNumQueryString += ")+1"
+
+	res := tx.Model(&models.Move{}).Create(map[string]interface{}{
+		"gameId":         gameId,
+		"moveNumber":     clause.Expr{SQL: "ST_PointFromText(?)", Vars: []interface{}{moveNumQueryString}},
+		"from_id":        from,
+		"to_id":          to,
+		"figureId":       board.Cells[from].FigureId,
+		"killedFigureId": killedFigureId,
+		"newFigureId":    0,
+		"isCheckWhite":   isCheckWhite.IsItCheck,
+		"whiteKingCell":  isCheckWhite.KingGameID,
+		"isCheckBlack":   isCheckBlack.IsItCheck,
+		"blackKingCell":  isCheckBlack.KingGameID,
+	})
+
+	if res.Error != nil {
+		return models.Move{}, res.Error
+	}
 
 	var move models.Move
 
-	err := FromRowToMove(row, &move)
+	err := FromRowToMove(res.Row(), &move)
 
 	return move, err
 }
@@ -73,7 +78,19 @@ func RowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
 
 	for rows.Next() {
 		var move models.Move
-		err := rows.Scan(&move.Id, &move.GameId, &move.MoveNumber, &move.From, &move.To, &move.FigureId, &move.KilledFigureId, &move.NewFigureId, &move.IsCheckWhite, &move.WhiteKingCell, &move.IsCheckBlack, &move.BlackKingCell)
+		err := rows.Scan(
+			&move.Id,
+			&move.GameId,
+			&move.MoveNumber,
+			&move.From,
+			&move.To,
+			&move.FigureId,
+			&move.KilledFigureId,
+			&move.NewFigureId,
+			&move.IsCheckWhite,
+			&move.WhiteKingCell,
+			&move.IsCheckBlack,
+			&move.BlackKingCell)
 		if err != nil {
 			return err
 		}
@@ -86,6 +103,17 @@ func RowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
 }
 
 func FromRowToMove(row *sql.Row, move *models.Move) error {
-	err := row.Scan(&move.Id, &move.GameId, &move.MoveNumber, &move.From, &move.To, &move.FigureId, &move.KilledFigureId, &move.NewFigureId, &move.IsCheckWhite, &move.WhiteKingCell, &move.IsCheckBlack, &move.BlackKingCell)
+	err := row.Scan(&move.Id,
+		&move.GameId,
+		&move.MoveNumber,
+		&move.From,
+		&move.To,
+		&move.FigureId,
+		&move.KilledFigureId,
+		&move.NewFigureId,
+		&move.IsCheckWhite,
+		&move.WhiteKingCell,
+		&move.IsCheckBlack,
+		&move.BlackKingCell)
 	return err
 }
