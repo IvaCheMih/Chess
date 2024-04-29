@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	_ "github.com/IvaCheMih/chess/server/docs"
 	"github.com/IvaCheMih/chess/server/domains"
 	"github.com/IvaCheMih/chess/server/domains/auth"
@@ -20,7 +19,7 @@ import (
 
 //const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
 
-var db *sql.DB
+var db *gorm.DB
 
 var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
@@ -46,18 +45,18 @@ func Init() {
 
 	var err error
 
-	db, err = sql.Open("postgres", postgresqlUrl)
-	if err != nil {
-		panic(err)
-	}
+	//db, err = sql.Open("postgres", postgresqlUrl)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	db_gorm, err := gorm.Open(postgres.Open(postgresqlUrl), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(postgresqlUrl), &gorm.Config{})
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	usersRepository := user.CreateUsersRepository(db_gorm)
+	usersRepository := user.CreateUsersRepository(db)
 	boardCellsRepository := game.CreateBoardCellsRepository(db)
 	figuresRepository := game.CreateFiguresRepository(db)
 	movesRepository := game.CreateMovesRepository(db)
@@ -75,7 +74,9 @@ func Init() {
 }
 
 func Shutdown() {
-	db.Close()
+	sqlDB, _ := db.DB()
+
+	sqlDB.Close()
 }
 
 // @title 						Fiber Swagger Example API

@@ -1,37 +1,29 @@
 package auth
 
 import (
-	"database/sql"
-	"fmt"
+	"errors"
+	"github.com/IvaCheMih/chess/server/domains/user/models"
+	"gorm.io/gorm"
 )
 
 type AuthRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func CreateAuthRepository(db *sql.DB) AuthRepository {
+func CreateAuthRepository(db *gorm.DB) AuthRepository {
 	return AuthRepository{
 		db: db,
 	}
 }
 
-func (a *AuthRepository) FindUserByUserId(userId any, tx *sql.Tx) error {
-	id := 0
-	err := tx.QueryRow(`
-		SELECT 1
-		FROM users
-			WHERE id = $1
-		`,
-		userId,
-	).Scan(&id)
+func (a *AuthRepository) GetUserById(clientId any) (models.User, error) {
+	var user models.User
 
-	if err != nil {
-		if err != sql.ErrNoRows {
-			fmt.Println(err)
-		}
-		fmt.Println(err)
-		return err
+	a.db.Take(&user, clientId)
+
+	if user.Password == "" {
+		return models.User{}, errors.New("gorm error, password is empty")
 	}
 
-	return err
+	return user, nil
 }

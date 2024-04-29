@@ -17,7 +17,7 @@ func CreateUsersRepository(db_gorm *gorm.DB) UsersRepository {
 	}
 }
 
-func (r *UsersRepository) Get(clientId int) (models.User, error) {
+func (r *UsersRepository) GetUserById(clientId int) (models.User, error) {
 	var user models.User
 
 	r.db.Take(&user, clientId)

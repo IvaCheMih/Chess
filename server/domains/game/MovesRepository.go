@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
+	"gorm.io/gorm"
 )
 
 type MovesRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func CreateMovesRepository(db *sql.DB) MovesRepository {
+func CreateMovesRepository(db *gorm.DB) MovesRepository {
 	return MovesRepository{
 		db: db,
 	}

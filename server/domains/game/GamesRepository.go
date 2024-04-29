@@ -5,109 +5,105 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 	_ "github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 type GamesRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func CreateGamesRepository(db *sql.DB) GamesRepository {
+func CreateGamesRepository(db *gorm.DB) GamesRepository {
 	return GamesRepository{
 		db: db,
 	}
 }
 
-func (g *GamesRepository) CreateGame(userId any, color bool, tx *sql.Tx) (models.Game, error) {
-	var row *sql.Row
+func (g *GamesRepository) CreateGame(userId int, color bool, tx *gorm.DB) (models.Game, error) {
+	var game models.Game
+	var err error
 
 	if color {
-		row = tx.QueryRow(`
-		insert into games (whiteUserId)
-			values ($1)
-			RETURNING *
-		`,
-			userId,
-		)
+		game.WhiteUserId = userId
 	} else {
-		row = tx.QueryRow(`
-		insert into games (blackUserId)
-			values ($1)
-			RETURNING *
-		`,
-			userId,
-		)
+		game.BlackUserId = userId
 	}
 
-	var requestCreateGame models.Game
+	result := tx.Create(&game)
 
-	err := RowToGame(row, &requestCreateGame)
+	if result.Error != nil {
+		return models.Game{}, result.Error
+	}
 
-	return requestCreateGame, err
+	err = RowToGame(result.Row(), &game)
+
+	return game, err
 }
 
-func (g *GamesRepository) FindNotStartedGame(color bool, tx *sql.Tx) (models.Game, error) {
-	var row *sql.Row
+//func (g *GamesRepository) FindNotStartedGame(color bool, tx *sql.Tx) (models.Game, error) {
+//	var row *sql.Row
+//
+//	if !color {
+//		row = tx.QueryRow(`
+//		SELECT * FROM games
+//		    where blackUserId = 0
+//		    LIMIT 1
+//		`,
+//		)
+//	} else {
+//		row = tx.QueryRow(`
+//		SELECT * FROM games
+//		    where whiteUserId = 0
+//		    LIMIT 1
+//		`,
+//		)
+//	}
+//
+//	if row.Err() != nil && row.Err().Error() == "sql: no rows in result set" {
+//		return models.Game{}, row.Err()
+//	}
+//
+//	var requestCreateGame models.Game
+//
+//	err := RowToGame(row, &requestCreateGame)
+//
+//	return requestCreateGame, err
+//
+//}
 
-	if !color {
-		row = tx.QueryRow(`
-		SELECT * FROM games
-		    where blackUserId = 0
-		    LIMIT 1 
-		`,
-		)
-	} else {
-		row = tx.QueryRow(`
-		SELECT * FROM games
-		    where whiteUserId = 0
-		    LIMIT 1 
-		`,
-		)
-	}
-
-	if row.Err() != nil && row.Err().Error() == "sql: no rows in result set" {
-		return models.Game{}, row.Err()
-	}
-
-	var requestCreateGame models.Game
-
-	err := RowToGame(row, &requestCreateGame)
-
-	return requestCreateGame, err
-
-}
-
-func (g *GamesRepository) JoinToGame(gameId any, color bool, userId any, tx *sql.Tx) (models.Game, error) {
-	var row *sql.Row
-
-	if !color {
-		row = tx.QueryRow(`
-		update games
-		set blackUserId = $1, isStarted = true
-			where id = $2
-		RETURNING *
-		`,
-			userId,
-			gameId,
-		)
-	} else {
-		row = tx.QueryRow(`
-		update games
-		set whiteUserId = $1, isStarted = true
-			where id = $2
-		RETURNING *
-		`,
-			userId,
-			gameId,
-		)
-	}
-
-	if row.Err() != nil {
-		return models.Game{}, row.Err()
-	}
-
+func (g *GamesRepository) FindNotStartedGame(color bool) (models.Game, error) {
 	var game models.Game
+	var res *gorm.DB
 
-	err := RowToGame(row, &game)
+	if color {
+		res = g.db.Take(&game, models.Game{WhiteUserId: 0})
+	} else {
+		res = g.db.Take(&game, models.Game{BlackUserId: 0})
+	}
+
+	if res.Error != nil {
+		return models.Game{}, res.Error
+	}
+
+	err := RowToGame(res.Row(), &game)
+
+	return game, err
+}
+
+func (g *GamesRepository) JoinToGame(gameId int, color bool, userId int, tx *gorm.DB) (models.Game, error) {
+	var game models.Game
+	var res *gorm.DB
+
+	if !color {
+		res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{"blackUserId": userId, "isStarted": true})
+	} else {
+		res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{"whiteUserId": userId, "isStarted": true})
+	}
+
+	if res.Error != nil {
+		return models.Game{}, res.Error
+	}
+
+	err := RowToGame(res.Row(), &game)
 
 	return game, err
 }

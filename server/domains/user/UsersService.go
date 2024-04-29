@@ -18,7 +18,7 @@ func CreateUsersService(usersRepo *UsersRepository) UsersService {
 
 func (u *UsersService) CreateSession(clientId int, password string) bool {
 
-	query, err := u.usersRepo.Get(clientId)
+	query, err := u.usersRepo.GetUserById(clientId)
 	if err != nil {
 		fmt.Println(err)
 		return false

@@ -35,7 +35,7 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 
 	userId := c.Context().Value("userId")
 
-	responseCreateGame, err := h.gameService.CreateGame(userId, request.IsWhite)
+	responseCreateGame, err := h.gameService.CreateGame(userId.(int), request.IsWhite)
 	if err != nil {
 		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)

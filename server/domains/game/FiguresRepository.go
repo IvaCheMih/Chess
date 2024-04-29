@@ -1,12 +1,14 @@
 package game
 
-import "database/sql"
+import (
+	"gorm.io/gorm"
+)
 
 type FiguresRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func CreateFiguresRepository(db *sql.DB) FiguresRepository {
+func CreateFiguresRepository(db *gorm.DB) FiguresRepository {
 	return FiguresRepository{
 		db: db,
 	}

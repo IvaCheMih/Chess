@@ -4,39 +4,32 @@ import (
 	"database/sql"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	_ "github.com/lib/pq"
-	"strconv"
+	"gorm.io/gorm"
 )
 
 type BoardCellsRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func CreateBoardCellsRepository(db *sql.DB) BoardCellsRepository {
+func CreateBoardCellsRepository(db *gorm.DB) BoardCellsRepository {
 	return BoardCellsRepository{
 		db: db,
 	}
 }
 
-func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *sql.Tx) error {
-	var err error
-	var baseParams []any
+func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *gorm.DB) error {
+	var cells []models.Cell
 
-	baseInsertQuery := "INSERT INTO boardCells (gameId, indexCell, figureId) values ($1, $2, $3)"
-
-	for index, cell := range startField {
-		baseParams = append(baseParams, gameId, cell[0], cell[1])
-		if index == 0 {
-			continue
+	for _, cell := range startField {
+		c := models.Cell{
+			Id:        gameId,
+			IndexCell: cell[0],
+			FigureId:  cell[1],
 		}
-		baseInsertQuery += ", ($" + strconv.Itoa(index*3+1) + ",$" + strconv.Itoa(index*3+2) + ", $" + strconv.Itoa(index*3+3) + ")"
-
+		cells = append(cells, c)
 	}
 
-	err = tx.QueryRow(baseInsertQuery, baseParams...).Err()
-
-	if err != nil {
-		return err
-	}
+	err := tx.Create(&cells).Error
 
 	return err
 }

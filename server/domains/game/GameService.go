@@ -24,29 +24,33 @@ func CreateGamesService(boardRepo *BoardCellsRepository, figureRepo *FiguresRepo
 	}
 }
 
-func (g *GamesService) CreateGame(userId any, userRequestedColor bool) (dto.CreateGameResponse, error) {
-	tx, err := g.gamesRepo.db.Begin()
-	if err != nil {
+func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.CreateGameResponse, error) {
+	var createGameResponse dto.CreateGameResponse
+	createNewBoard := false
+
+	response, err := g.gamesRepo.FindNotStartedGame(userRequestedColor)
+	if err != nil && err.Error() != "sql: no rows in result set" {
 		return dto.CreateGameResponse{}, err
 	}
 
-	defer tx.Rollback()
+	tx := g.gamesRepo.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	var createGameResponse dto.CreateGameResponse
-
-	response, err := g.gamesRepo.FindNotStartedGame(userRequestedColor, tx)
-	if err != nil && err.Error() != "sql: no rows in result set" {
+	if tx.Error != nil {
 		return dto.CreateGameResponse{}, err
 	}
 
 	if err != nil && err.Error() == "sql: no rows in result set" {
 		response, err = g.gamesRepo.CreateGame(userId, userRequestedColor, tx)
+		createNewBoard = true
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
-
 	} else {
-
 		response, err = g.gamesRepo.JoinToGame(response.GameId, userRequestedColor, userId, tx)
 	}
 
@@ -56,14 +60,14 @@ func (g *GamesService) CreateGame(userId any, userRequestedColor bool) (dto.Crea
 		return dto.CreateGameResponse{}, err
 	}
 
-	if userRequestedColor {
+	if createNewBoard {
 		err = g.boardRepo.CreateNewBoardCells(createGameResponse.GameId, tx)
 	}
 	if err != nil {
 		return dto.CreateGameResponse{}, err
 	}
 
-	err = tx.Commit()
+	tx.Commit()
 
 	return createGameResponse, err
 }
