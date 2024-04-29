@@ -51,7 +51,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 			return dto.CreateGameResponse{}, err
 		}
 	} else {
-		response, err = g.gamesRepo.JoinToGame(response.GameId, userRequestedColor, userId, tx)
+		response, err = g.gamesRepo.UpdateColorUserIdByColor(response.GameId, userRequestedColor, userId, tx)
 	}
 
 	FromModelsToDtoCreateGame(response, &createGameResponse)
@@ -76,13 +76,6 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 
 	game, err := g.gamesRepo.GetById(gameId)
 
-	tx, err := g.gamesRepo.db.Begin()
-	if err != nil {
-		return dto.GetBoardResponse{}, err
-	}
-
-	defer tx.Rollback()
-
 	if userId != game.WhiteUserId && userId != game.BlackUserId {
 		return dto.GetBoardResponse{}, err
 	}
@@ -92,13 +85,10 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 		return dto.GetBoardResponse{}, err
 	}
 
-	err = tx.Commit()
-
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
 	for index, cell := range board.Cells {
 		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
-
 	}
 
 	getBoardResponse := dto.GetBoardResponse{
@@ -114,23 +104,14 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.GetHistoryRespons
 		return dto.GetHistoryResponse{}, err
 	}
 
-	tx, err := g.gamesRepo.db.Begin()
-	if err != nil {
-		return dto.GetHistoryResponse{}, err
-	}
-
-	defer tx.Rollback()
-
 	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
 		return dto.GetHistoryResponse{}, errors.New("This is not your game")
 	}
 
-	moves, err := g.movesRepo.Find(gameId, tx)
+	moves, err := g.movesRepo.Find(gameId)
 	if err != nil {
 		return dto.GetHistoryResponse{}, err
 	}
-
-	err = tx.Commit()
 
 	var responseGetHistory = dto.GetHistoryResponse{
 		Moves: moves,
@@ -246,26 +227,11 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 }
 
 func (g *GamesService) GiveUp(gameId int, userId any) (models.Game, error) {
-	game, err := g.gamesRepo.GetById(gameId)
+
+	game, err = g.gamesRepo.UpdateIsEnded(gameId)
 	if err != nil {
 		return models.Game{}, err
 	}
-
-	tx, err := g.gamesRepo.db.Begin()
-	if err != nil {
-		return models.Game{}, err
-	}
-
-	defer tx.Rollback()
-
-	game.IsEnded = true
-
-	game, err = g.gamesRepo.Update(game, tx)
-	if err != nil {
-		return models.Game{}, err
-	}
-
-	err = tx.Commit()
 
 	return game, err
 

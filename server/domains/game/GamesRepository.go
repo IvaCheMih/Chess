@@ -89,15 +89,16 @@ func (g *GamesRepository) FindNotStartedGame(color bool) (models.Game, error) {
 	return game, err
 }
 
-func (g *GamesRepository) JoinToGame(gameId int, color bool, userId int, tx *gorm.DB) (models.Game, error) {
+func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, color bool, userId int, tx *gorm.DB) (models.Game, error) {
 	var game models.Game
 	var res *gorm.DB
+	userColor := "whiteUserId"
 
 	if !color {
-		res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{"blackUserId": userId, "isStarted": true})
-	} else {
-		res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{"whiteUserId": userId, "isStarted": true})
+		userColor = "blackUserId"
 	}
+
+	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColor: userId, "isStarted": true})
 
 	if res.Error != nil {
 		return models.Game{}, res.Error
@@ -109,18 +110,16 @@ func (g *GamesRepository) JoinToGame(gameId int, color bool, userId int, tx *gor
 }
 
 func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
-	row := g.db.QueryRow(`
-		SELECT * FROM games
-		    where id = $1
-		`,
-		gameId,
-	)
+	var game models.Game
 
-	var requestCreateGame models.Game
+	res := g.db.Take(&game, gameId)
+	if res.Error != nil {
+		return models.Game{}, res.Error
+	}
 
-	err := RowToGame(row, &requestCreateGame)
+	err := RowToGame(res.Row(), &game)
 
-	return requestCreateGame, err
+	return game, err
 }
 
 func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *sql.Tx) error {
@@ -140,28 +139,16 @@ func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move
 	return err
 }
 
-func (g *GamesRepository) Update(game models.Game, tx *sql.Tx) (models.Game, error) {
-	row := tx.QueryRow(`
-		update games
-		set whiteUserId = $1, blackUserId =$2,isStarted =$3, isEnded= $4, isCheckWhite = $5, whiteKingCell = $6,isCheckBlack = $7,blackKingCell=$8, side =$9 
-			where id = $10
-		RETURNING *
-		`,
-		game.WhiteUserId,
-		game.BlackUserId,
-		game.IsStarted,
-		game.IsEnded,
-		game.IsCheckWhite,
-		game.WhiteKingCell,
-		game.IsCheckBlack,
-		game.BlackKingCell,
-		game.Side,
-		game.GameId,
-	)
+func (g *GamesRepository) UpdateIsEnded(gameId int) (models.Game, error) {
+
+	res := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{"isEnded": true})
+	if res.Error != nil {
+		return models.Game{}, res.Error
+	}
 
 	var modelGame models.Game
 
-	err := RowToGame(row, &modelGame)
+	err := RowToGame(res.Row(), &modelGame)
 
 	return modelGame, err
 }

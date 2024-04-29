@@ -17,21 +17,21 @@ func CreateMovesRepository(db *gorm.DB) MovesRepository {
 	}
 }
 
-func (m *MovesRepository) Find(gameId int, tx *sql.Tx) ([]models.Move, error) {
-	rows, err := tx.Query(`
-		SELECT * FROM moves
-		    where gameId = $1 ORDER BY moveNumber
-		`,
-		gameId,
-	)
+func (m *MovesRepository) Find(gameId int) ([]models.Move, error) {
+	var moves []models.Move
 
+	res := m.db.Find(&moves).Where("id=?", gameId)
+
+	if res.Error != nil {
+		return []models.Move{}, res.Error
+	}
+
+	rows, err := res.Rows()
 	if err != nil {
 		return []models.Move{}, err
 	}
 
-	var moves []models.Move
-
-	err = FromRowsToMove(rows, &moves)
+	err = RowsToMove(rows, &moves)
 
 	return moves, nil
 }
@@ -68,7 +68,7 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 	return move, err
 }
 
-func FromRowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
+func RowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
 	var moves []models.Move
 
 	for rows.Next() {
