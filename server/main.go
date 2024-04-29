@@ -11,6 +11,8 @@ import (
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"time"
@@ -49,7 +51,13 @@ func Init() {
 		panic(err)
 	}
 
-	usersRepository := user.CreateUsersRepository(db)
+	db_gorm, err := gorm.Open(postgres.Open(postgresqlUrl), &gorm.Config{})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	usersRepository := user.CreateUsersRepository(db_gorm)
 	boardCellsRepository := game.CreateBoardCellsRepository(db)
 	figuresRepository := game.CreateFiguresRepository(db)
 	movesRepository := game.CreateMovesRepository(db)

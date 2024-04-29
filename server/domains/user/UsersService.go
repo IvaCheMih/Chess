@@ -17,22 +17,14 @@ func CreateUsersService(usersRepo *UsersRepository) UsersService {
 }
 
 func (u *UsersService) CreateSession(clientId int, password string) bool {
-	tx, err := u.usersRepo.db.Begin()
+
+	query, err := u.usersRepo.Get(clientId)
 	if err != nil {
 		fmt.Println(err)
 		return false
 	}
 
-	defer tx.Rollback()
-
-	passwordFromBase, err := u.usersRepo.GetClientPassword(clientId, tx)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-
-	err = tx.Commit()
-	if err != nil || password != passwordFromBase {
+	if err != nil || password != query.Password {
 		fmt.Println(err)
 		return false
 	}
@@ -41,25 +33,13 @@ func (u *UsersService) CreateSession(clientId int, password string) bool {
 }
 
 func (u *UsersService) CreateUser(password string) (dto.CreateUserResponse, error) {
-	tx, err := u.usersRepo.db.Begin()
-	if err != nil {
-		fmt.Println(err)
-		return dto.CreateUserResponse{}, err
+
+	query, err := u.usersRepo.Create(password)
+
+	response := dto.CreateUserResponse{
+		Id:       query.Id,
+		Password: query.Password,
 	}
 
-	defer tx.Rollback()
-
-	query, err := u.usersRepo.CreateUser(password, tx)
-	if err != nil {
-		fmt.Println(err)
-		return dto.CreateUserResponse{}, err
-	}
-
-	err = tx.Commit()
-	if err != nil || query.Password != password {
-		fmt.Println(err)
-		return dto.CreateUserResponse{}, err
-	}
-
-	return query, err
+	return response, err
 }
