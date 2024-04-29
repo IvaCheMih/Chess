@@ -1,13 +1,14 @@
 package models
 
-type Cell struct {
+type BoardCell struct {
 	Id        int
+	GameId    int
 	IndexCell int
 	FigureId  int
 }
 
 type Board struct {
-	Cells map[int]*Cell
+	Cells map[int]*BoardCell
 }
 
 type Move struct {
@@ -26,14 +27,14 @@ type Move struct {
 }
 
 type Game struct {
-	GameId        int
-	WhiteUserId   int
-	BlackUserId   int
-	IsStarted     bool
-	IsEnded       bool
-	IsCheckWhite  bool
-	WhiteKingCell int
-	IsCheckBlack  bool
-	BlackKingCell int
-	Side          int
+	Id            int  `json:"id"`
+	WhiteUserId   int  `json:"whiteUserId"`
+	BlackUserId   int  `json:"blackUserId"`
+	IsStarted     bool `json:"isStarted"`
+	IsEnded       bool `json:"isEnded"`
+	IsCheckWhite  bool `json:"isCheckWhite"`
+	WhiteKingCell int  `json:"whiteKingCell"`
+	IsCheckBlack  bool `json:"isCheckBlack"`
+	BlackKingCell int  `json:"blackKingCell"`
+	Side          int  `json:"side"`
 }
