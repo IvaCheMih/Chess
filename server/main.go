@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-//const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
+const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
 
 var db *gorm.DB
 

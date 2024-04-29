@@ -18,26 +18,27 @@ func CreateBoardCellsRepository(db *gorm.DB) BoardCellsRepository {
 }
 
 func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *gorm.DB) error {
-	var cells []models.Cell
+	var board_cells = []models.BoardCell{}
 
 	for _, cell := range startField {
-		c := models.Cell{
-			Id:        gameId,
+		c := models.BoardCell{
+			GameId:    gameId,
 			IndexCell: cell[0],
 			FigureId:  cell[1],
 		}
-		cells = append(cells, c)
+		board_cells = append(board_cells, c)
 	}
 
-	err := tx.Create(&cells).Error
+	err := tx.Create(board_cells).Error
 
 	return err
 }
 
 func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
-	var cells map[int]*models.Cell
+	var cells = map[int]*models.BoardCell{}
+	var board_cell = []models.BoardCell{}
 
-	res := b.db.Find(&cells).Where("id=?", gameId)
+	res := b.db.Find(&board_cell).Where("game_id=?", gameId)
 	if res.Error != nil {
 		return models.Board{}, res.Error
 	}
@@ -53,23 +54,23 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 }
 
 func (b *BoardCellsRepository) Update(id, to int, tx *gorm.DB) error {
-	err := b.db.Model(&models.Cell{}).Where("id=?", id).Updates(map[string]interface{}{"indexCell": to}).Error
+	err := b.db.Model(&models.BoardCell{}).Where("id=?", id).Updates(map[string]interface{}{"index_cell": to}).Error
 
 	return err
 }
 
 func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
 
-	err := tx.Delete(&models.Cell{}, id).Error
+	err := tx.Delete(&models.BoardCell{}, id).Error
 
 	return err
 }
 
-func RowsToCells(rows *sql.Rows, cells *map[int]*models.Cell) error {
+func RowsToCells(rows *sql.Rows, cells *map[int]*models.BoardCell) error {
 	for rows.Next() {
-		var cell models.Cell
+		var cell = models.BoardCell{}
 
-		err := rows.Scan(&cell.Id, &cell.IndexCell, &cell.FigureId)
+		err := rows.Scan(&cell.Id, &cell.GameId, &cell.IndexCell, &cell.FigureId)
 		if err != nil {
 			return err
 		}

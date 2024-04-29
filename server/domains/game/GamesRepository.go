@@ -92,13 +92,13 @@ func (g *GamesRepository) FindNotStartedGame(color bool) (models.Game, error) {
 func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, color bool, userId int, tx *gorm.DB) (models.Game, error) {
 	var game models.Game
 	var res *gorm.DB
-	userColor := "whiteUserId"
+	userColor := "white_user_id"
 
 	if !color {
-		userColor = "blackUserId"
+		userColor = "black_user_id"
 	}
 
-	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColor: userId, "isStarted": true})
+	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColor: userId, "is_started": true})
 
 	if res.Error != nil {
 		return models.Game{}, res.Error
@@ -124,11 +124,11 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 
 func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *gorm.DB) error {
 	err := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{
-		"isCheckWhite":  isCheckWhite.IsItCheck,
-		"whiteKingCell": isCheckWhite.KingGameID,
-		"isCheckBlack":  isCheckBlack.IsItCheck,
-		"blackKingCell": isCheckBlack.KingGameID,
-		"side":          side,
+		"is_check_white":  isCheckWhite.IsItCheck,
+		"white_king_cell": isCheckWhite.KingGameID,
+		"is_check_black":  isCheckBlack.IsItCheck,
+		"black_king_cell": isCheckBlack.KingGameID,
+		"side":            side,
 	}).Error
 
 	return err
@@ -150,7 +150,7 @@ func (g *GamesRepository) UpdateIsEnded(gameId int) (models.Game, error) {
 
 func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
 	return row.Scan(
-		&requestCreateGame.GameId,
+		&requestCreateGame.Id,
 
 		&requestCreateGame.WhiteUserId,
 		&requestCreateGame.BlackUserId,

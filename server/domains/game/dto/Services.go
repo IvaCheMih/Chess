@@ -9,7 +9,7 @@ import (
 func GetClientId(c *fiber.Ctx) (int, error) {
 	headers := c.GetReqHeaders()
 
-	clientIds := headers["X-Client-Id"]
+	clientIds := headers["X-Client-GameId"]
 	clientId, err := strconv.ParseInt(clientIds[0], 10, 0)
 
 	return int(clientId), err

@@ -29,7 +29,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	createNewBoard := false
 
 	response, err := g.gamesRepo.FindNotStartedGame(userRequestedColor)
-	if err != nil && err.Error() != "sql: no rows in result set" {
+	if err != nil && err.Error() != "record not found" {
 		return dto.CreateGameResponse{}, err
 	}
 
@@ -44,14 +44,14 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 		return dto.CreateGameResponse{}, err
 	}
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
+	if err != nil && err.Error() == "record not found" {
 		response, err = g.gamesRepo.CreateGame(userId, userRequestedColor, tx)
 		createNewBoard = true
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
 	} else {
-		response, err = g.gamesRepo.UpdateColorUserIdByColor(response.GameId, userRequestedColor, userId, tx)
+		response, err = g.gamesRepo.UpdateColorUserIdByColor(response.Id, userRequestedColor, userId, tx)
 	}
 
 	FromModelsToDtoCreateGame(response, &createGameResponse)
@@ -143,7 +143,6 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		fmt.Println(err)
 		return models.Move{}, err
 	}
-
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
@@ -168,7 +167,14 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, tx)
+	maxNumber, err := g.movesRepo.FindMaxMoveNumber(gameId)
+
+	if err != nil {
+		fmt.Println(err)
+		return models.Move{}, err
+	}
+
+	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, maxNumber+1, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -185,14 +191,14 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	if board.Cells[to] != nil {
-		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
+		err = g.boardRepo.Delete(board.Cells[to].GameId, tx)
 
 		if err != nil {
 			return models.Move{}, err
 		}
 	}
 
-	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
+	err = g.boardRepo.Update(board.Cells[from].GameId, to, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -295,7 +301,7 @@ func CheckCorrectRequest(f, t string) bool {
 
 func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.CreateGameResponse) {
 
-	createGameResponse.GameId = response.GameId
+	createGameResponse.GameId = response.Id
 	createGameResponse.Side = response.Side
 
 	createGameResponse.IsCheckWhite = response.IsCheckWhite

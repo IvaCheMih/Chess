@@ -5,7 +5,6 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/move_service"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"strconv"
 )
 
@@ -38,28 +37,27 @@ func (m *MovesRepository) Find(gameId int) ([]models.Move, error) {
 	return moves, nil
 }
 
-func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, tx *gorm.DB) (models.Move, error) {
+func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCheckWhite, isCheckBlack move_service.IsCheck, maxNumber int, tx *gorm.DB) (models.Move, error) {
 	killedFigureId := 0
 	if board.Cells[to] != nil {
 		killedFigureId = board.Cells[to].FigureId
 	}
 
-	moveNumQueryString := "(SELECT COUNT(*) FROM moves WHERE gameId = "
-	moveNumQueryString += strconv.Itoa(gameId)
-	moveNumQueryString += ")+1"
+	queryWhere := "m.game_id = "
+	queryWhere += strconv.Itoa(gameId)
 
-	res := tx.Model(&models.Move{}).Create(map[string]interface{}{
-		"gameId":         gameId,
-		"moveNumber":     clause.Expr{SQL: "ST_PointFromText(?)", Vars: []interface{}{moveNumQueryString}},
-		"from_id":        from,
-		"to_id":          to,
-		"figureId":       board.Cells[from].FigureId,
-		"killedFigureId": killedFigureId,
-		"newFigureId":    0,
-		"isCheckWhite":   isCheckWhite.IsItCheck,
-		"whiteKingCell":  isCheckWhite.KingGameID,
-		"isCheckBlack":   isCheckBlack.IsItCheck,
-		"blackKingCell":  isCheckBlack.KingGameID,
+	res := tx.Table("moves as m").Create(map[string]interface{}{
+		"game_id":          gameId,
+		"move_number":      maxNumber,
+		"from_id":          from,
+		"to_id":            to,
+		"figure_id":        board.Cells[from].FigureId,
+		"killed_figure_id": killedFigureId,
+		"new_figure_id":    0,
+		"is_check_white":   isCheckWhite.IsItCheck,
+		"white_king_cell":  isCheckWhite.KingGameID,
+		"is_check_black":   isCheckBlack.IsItCheck,
+		"black_king_cell":  isCheckBlack.KingGameID,
 	})
 
 	if res.Error != nil {
@@ -71,6 +69,18 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 	err := FromRowToMove(res.Row(), &move)
 
 	return move, err
+}
+
+func (m *MovesRepository) FindMaxMoveNumber(gameId int) (int, error) {
+	var maxNumber int64
+
+	res := m.db.Model(&models.Move{}).Where("game_id = ?", gameId).Count(&maxNumber)
+
+	if res.Error != nil {
+		return 0, res.Error
+	}
+
+	return int(maxNumber), res.Error
 }
 
 func RowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {

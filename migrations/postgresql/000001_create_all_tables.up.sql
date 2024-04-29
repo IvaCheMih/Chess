@@ -5,67 +5,67 @@ CREATE TABLE users (
     CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE boardCells (
-    id          serial       NOT NULL,
-    gameId      integer      NOT NULL default 0,
-    indexCell   integer      NOT NULL default 0,
-    figureId    integer      NOT NULL default 0,
+CREATE TABLE board_cells (
+    id           serial       NOT NULL,
+    game_id      integer      NOT NULL default 0,
+    index_cell   integer      NOT NULL default 0,
+    figure_id    integer      NOT NULL default 0,
 
-    CONSTRAINT boardCells_pkey PRIMARY KEY (id)
+    CONSTRAINT board_cells_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE figures (
-   id          serial        NOT NULL,
-   type        varchar(100)  NOT NULL,
-   isWhite     BOOLEAN       NOT NULL,
+   id           serial        NOT NULL,
+   type         varchar(100)  NOT NULL,
+   is_white     BOOLEAN       NOT NULL,
 
    CONSTRAINT figures_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE games (
-    id              serial       NOT NULL,
-    whiteUserId     integer      NOT NULL default 0,
-    blackUserId     integer      NOT NULL default 0,
-    isStarted       BOOLEAN      NOT NULL default false,
-    isEnded         BOOLEAN      NOT NULL default false,
-    isCheckWhite    BOOLEAN      NOT NULL default false,
-    whiteKingCell   integer      NOT NULL default 60,
-    isCheckBlack    BOOLEAN      NOT NULL default false,
-    blackKingCell   integer      NOT NULL default 4,
-    side            integer      NOT NULL default 1,
+    id                  serial       NOT NULL,
+    white_user_id       integer      NOT NULL default 0,
+    black_user_id       integer      NOT NULL default 0,
+    is_started          BOOLEAN      NOT NULL default false,
+    is_ended            BOOLEAN      NOT NULL default false,
+    is_check_white      BOOLEAN      NOT NULL default false,
+    white_king_cell     integer      NOT NULL default 60,
+    is_check_black      BOOLEAN      NOT NULL default false,
+    black_king_cell     integer      NOT NULL default 4,
+    side                integer      NOT NULL default 1,
 
     CONSTRAINT games_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE moves (
-      id               serial       NOT NULL,
-      gameId           integer      NOT NULL default 0,
-      moveNumber       integer      NOT NULL default (SELECT COUNT(*) FROM moves WHERE gameId = moves.gameId)+1,
-      from_id          integer      NOT NULL default 0,
-      to_id            integer      NOT NULL default 0,
-      figureId         integer      NOT NULL default 0,
-      killedFigureId   integer      NOT NULL default 0,
-      newFigureId      integer      NOT NULL default 0,
-      isCheckWhite     BOOLEAN      NOT NULL default false,
-      whiteKingCell    integer      NOT NULL default 0,
-      isCheckBlack     BOOLEAN      NOT NULL default false,
-      blackKingCell    integer      NOT NULL default 0,
+      id                    serial       NOT NULL,
+      game_id               integer      NOT NULL default 0,
+      move_number           integer      NOT NULL default 0,
+      from_id               integer      NOT NULL default 0,
+      to_id                 integer      NOT NULL default 0,
+      figure_id             integer      NOT NULL default 0,
+      killed_figure_id      integer      NOT NULL default 0,
+      new_figure_id         integer      NOT NULL default 0,
+      is_check_white        BOOLEAN      NOT NULL default false,
+      white_king_cell       integer      NOT NULL default 0,
+      is_check_black        BOOLEAN      NOT NULL default false,
+      black_king_cell       integer      NOT NULL default 0,
 
       CONSTRAINT moves_pkey PRIMARY KEY (id)
 );
 
 
-INSERT INTO figures (id, type, isWhite) VALUES (1, 'r', false);
-INSERT INTO figures (id, type, isWhite) VALUES (2, 'k', false);
-INSERT INTO figures (id, type, isWhite) VALUES (3, 'b', false);
-INSERT INTO figures (id, type, isWhite) VALUES (4, 'q', false);
-INSERT INTO figures (id, type, isWhite) VALUES (5, 'K', false);
-INSERT INTO figures (id, type, isWhite) VALUES (6, 'p', false);
+INSERT INTO figures (id, type, is_white) VALUES (1, 'r', false);
+INSERT INTO figures (id, type, is_white) VALUES (2, 'k', false);
+INSERT INTO figures (id, type, is_white) VALUES (3, 'b', false);
+INSERT INTO figures (id, type, is_white) VALUES (4, 'q', false);
+INSERT INTO figures (id, type, is_white) VALUES (5, 'K', false);
+INSERT INTO figures (id, type, is_white) VALUES (6, 'p', false);
 
-INSERT INTO figures (id, type, isWhite) VALUES (7, 'r', true);
-INSERT INTO figures (id, type, isWhite) VALUES (8, 'k', true);
-INSERT INTO figures (id, type, isWhite) VALUES (9, 'b', true);
-INSERT INTO figures (id, type, isWhite) VALUES (10, 'q', true);
-INSERT INTO figures (id, type, isWhite) VALUES (11, 'K', true);
-INSERT INTO figures (id, type, isWhite) VALUES (12, 'p', true);
+INSERT INTO figures (id, type, is_white) VALUES (7, 'r', true);
+INSERT INTO figures (id, type, is_white) VALUES (8, 'k', true);
+INSERT INTO figures (id, type, is_white) VALUES (9, 'b', true);
+INSERT INTO figures (id, type, is_white) VALUES (10, 'q', true);
+INSERT INTO figures (id, type, is_white) VALUES (11, 'K', true);
+INSERT INTO figures (id, type, is_white) VALUES (12, 'p', true);
 

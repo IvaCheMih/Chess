@@ -11,7 +11,7 @@ func GetClientId(c *fiber.Ctx) int {
 	headers := c.GetReqHeaders()
 	fmt.Println(headers)
 
-	clientIds := headers["X-Client-Id"]
+	clientIds := headers["X-Client-GameId"]
 	clientId, _ := strconv.ParseInt(clientIds[0], 10, 0)
 	return int(clientId)
 }
