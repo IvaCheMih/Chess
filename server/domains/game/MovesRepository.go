@@ -3,7 +3,7 @@ package game
 import (
 	"database/sql"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
-	"github.com/IvaCheMih/chess/server/domains/game/move_service"
+	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
 	"gorm.io/gorm"
 	"strconv"
 )

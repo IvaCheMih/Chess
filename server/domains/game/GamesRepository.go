@@ -3,7 +3,7 @@ package game
 import (
 	"database/sql"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
-	"github.com/IvaCheMih/chess/server/domains/game/move_service"
+	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -82,13 +82,19 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 	return game, err
 }
 
-func (g *GamesRepository) UpdateGame(gameId int, isCheckWhite, isCheckBlack move_service.IsCheck, side int, tx *gorm.DB) error {
-	err := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{
-		"is_check_white":  isCheckWhite.IsItCheck,
-		"white_king_cell": isCheckWhite.KingGameID,
-		"is_check_black":  isCheckBlack.IsItCheck,
-		"black_king_cell": isCheckBlack.KingGameID,
-		"side":            side,
+func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gorm.DB) error {
+	err := tx.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{
+		"is_check_white":        game.IsCheckWhite.IsItCheck,
+		"white_king_cell":       game.IsCheckWhite.KingGameID,
+		"white_king_castling":   game.WhiteCastling.WhiteKingCastling,
+		"white_rook_a_castling": game.WhiteCastling.WhiteRookACastling,
+		"white_rook_h_castling": game.WhiteCastling.WhiteRookHCastling,
+		"is_check_black":        game.IsCheckBlack.IsItCheck,
+		"black_king_cell":       game.IsCheckBlack.KingGameID,
+		"black_king_castling":   game.BlackCastling.BlackKingCastling,
+		"black_rook_a_castling": game.BlackCastling.BlackRookACastling,
+		"black_rook_h_castling": game.BlackCastling.BlackRookHCastling,
+		"side":                  game.Side,
 	}).Error
 
 	return err
@@ -120,9 +126,17 @@ func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
 
 		&requestCreateGame.IsCheckWhite,
 		&requestCreateGame.WhiteKingCell,
+		&requestCreateGame.WhiteKingCastling,
+
+		&requestCreateGame.WhiteRookACastling,
+		&requestCreateGame.WhiteRookHCastling,
 
 		&requestCreateGame.IsCheckBlack,
 		&requestCreateGame.BlackKingCell,
+		&requestCreateGame.BlackKingCastling,
+
+		&requestCreateGame.BlackRookACastling,
+		&requestCreateGame.BlackRookHCastling,
 
 		&requestCreateGame.Side,
 	)

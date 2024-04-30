@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
-	"github.com/IvaCheMih/chess/server/domains/game/move_service"
+	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
 )
 
 type GamesService struct {
@@ -192,7 +192,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		game.Side = *game.WhiteClientId
 	}
 
-	err = g.gamesRepo.UpdateGame(gameId, game.IsCheckWhite, game.IsCheckBlack, game.Side, tx)
+	err = g.gamesRepo.UpdateGame(gameId, game, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -319,6 +319,15 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 	createGameResponse.WhiteKingCell = response.WhiteKingCell
 	createGameResponse.BlackKingCell = response.BlackKingCell
+
+	createGameResponse.WhiteKingCastling = response.WhiteKingCastling
+	createGameResponse.BlackKingCastling = response.BlackKingCastling
+
+	createGameResponse.WhiteRookACastling = response.WhiteRookACastling
+	createGameResponse.WhiteRookHCastling = response.WhiteRookHCastling
+
+	createGameResponse.BlackRookACastling = response.BlackRookACastling
+	createGameResponse.BlackRookHCastling = response.BlackRookHCastling
 
 	createGameResponse.BlackUserId = response.BlackUserId
 	createGameResponse.WhiteUserId = response.WhiteUserId

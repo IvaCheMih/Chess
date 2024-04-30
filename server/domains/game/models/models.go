@@ -27,14 +27,20 @@ type Move struct {
 }
 
 type Game struct {
-	Id            int  `json:"id"`
-	WhiteUserId   int  `json:"whiteUserId"`
-	BlackUserId   int  `json:"blackUserId"`
-	IsStarted     bool `json:"isStarted"`
-	IsEnded       bool `json:"isEnded"`
-	IsCheckWhite  bool `json:"isCheckWhite"`
-	WhiteKingCell int  `json:"whiteKingCell"`
-	IsCheckBlack  bool `json:"isCheckBlack"`
-	BlackKingCell int  `json:"blackKingCell"`
-	Side          int  `json:"side"`
+	Id                 int  `json:"id"`
+	WhiteUserId        int  `json:"whiteUserId"`
+	BlackUserId        int  `json:"blackUserId"`
+	IsStarted          bool `json:"isStarted"`
+	IsEnded            bool `json:"isEnded"`
+	IsCheckWhite       bool `json:"isCheckWhite"`
+	WhiteKingCell      int  `json:"whiteKingCell"`
+	WhiteKingCastling  bool `json:"whiteKingCastling"`
+	WhiteRookACastling bool `json:"whiteRookCastling"`
+	WhiteRookHCastling bool `json:"whiteRookHCastling"`
+	IsCheckBlack       bool `json:"isCheckBlack"`
+	BlackKingCell      int  `json:"blackKingCell"`
+	BlackKingCastling  bool `json:"blackKingCastling"`
+	BlackRookACastling bool `json:"blackRookACastling"`
+	BlackRookHCastling bool `json:"blackRookHCastling"`
+	Side               int  `json:"side"`
 }

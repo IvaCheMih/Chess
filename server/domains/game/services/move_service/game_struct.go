@@ -14,12 +14,26 @@ type Game struct {
 	Figures       map[int]*Figure
 	IsCheckWhite  IsCheck
 	IsCheckBlack  IsCheck
+	WhiteCastling WhiteCastling
+	BlackCastling BlackCastling
 	Side          int
 }
 
 type IsCheck struct {
 	IsItCheck  bool
 	KingGameID int
+}
+
+type WhiteCastling struct {
+	WhiteKingCastling  bool
+	WhiteRookACastling bool
+	WhiteRookHCastling bool
+}
+
+type BlackCastling struct {
+	BlackKingCastling  bool
+	BlackRookACastling bool
+	BlackRookHCastling bool
 }
 
 var FigureRepo = make(map[int]byte)
@@ -31,9 +45,11 @@ func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 		M:             12,
 		WhiteClientId: &game.WhiteUserId,
 		BlackClientId: &game.BlackUserId,
-		Figures:       CreateField(board),
+		Figures:       CreateField(board, game),
 		IsCheckWhite:  IsCheck{game.IsCheckWhite, game.WhiteKingCell},
 		IsCheckBlack:  IsCheck{game.IsCheckBlack, game.BlackKingCell},
+		WhiteCastling: WhiteCastling{game.WhiteKingCastling, game.WhiteRookACastling, game.WhiteRookHCastling},
+		BlackCastling: BlackCastling{game.BlackKingCastling, game.BlackRookACastling, game.BlackRookHCastling},
 		Side:          game.Side,
 	}
 }

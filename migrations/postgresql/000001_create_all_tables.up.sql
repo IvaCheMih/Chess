@@ -23,16 +23,27 @@ CREATE TABLE figures (
 );
 
 CREATE TABLE games (
-    id                  serial       NOT NULL,
-    white_user_id       integer      NOT NULL default 0,
-    black_user_id       integer      NOT NULL default 0,
-    is_started          BOOLEAN      NOT NULL default false,
-    is_ended            BOOLEAN      NOT NULL default false,
-    is_check_white      BOOLEAN      NOT NULL default false,
-    white_king_cell     integer      NOT NULL default 60,
-    is_check_black      BOOLEAN      NOT NULL default false,
-    black_king_cell     integer      NOT NULL default 4,
-    side                integer      NOT NULL default 1,
+    id                      serial       NOT NULL,
+    white_user_id           integer      NOT NULL default 0,
+    black_user_id           integer      NOT NULL default 0,
+    is_started              BOOLEAN      NOT NULL default false,
+    is_ended                BOOLEAN      NOT NULL default false,
+
+    is_check_white          BOOLEAN      NOT NULL default false,
+    white_king_cell         integer      NOT NULL default 60,
+    white_king_castling     BOOLEAN      NOT NULL default false,
+
+    white_rook_a_castling   BOOLEAN      NOT NULL default false,
+    white_rook_h_castling   BOOLEAN      NOT NULL default false,
+
+    is_check_black          BOOLEAN      NOT NULL default false,
+    black_king_cell         integer      NOT NULL default 4,
+    black_king_castling     BOOLEAN      NOT NULL default false,
+
+    black_rook_a_castling   BOOLEAN      NOT NULL default false,
+    black_rook_h_castling   BOOLEAN      NOT NULL default false,
+
+    side                    integer      NOT NULL default 1,
 
     CONSTRAINT games_pkey PRIMARY KEY (id)
 );
@@ -46,10 +57,13 @@ CREATE TABLE moves (
       figure_id             integer      NOT NULL default 0,
       killed_figure_id      integer      NOT NULL default 0,
       new_figure_id         integer      NOT NULL default 0,
+
       is_check_white        BOOLEAN      NOT NULL default false,
       white_king_cell       integer      NOT NULL default 0,
+
       is_check_black        BOOLEAN      NOT NULL default false,
       black_king_cell       integer      NOT NULL default 0,
+
 
       CONSTRAINT moves_pkey PRIMARY KEY (id)
 );

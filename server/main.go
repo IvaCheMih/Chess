@@ -5,7 +5,7 @@ import (
 	"github.com/IvaCheMih/chess/server/domains"
 	"github.com/IvaCheMih/chess/server/domains/auth"
 	"github.com/IvaCheMih/chess/server/domains/game"
-	"github.com/IvaCheMih/chess/server/domains/game/move_service"
+	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
 	"github.com/IvaCheMih/chess/server/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"

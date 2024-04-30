@@ -14,7 +14,7 @@ type Figure interface {
 	Delete()
 }
 
-func CreateField(board models.Board) map[int]*Figure {
+func CreateField(board models.Board, game Game) map[int]*Figure {
 
 	//startField := []byte{
 	//	'r', 'k', 'b', 'q', 'K', 'b', 'k', 'r',
@@ -67,8 +67,8 @@ func CreateFigure1(_type byte, isWhite bool, coordinates []int) Figure {
 	switch _type {
 	case 'p':
 		return &FigurePawn{bf}
-	case 'r':
-		return &FigureRook{bf}
+	case 'a':
+		return &FigureRook{bf, RookCastling{}}
 	case 'k':
 		return &FigureKnight{bf}
 	case 'b':

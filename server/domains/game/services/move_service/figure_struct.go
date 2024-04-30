@@ -10,6 +10,7 @@ type FigurePawn struct {
 
 type FigureRook struct {
 	BaseFigure
+	Castling bool
 }
 
 type FigureKnight struct {
@@ -26,6 +27,7 @@ type FigureQueen struct {
 
 type FigureKing struct {
 	BaseFigure
+	RookCastling
 }
 
 type TheoryMoves struct {
