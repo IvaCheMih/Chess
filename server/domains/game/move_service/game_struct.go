@@ -350,6 +350,22 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureTo = g.GetFigureByIndex(to)
 }
 
+func (g *Game) IsItYourFigure(figure *Figure) bool {
+	if figure == nil {
+		return false
+	}
+
+	if *g.WhiteClientId == g.Side && !(*figure).IsWhite() {
+		return false
+	}
+
+	if *g.BlackClientId == g.Side && (*figure).IsWhite() {
+		return false
+	}
+
+	return true
+}
+
 var TheoryKnightSteps = []int{
 	(2 * 8) + 1,
 	(2 * 8) - 1,

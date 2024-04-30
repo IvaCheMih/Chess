@@ -12,6 +12,10 @@ func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board
 
 	figure := game.GetFigureByIndex(from)
 
+	if !game.IsItYourFigure(figure) {
+		return false
+	}
+
 	possibleMoves := (*figure).GetPossibleMoves(&game)
 
 	printMoves(possibleMoves)

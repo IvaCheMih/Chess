@@ -18,6 +18,6 @@ ADD ./migrations/ ./migrations/
 
 COPY --from=builder /app/chess .
 
-EXPOSE 8082
+EXPOSE 8080
 
 CMD [ "./chess" ]

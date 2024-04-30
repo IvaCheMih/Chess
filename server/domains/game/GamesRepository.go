@@ -39,46 +39,11 @@ func (g *GamesRepository) CreateGame(userId int, color bool, tx *gorm.DB) (model
 	return game, err
 }
 
-//func (g *GamesRepository) FindNotStartedGame(color bool, tx *sql.Tx) (models.Game, error) {
-//	var row *sql.Row
-//
-//	if !color {
-//		row = tx.QueryRow(`
-//		SELECT * FROM games
-//		    where blackUserId = 0
-//		    LIMIT 1
-//		`,
-//		)
-//	} else {
-//		row = tx.QueryRow(`
-//		SELECT * FROM games
-//		    where whiteUserId = 0
-//		    LIMIT 1
-//		`,
-//		)
-//	}
-//
-//	if row.Err() != nil && row.Err().Error() == "sql: no rows in result set" {
-//		return models.Game{}, row.Err()
-//	}
-//
-//	var requestCreateGame models.Game
-//
-//	err := RowToGame(row, &requestCreateGame)
-//
-//	return requestCreateGame, err
-//
-//}
-
-func (g *GamesRepository) FindNotStartedGame(color bool) (models.Game, error) {
+func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, error) {
 	var game models.Game
 	var res *gorm.DB
 
-	if color {
-		res = g.db.Take(&game, models.Game{WhiteUserId: 0})
-	} else {
-		res = g.db.Take(&game, models.Game{BlackUserId: 0})
-	}
+	res = g.db.Take(&game, map[string]interface{}{userColorId: 0})
 
 	if res.Error != nil {
 		return models.Game{}, res.Error
@@ -89,16 +54,11 @@ func (g *GamesRepository) FindNotStartedGame(color bool) (models.Game, error) {
 	return game, err
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, color bool, userId int, tx *gorm.DB) (models.Game, error) {
+func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, userId int, tx *gorm.DB) (models.Game, error) {
 	var game models.Game
 	var res *gorm.DB
-	userColor := "white_user_id"
 
-	if !color {
-		userColor = "black_user_id"
-	}
-
-	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColor: userId, "is_started": true})
+	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColorId: userId, "is_started": true})
 
 	if res.Error != nil {
 		return models.Game{}, res.Error
