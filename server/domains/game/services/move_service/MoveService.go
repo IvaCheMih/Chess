@@ -124,6 +124,15 @@ func CheckMove(possibleMoves *TheoryMoves, to int) bool {
 			}
 		}
 	}
+
+	if possibleMoves.Castling != nil {
+		for _, pm := range possibleMoves.Castling {
+			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
+				return true
+			}
+		}
+	}
+
 	fmt.Println("Запрашиваемого хода нет в массиве")
 	return false
 }

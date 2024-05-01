@@ -27,19 +27,20 @@ type FigureQueen struct {
 
 type FigureKing struct {
 	BaseFigure
-	RookCastling
+	Castling bool
 }
 
 type TheoryMoves struct {
-	Up    [][]int
-	Down  [][]int
-	Right [][]int
-	Left  [][]int
-	UR    [][]int
-	UL    [][]int
-	DR    [][]int
-	DL    [][]int
-	Kn    [][]int
+	Up       [][]int
+	Down     [][]int
+	Right    [][]int
+	Left     [][]int
+	UR       [][]int
+	UL       [][]int
+	DR       [][]int
+	DL       [][]int
+	Kn       [][]int
+	Castling [][]int
 }
 
 func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
@@ -412,16 +413,64 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
+	castling := [][]int{}
+
+	if !figure.Castling {
+		if figure.IsWhite() && crd[0] == 4 && crd[1] == 7 {
+			rookA := game.GetFigureByFieldCoordinates([]int{0, 7})
+			if rookA != nil && (*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.WhiteRookACastling {
+				if !game.IsKingCheck(60) &&
+					!game.IsKingCheck(59) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(59)) == nil &&
+					!game.IsKingCheck(58) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(58)) == nil &&
+					!game.IsKingCheck(57) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(57)) == nil {
+					castling = append(castling, []int{2, 7})
+				}
+
+			}
+
+			rookH := game.GetFigureByFieldCoordinates([]int{7, 7})
+			if rookH != nil && (*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.WhiteRookHCastling {
+				if !game.IsKingCheck(60) &&
+					!game.IsKingCheck(61) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(61)) == nil &&
+					!game.IsKingCheck(62) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(62)) == nil {
+					castling = append(castling, []int{6, 7})
+				}
+			}
+		}
+
+		if !figure.IsWhite() && crd[0] == 4 && crd[1] == 0 {
+			rookA := game.GetFigureByFieldCoordinates([]int{0, 0})
+			if rookA != nil && !(*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.BlackRookACastling {
+				if !game.IsKingCheck(4) &&
+					!game.IsKingCheck(3) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(3)) == nil &&
+					!game.IsKingCheck(2) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(2)) == nil &&
+					!game.IsKingCheck(1) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(1)) == nil {
+					castling = append(castling, []int{2, 0})
+				}
+			}
+
+			rookH := game.GetFigureByFieldCoordinates([]int{7, 0})
+			if rookH != nil && !(*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.BlackRookHCastling {
+				if !game.IsKingCheck(4) &&
+					!game.IsKingCheck(5) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(5)) == nil &&
+					!game.IsKingCheck(6) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(6)) == nil {
+					castling = append(castling, []int{6, 0})
+				}
+			}
+		}
+	}
+
 	var theoryMoves = TheoryMoves{
-		Up:    nil,
-		Down:  nil,
-		Right: nil,
-		Left:  nil,
-		UR:    nil,
-		UL:    nil,
-		DR:    nil,
-		DL:    nil,
-		Kn:    k,
+		Up:       nil,
+		Down:     nil,
+		Right:    nil,
+		Left:     nil,
+		UR:       nil,
+		UL:       nil,
+		DR:       nil,
+		DL:       nil,
+		Kn:       k,
+		Castling: castling,
 	}
 
 	return &theoryMoves
@@ -542,4 +591,28 @@ func GetTheorySteps(crd []int) [][]int {
 		{crd[0], crd[1] - 1},
 		{crd[0] - 1, crd[1] - 1},
 	}
+}
+
+func (figure *FigureKing) GetCastling() bool {
+	return figure.Castling
+}
+
+func (figure *FigureRook) GetCastling() bool {
+	return figure.Castling
+}
+
+func (figure *FigureQueen) GetCastling() bool {
+	return true
+}
+
+func (figure *FigureKnight) GetCastling() bool {
+	return true
+}
+
+func (figure *FigurePawn) GetCastling() bool {
+	return true
+}
+
+func (figure *FigureBishop) GetCastling() bool {
+	return true
 }

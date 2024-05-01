@@ -1,6 +1,7 @@
 package move_service
 
 import (
+	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 )
 
@@ -12,28 +13,18 @@ type Figure interface {
 	ChangeGameIndex([]int)
 	GetGameIndex() []int
 	Delete()
+	GetCastling() bool
 }
 
-func CreateField(board models.Board, game Game) map[int]*Figure {
-
-	//startField := []byte{
-	//	'r', 'k', 'b', 'q', 'K', 'b', 'k', 'r',
-	//	'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-	//	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-	//	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-	//	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-	//	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-	//	'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-	//	'r', 'k', 'b', 'q', 'K', 'b', 'k', 'r',
-	//}
+func CreateField(board models.Board, game dto.CreateGameResponse) map[int]*Figure {
 
 	field := map[int]*Figure{}
 
 	for _, cell := range board.Cells {
 
-		isWhite := cell.FigureId <= 6
+		isWhite := cell.FigureId <= 7
 
-		field[cell.IndexCell] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell)
+		field[cell.IndexCell] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell, game)
 
 	}
 
@@ -48,11 +39,11 @@ func FigureToString(figure *Figure) string {
 	return (*figure).ToString()
 }
 
-func CreateFigure(_type byte, isWhite bool, index int) *Figure {
+func CreateFigure(_type byte, isWhite bool, index int, game dto.CreateGameResponse) *Figure {
 
 	coordinates := IndexToFieldCoordinates(index)
 
-	figure := CreateFigure1(_type, isWhite, coordinates)
+	figure := CreateFigure1(_type, isWhite, coordinates, game)
 
 	if figure == nil {
 		return nil
@@ -61,14 +52,38 @@ func CreateFigure(_type byte, isWhite bool, index int) *Figure {
 	return &figure
 }
 
-func CreateFigure1(_type byte, isWhite bool, coordinates []int) Figure {
+func CreateFigure1(_type byte, isWhite bool, coordinates []int, game dto.CreateGameResponse) Figure {
 	var bf = BaseFigure{isWhite, _type, coordinates}
 	//var tm = TheoryMoves{nil, nil, nil, nil, nil, nil, nil, nil, nil}
 	switch _type {
 	case 'p':
 		return &FigurePawn{bf}
 	case 'a':
-		return &FigureRook{bf, RookCastling{}}
+
+		castling := false
+		if isWhite {
+			if game.WhiteRookACastling {
+				castling = true
+			}
+		} else {
+			if game.BlackRookACastling {
+				castling = true
+			}
+		}
+
+		return &FigureRook{bf, castling}
+	case 'h':
+		castling := false
+		if isWhite {
+			if game.WhiteRookHCastling {
+				castling = true
+			}
+		} else {
+			if game.BlackRookHCastling {
+				castling = true
+			}
+		}
+		return &FigureRook{bf, castling}
 	case 'k':
 		return &FigureKnight{bf}
 	case 'b':
@@ -76,7 +91,17 @@ func CreateFigure1(_type byte, isWhite bool, coordinates []int) Figure {
 	case 'q':
 		return &FigureQueen{bf}
 	case 'K':
-		return &FigureKing{bf}
+		castling := false
+		if isWhite {
+			if game.WhiteKingCastling {
+				castling = true
+			}
+		} else {
+			if game.BlackKingCastling {
+				castling = true
+			}
+		}
+		return &FigureKing{bf, castling}
 	}
 	return nil
 }

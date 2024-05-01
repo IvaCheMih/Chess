@@ -57,19 +57,21 @@ func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 func CreateFigureRepo() map[int]byte {
 	var figureRepo = make(map[int]byte)
 
-	figureRepo[1] = 'r'
+	figureRepo[1] = 'a'
 	figureRepo[2] = 'k'
 	figureRepo[3] = 'b'
 	figureRepo[4] = 'q'
 	figureRepo[5] = 'K'
 	figureRepo[6] = 'p'
+	figureRepo[7] = 'h'
 
-	figureRepo[7] = 'r'
-	figureRepo[8] = 'k'
-	figureRepo[9] = 'b'
-	figureRepo[10] = 'q'
-	figureRepo[11] = 'K'
-	figureRepo[12] = 'p'
+	figureRepo[8] = 'a'
+	figureRepo[9] = 'k'
+	figureRepo[10] = 'b'
+	figureRepo[11] = 'q'
+	figureRepo[12] = 'K'
+	figureRepo[13] = 'p'
+	figureRepo[14] = 'h'
 
 	return figureRepo
 }
