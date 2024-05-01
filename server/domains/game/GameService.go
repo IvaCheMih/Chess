@@ -153,11 +153,13 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	if !move_service.CheckCorrectMove(responseGetGame, board, from, to) {
+	isCorrect, isCastling := move_service.CheckCorrectMove(responseGetGame, board, from, to)
+
+	if !isCorrect {
 		return models.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
 
-	game, check := move_service.CheckIsItCheck(responseGetGame, board, from, to)
+	game, check := move_service.CheckIsItCheck(responseGetGame, board, from, to, isCastling)
 
 	if !check {
 		return models.Move{}, errors.New("Move is not possible (CheckIsItCheck)")

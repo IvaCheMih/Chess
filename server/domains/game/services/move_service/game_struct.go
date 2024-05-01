@@ -137,6 +137,29 @@ func (game *Game) CheckIsCheck() bool {
 	return false
 }
 
+func (game *Game) ChangeCastlingFlag(figure *Figure) {
+	switch (*figure).GetType() {
+	case 'K':
+		if (*figure).IsWhite() {
+			game.WhiteCastling.WhiteKingCastling = true
+		} else {
+			game.BlackCastling.BlackKingCastling = true
+		}
+	case 'a':
+		if (*figure).IsWhite() {
+			game.WhiteCastling.WhiteRookACastling = true
+		} else {
+			game.BlackCastling.BlackRookACastling = true
+		}
+	case 'h':
+		if (*figure).IsWhite() {
+			game.WhiteCastling.WhiteRookHCastling = true
+		} else {
+			game.BlackCastling.BlackRookHCastling = true
+		}
+	}
+}
+
 func (game *Game) IsKingCheck(index int) bool {
 	fmt.Println("начало проверки аттак на короля")
 	if game.CheckKnightAttack(index) {
@@ -366,6 +389,19 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	g.Figures[from] = nil
 
 	figureTo = g.GetFigureByIndex(to)
+}
+
+func (g *Game) ChangeRookIfCastling(to int) {
+	switch to {
+	case 2:
+		g.ChangeToAndFrom(3, 0)
+	case 6:
+		g.ChangeToAndFrom(5, 7)
+	case 57:
+		g.ChangeToAndFrom(59, 56)
+	case 62:
+		g.ChangeToAndFrom(61, 63)
+	}
 }
 
 func (g *Game) IsItYourFigure(figure *Figure) bool {
