@@ -13,7 +13,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
-	"os"
 	"time"
 )
 
@@ -27,15 +26,15 @@ var authHandlers auth.AuthHandlers
 
 func Init() {
 
-	postgresqlUrl, exists := os.LookupEnv("POSTGRES_URL")
-
-	if !exists {
-		panic("postgresqlUrl is not found")
-	}
+	//postgresqlUrl, exists := os.LookupEnv("POSTGRES_URL")
+	//
+	//if !exists {
+	//	panic("postgresqlUrl is not found")
+	//}
 
 	time.Sleep(5 * time.Second)
 
-	//postgresqlUrl := connect
+	postgresqlUrl := connect
 
 	migrationService := domains.CreateMigrationService()
 

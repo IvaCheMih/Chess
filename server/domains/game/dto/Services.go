@@ -48,6 +48,16 @@ func GetRequestDoMoveFromBody(c *fiber.Ctx) (DoMoveBody, error) {
 	return request, err
 }
 
+func GetCreateNewFigureBody(c *fiber.Ctx) (CreateNewFigureBody, error) {
+	body := c.Body()
+
+	var request CreateNewFigureBody
+
+	err := json.Unmarshal(body, &request)
+
+	return request, err
+}
+
 //func GetRequestGetBoard(c *fiber.Ctx) (GetGameIdParam, error) {
 //	body := c.Body()
 //

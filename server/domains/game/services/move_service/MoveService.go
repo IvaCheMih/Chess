@@ -8,15 +8,24 @@ import (
 
 func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) (bool, bool) {
 
+	fmt.Println(100)
+
 	game := CreateGameStruct(responseGetGame, board)
 
+	fmt.Println(101)
+
 	figure := game.GetFigureByIndex(from)
+
+	fmt.Println(102)
 
 	if !game.IsItYourFigure(figure) {
 		return false, false
 	}
+	fmt.Println(103)
 
 	possibleMoves := (*figure).GetPossibleMoves(&game)
+
+	fmt.Println(104)
 
 	printMoves(possibleMoves)
 

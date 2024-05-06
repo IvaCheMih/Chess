@@ -2,6 +2,7 @@ package game
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
@@ -53,8 +54,10 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 	return models.Board{Cells: cells}, err
 }
 
-func (b *BoardCellsRepository) Update(id, to int, tx *gorm.DB) error {
-	err := b.db.Model(&models.BoardCell{}).Where("id=?", id).Updates(map[string]interface{}{"index_cell": to}).Error
+func (b *BoardCellsRepository) Update(id int, to int, tx *gorm.DB) error {
+
+	err := tx.Model(&models.BoardCell{}).Where("id=?", id).Updates(map[string]interface{}{"index_cell": to}).Error
+	fmt.Println(err)
 
 	return err
 }

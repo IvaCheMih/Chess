@@ -22,10 +22,12 @@ func CreateField(board models.Board, game dto.CreateGameResponse) (map[int]*Figu
 
 	for _, cell := range board.Cells {
 		if cell.FigureId == 5 {
-			blackKingCell = cell.IndexCell
+			whiteKingCell = cell.IndexCell
+
 		}
 		if cell.FigureId == 12 {
-			whiteKingCell = cell.IndexCell
+			blackKingCell = cell.IndexCell
+
 		}
 
 		isWhite := cell.FigureId <= 7

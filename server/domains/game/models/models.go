@@ -15,8 +15,8 @@ type Move struct {
 	Id             int
 	GameId         int
 	MoveNumber     int
-	From           int
-	To             int
+	From_id        int
+	To_id          int
 	FigureId       int
 	KilledFigureId int
 	NewFigureId    int

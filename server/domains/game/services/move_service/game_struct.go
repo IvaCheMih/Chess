@@ -135,6 +135,7 @@ func (game *Game) CheckIsCheck() bool {
 	if game.Side == *game.WhiteClientId && game.IsKingCheck(game.IsCheckWhite.KingGameID) {
 		return true
 	}
+
 	if game.Side == *game.BlackClientId && game.IsKingCheck(game.IsCheckBlack.KingGameID) {
 		return true
 	}
@@ -166,8 +167,10 @@ func (game *Game) ChangeCastlingFlag(figure *Figure) {
 }
 
 func (game *Game) ChangeLastPawnMove(figure *Figure, from int, to int) {
-	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 8 {
+	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 9 {
+
 		game.LastPawnMove = to
+
 		return
 	}
 
@@ -223,9 +226,15 @@ func (game *Game) CheckKnightAttack(index int) bool {
 func (game *Game) CheckDiagonalAttack(index int) bool {
 	fmt.Println("Начало диаг проверки")
 
+	fmt.Println(index)
+
 	crd := IndexToFieldCoordinates(index)
+	fmt.Println(crd)
+
+	fmt.Println(100)
 
 	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] + i}); i++ {
+		fmt.Println([]int{crd[0] + i, crd[1] + i})
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + i, crd[1] + i}, 'b')
 		if isCheck {
 			return true
@@ -234,6 +243,7 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 			break
 		}
 	}
+	fmt.Println(101)
 
 	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] - i}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + i, crd[1] - i}, 'b')
@@ -245,6 +255,8 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 		}
 	}
 
+	fmt.Println(102)
+
 	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] + i}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - i, crd[1] + i}, 'b')
 		if isCheck {
@@ -255,6 +267,8 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 		}
 	}
 
+	fmt.Println(103)
+
 	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] - i}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - i, crd[1] - i}, 'b')
 		if isCheck {
@@ -264,6 +278,7 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 			break
 		}
 	}
+
 	fmt.Println("Конец диаг проверки")
 	return false
 }
@@ -323,7 +338,16 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 
 func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, triggerFigure byte) (bool, bool) {
 
-	king := game.GetFigureByFieldCoordinates(kingCoordinate)
+	var king *Figure
+
+	if game.Side == *game.WhiteClientId {
+		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
+	} else {
+		fmt.Println(game.IsCheckWhite.KingGameID)
+		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
+		fmt.Println((*king).IsWhite())
+	}
+
 	fig := game.GetFigureByFieldCoordinates(cellCoordinate)
 
 	if fig == nil {
@@ -334,6 +358,9 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 	}
 	if (*fig).IsWhite() != (*king).IsWhite() {
 		if (*fig).GetType() == triggerFigure || (*fig).GetType() == 'q' {
+			fmt.Println((*fig).IsWhite())
+			fmt.Println((*king).IsWhite())
+			fmt.Println("Это поле атакует: ", (*fig).GetType(), cellCoordinate)
 			return true, true
 		}
 		return false, true
@@ -343,8 +370,16 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 
 func (game *Game) CheckPawnAttack(indexKing int) bool {
 	fmt.Println("Начало пешечной проверки")
+
+	var king *Figure
+
+	if game.Side == *game.WhiteClientId {
+		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
+	} else {
+		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
+	}
+
 	crd := IndexToFieldCoordinates(indexKing)
-	king := game.GetFigureByFieldCoordinates(crd)
 
 	if (*king).IsWhite() && IsOnRealBoard([]int{crd[0], crd[1] + 1}) {
 
@@ -354,7 +389,6 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 				return true
 			}
 		}
-
 	}
 
 	if (*king).IsWhite() && IsOnRealBoard([]int{crd[0], crd[1] - 1}) {
@@ -390,12 +424,22 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	coordinateFrom := IndexToFieldCoordinates(from)
 
 	figureTo := g.GetFigureByFieldCoordinates(coordinateTo)
+	figureFrom := g.GetFigureByFieldCoordinates(coordinateFrom)
+
+	crdLPM := []int{}
+
+	if g.LastPawnMove != -1 {
+		crdLPM = IndexToFieldCoordinates(g.LastPawnMove)
+	}
 
 	if figureTo != nil {
 		(*figureTo).Delete()
+	} else {
+		if (*figureFrom).GetType() == 'p' && g.LastPawnMove != -1 && coordinateFrom[0] == crdLPM[0] && coordinateTo[1] == crdLPM[1] {
+			pawn := g.GetFigureByFieldCoordinates(crdLPM)
+			(*pawn).Delete()
+		}
 	}
-
-	figureFrom := g.GetFigureByFieldCoordinates(coordinateFrom)
 
 	(*figureFrom).ChangeGameIndex(coordinateTo)
 

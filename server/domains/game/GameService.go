@@ -29,6 +29,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	createNewBoard := false
 
 	userColor := "white_user_id"
+	gameSide := userId
 
 	if !userRequestedColor {
 		userColor = "black_user_id"
@@ -37,6 +38,10 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	response, err := g.gamesRepo.FindNotStartedGame(userColor)
 	if err != nil && err.Error() != "record not found" {
 		return dto.CreateGameResponse{}, err
+	}
+
+	if userColor == "black_user_id" {
+		gameSide = response.WhiteUserId
 	}
 
 	tx := g.gamesRepo.db.Begin()
@@ -58,7 +63,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 		}
 	} else {
 
-		response, err = g.gamesRepo.UpdateColorUserIdByColor(response.Id, userColor, userId, tx)
+		response, err = g.gamesRepo.UpdateColorUserIdByColor(response.Id, userColor, gameSide, userId, tx)
 	}
 
 	FromModelsToDtoCreateGame(response, &createGameResponse)
@@ -200,14 +205,14 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	if board.Cells[to] != nil {
-		err = g.boardRepo.Delete(board.Cells[to].GameId, tx)
+		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
 
 		if err != nil {
 			return models.Move{}, err
 		}
 	}
 
-	err = g.boardRepo.Update(board.Cells[from].GameId, to, tx)
+	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -303,6 +308,14 @@ func CheckCorrectRequest(f, t string) bool {
 	from, to := CoordinatesToIndex(f), CoordinatesToIndex(t)
 
 	if !CheckCellOnBoardByIndex(from) || !CheckCellOnBoardByIndex(to) {
+		return false
+	}
+	return true
+}
+
+func CheckCorrectNewFigure(figureId int) bool {
+	figureType, ok := move_service.FigureRepo[figureId]
+	if !ok || figureType == 'p' || figureType == 'K' {
 		return false
 	}
 	return true

@@ -24,6 +24,7 @@ func (g *GamesRepository) CreateGame(userId int, color bool, tx *gorm.DB) (model
 
 	if color {
 		game.WhiteUserId = userId
+		game.Side = userId
 	} else {
 		game.BlackUserId = userId
 	}
@@ -54,11 +55,11 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	return game, err
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, userId int, tx *gorm.DB) (models.Game, error) {
+func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide int, userId int, tx *gorm.DB) (models.Game, error) {
 	var game models.Game
 	var res *gorm.DB
 
-	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColorId: userId, "is_started": true})
+	res = tx.Model(&game).Where("id=?", gameId).Updates(map[string]interface{}{userColorId: userId, "side": gameSide, "is_started": true})
 
 	if res.Error != nil {
 		return models.Game{}, res.Error

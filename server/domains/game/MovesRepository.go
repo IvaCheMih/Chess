@@ -5,7 +5,6 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type MovesRepository struct {
@@ -43,26 +42,23 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 		killedFigureId = board.Cells[to].FigureId
 	}
 
-	queryWhere := "m.game_id = "
-	queryWhere += strconv.Itoa(gameId)
+	var move = models.Move{
+		GameId:         gameId,
+		MoveNumber:     maxNumber,
+		From_id:        from,
+		To_id:          to,
+		FigureId:       board.Cells[from].FigureId,
+		KilledFigureId: killedFigureId,
+		NewFigureId:    0,
+		IsCheckWhite:   isCheckWhite.IsItCheck,
+		IsCheckBlack:   isCheckBlack.IsItCheck,
+	}
 
-	res := tx.Table("moves as m").Create(map[string]interface{}{
-		"game_id":          gameId,
-		"move_number":      maxNumber,
-		"from_id":          from,
-		"to_id":            to,
-		"figure_id":        board.Cells[from].FigureId,
-		"killed_figure_id": killedFigureId,
-		"new_figure_id":    0,
-		"is_check_white":   isCheckWhite.IsItCheck,
-		"is_check_black":   isCheckBlack.IsItCheck,
-	})
+	res := tx.Create(&move)
 
 	if res.Error != nil {
 		return models.Move{}, res.Error
 	}
-
-	var move models.Move
 
 	err := FromRowToMove(res.Row(), &move)
 
@@ -90,8 +86,8 @@ func RowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
 			&move.Id,
 			&move.GameId,
 			&move.MoveNumber,
-			&move.From,
-			&move.To,
+			&move.From_id,
+			&move.To_id,
 			&move.FigureId,
 			&move.KilledFigureId,
 			&move.NewFigureId,
@@ -113,8 +109,8 @@ func FromRowToMove(row *sql.Row, move *models.Move) error {
 	err := row.Scan(&move.Id,
 		&move.GameId,
 		&move.MoveNumber,
-		&move.From,
-		&move.To,
+		&move.From_id,
+		&move.To_id,
 		&move.FigureId,
 		&move.KilledFigureId,
 		&move.NewFigureId,

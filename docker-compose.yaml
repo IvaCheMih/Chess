@@ -1,16 +1,16 @@
 version: "3.7"
 
 services:
-  application:
-    depends_on:
-      - postgres
-    build:
-      context: .
-    ports:
-      - "8080:8080"
-    networks:
-      - infra
-    env_file: .env
+#  application:
+#    depends_on:
+#      - postgres
+#    build:
+#      context: .
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      - infra
+#    env_file: .env
 
   postgres:
     image: postgres:latest
@@ -22,8 +22,8 @@ services:
       POSTGRES_DB: 'test'
 
     command: postgres -c max_connections=20 -c shared_buffers=200MB
-#    ports:
-#      - "8090:5432"
+    ports:
+      - "8090:5432"
     networks:
       - infra
 
