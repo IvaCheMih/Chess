@@ -11,9 +11,9 @@ type UsersRepository struct {
 	db *gorm.DB
 }
 
-func CreateUsersRepository(db_gorm *gorm.DB) UsersRepository {
+func CreateUsersRepository(dbGorm *gorm.DB) UsersRepository {
 	return UsersRepository{
-		db: db_gorm,
+		db: dbGorm,
 	}
 }
 

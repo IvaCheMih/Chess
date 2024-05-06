@@ -16,11 +16,17 @@ type Figure interface {
 	GetCastling() bool
 }
 
-func CreateField(board models.Board, game dto.CreateGameResponse) map[int]*Figure {
-
+func CreateField(board models.Board, game dto.CreateGameResponse) (map[int]*Figure, int, int) {
+	blackKingCell, whiteKingCell := 0, 0
 	field := map[int]*Figure{}
 
 	for _, cell := range board.Cells {
+		if cell.FigureId == 5 {
+			blackKingCell = cell.IndexCell
+		}
+		if cell.FigureId == 12 {
+			whiteKingCell = cell.IndexCell
+		}
 
 		isWhite := cell.FigureId <= 7
 
@@ -28,7 +34,7 @@ func CreateField(board models.Board, game dto.CreateGameResponse) map[int]*Figur
 
 	}
 
-	return field
+	return field, blackKingCell, whiteKingCell
 }
 
 func FigureToString(figure *Figure) string {

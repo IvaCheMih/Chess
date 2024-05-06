@@ -47,6 +47,8 @@ func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, 
 
 	gameAfterMove.ChangeCastlingFlag(figure)
 
+	gameAfterMove.ChangeLastPawnMove(figure, from, to)
+
 	return gameAfterMove, true
 }
 

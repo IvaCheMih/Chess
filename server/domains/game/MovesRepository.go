@@ -55,9 +55,7 @@ func (m *MovesRepository) AddMove(gameId, from, to int, board models.Board, isCh
 		"killed_figure_id": killedFigureId,
 		"new_figure_id":    0,
 		"is_check_white":   isCheckWhite.IsItCheck,
-		"white_king_cell":  isCheckWhite.KingGameID,
 		"is_check_black":   isCheckBlack.IsItCheck,
-		"black_king_cell":  isCheckBlack.KingGameID,
 	})
 
 	if res.Error != nil {
@@ -98,9 +96,8 @@ func RowsToMove(rows *sql.Rows, movesOut *[]models.Move) error {
 			&move.KilledFigureId,
 			&move.NewFigureId,
 			&move.IsCheckWhite,
-			&move.WhiteKingCell,
 			&move.IsCheckBlack,
-			&move.BlackKingCell)
+		)
 		if err != nil {
 			return err
 		}
@@ -122,8 +119,7 @@ func FromRowToMove(row *sql.Row, move *models.Move) error {
 		&move.KilledFigureId,
 		&move.NewFigureId,
 		&move.IsCheckWhite,
-		&move.WhiteKingCell,
 		&move.IsCheckBlack,
-		&move.BlackKingCell)
+	)
 	return err
 }

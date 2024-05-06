@@ -319,9 +319,6 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 	createGameResponse.IsStarted = response.IsStarted
 	createGameResponse.IsEnded = response.IsEnded
 
-	createGameResponse.WhiteKingCell = response.WhiteKingCell
-	createGameResponse.BlackKingCell = response.BlackKingCell
-
 	createGameResponse.WhiteKingCastling = response.WhiteKingCastling
 	createGameResponse.BlackKingCastling = response.BlackKingCastling
 
@@ -333,6 +330,8 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 	createGameResponse.BlackUserId = response.BlackUserId
 	createGameResponse.WhiteUserId = response.WhiteUserId
+
+	createGameResponse.LastPawnMove = response.LastPawnMove
 
 }
 

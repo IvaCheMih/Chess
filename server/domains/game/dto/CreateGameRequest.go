@@ -11,7 +11,6 @@ type CreateGameResponse struct {
 	IsStarted          bool
 	IsEnded            bool
 	IsCheckWhite       bool
-	WhiteKingCell      int
 	WhiteKingCastling  bool
 	WhiteRookACastling bool
 	WhiteRookHCastling bool
@@ -19,6 +18,6 @@ type CreateGameResponse struct {
 	BlackRookACastling bool
 	BlackRookHCastling bool
 	IsCheckBlack       bool
-	BlackKingCell      int
+	LastPawnMove       int
 	Side               int
 }

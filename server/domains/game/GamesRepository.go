@@ -85,15 +85,14 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gorm.DB) error {
 	err := tx.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{
 		"is_check_white":        game.IsCheckWhite.IsItCheck,
-		"white_king_cell":       game.IsCheckWhite.KingGameID,
 		"white_king_castling":   game.WhiteCastling.WhiteKingCastling,
 		"white_rook_a_castling": game.WhiteCastling.WhiteRookACastling,
 		"white_rook_h_castling": game.WhiteCastling.WhiteRookHCastling,
 		"is_check_black":        game.IsCheckBlack.IsItCheck,
-		"black_king_cell":       game.IsCheckBlack.KingGameID,
 		"black_king_castling":   game.BlackCastling.BlackKingCastling,
 		"black_rook_a_castling": game.BlackCastling.BlackRookACastling,
 		"black_rook_h_castling": game.BlackCastling.BlackRookHCastling,
+		"last_pawn_move":        game.LastPawnMove,
 		"side":                  game.Side,
 	}).Error
 
@@ -125,19 +124,18 @@ func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
 		&requestCreateGame.IsEnded,
 
 		&requestCreateGame.IsCheckWhite,
-		&requestCreateGame.WhiteKingCell,
 		&requestCreateGame.WhiteKingCastling,
 
 		&requestCreateGame.WhiteRookACastling,
 		&requestCreateGame.WhiteRookHCastling,
 
 		&requestCreateGame.IsCheckBlack,
-		&requestCreateGame.BlackKingCell,
 		&requestCreateGame.BlackKingCastling,
 
 		&requestCreateGame.BlackRookACastling,
 		&requestCreateGame.BlackRookHCastling,
 
+		&requestCreateGame.LastPawnMove,
 		&requestCreateGame.Side,
 	)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
+	"math"
 )
 
 type Game struct {
@@ -16,6 +17,7 @@ type Game struct {
 	IsCheckBlack  IsCheck
 	WhiteCastling WhiteCastling
 	BlackCastling BlackCastling
+	LastPawnMove  int
 	Side          int
 }
 
@@ -40,16 +42,19 @@ var FigureRepo = make(map[int]byte)
 
 func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
 
+	figures, blackKingCell, whiteKingCell := CreateField(board, game)
+
 	return Game{
 		N:             8,
 		M:             12,
 		WhiteClientId: &game.WhiteUserId,
 		BlackClientId: &game.BlackUserId,
-		Figures:       CreateField(board, game),
-		IsCheckWhite:  IsCheck{game.IsCheckWhite, game.WhiteKingCell},
-		IsCheckBlack:  IsCheck{game.IsCheckBlack, game.BlackKingCell},
+		Figures:       figures,
+		IsCheckWhite:  IsCheck{game.IsCheckWhite, whiteKingCell},
+		IsCheckBlack:  IsCheck{game.IsCheckBlack, blackKingCell},
 		WhiteCastling: WhiteCastling{game.WhiteKingCastling, game.WhiteRookACastling, game.WhiteRookHCastling},
 		BlackCastling: BlackCastling{game.BlackKingCastling, game.BlackRookACastling, game.BlackRookHCastling},
+		LastPawnMove:  game.LastPawnMove,
 		Side:          game.Side,
 	}
 }
@@ -158,6 +163,15 @@ func (game *Game) ChangeCastlingFlag(figure *Figure) {
 			game.BlackCastling.BlackRookHCastling = true
 		}
 	}
+}
+
+func (game *Game) ChangeLastPawnMove(figure *Figure, from int, to int) {
+	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 8 {
+		game.LastPawnMove = to
+		return
+	}
+
+	game.LastPawnMove = -1
 }
 
 func (game *Game) IsKingCheck(index int) bool {
