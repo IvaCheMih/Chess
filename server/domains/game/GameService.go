@@ -6,6 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/server/domains/game/dto"
 	"github.com/IvaCheMih/chess/server/domains/game/models"
 	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
+	"gorm.io/gorm"
 )
 
 type GamesService struct {
@@ -204,15 +205,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	if board.Cells[to] != nil {
-		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
-
-		if err != nil {
-			return models.Move{}, err
-		}
-	}
-
-	err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
+	err = UpdateBoardAfterMove(g, board, from, to, game, isCastling, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -319,6 +312,27 @@ func CheckCorrectNewFigure(figureId int) bool {
 		return false
 	}
 	return true
+}
+
+func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int, game move_service.Game, isCastling bool, tx *gorm.DB) error {
+	if board.Cells[to] != nil {
+		err := g.boardRepo.Delete(board.Cells[to].Id, tx)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	err := g.boardRepo.Update(board.Cells[from].Id, to, tx)
+	if err != nil {
+		return err
+	}
+
+	if isCastling {
+		err = g.boardRepo.Update(board.Cells[game.RookOldIdIfItCastling].Id, game.RookNewIdIfItCastling, tx)
+	}
+	
+	return err
 }
 
 func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.CreateGameResponse) {
