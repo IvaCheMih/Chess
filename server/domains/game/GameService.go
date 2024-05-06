@@ -156,6 +156,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		fmt.Println(err)
 		return models.Move{}, err
 	}
+
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
@@ -331,7 +332,7 @@ func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int,
 	if isCastling {
 		err = g.boardRepo.Update(board.Cells[game.RookOldIdIfItCastling].Id, game.RookNewIdIfItCastling, tx)
 	}
-	
+
 	return err
 }
 
