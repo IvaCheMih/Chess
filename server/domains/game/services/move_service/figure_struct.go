@@ -40,6 +40,7 @@ type TheoryMoves struct {
 	DR       [][]int
 	DL       [][]int
 	Kn       [][]int
+	EnPass   [][]int
 	Castling [][]int
 }
 
@@ -53,6 +54,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	}
 
 	vert := [][]int{}
+	EnPass := [][]int{}
 	crd := figure.CellCoordinate
 	crdLastPawnMove := []int{}
 
@@ -61,7 +63,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 
 		if crdLastPawnMove[0] == crd[0]+1 || crdLastPawnMove[0] == crd[0]-1 {
 			if crd[1] == crdLastPawnMove[1] {
-				vert = append(vert, []int{crdLastPawnMove[0], crdLastPawnMove[1] - n})
+				EnPass = append(EnPass, []int{crdLastPawnMove[0], crdLastPawnMove[1] - n})
 			}
 		}
 	}
@@ -101,15 +103,16 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	}
 
 	var theoryMoves = TheoryMoves{
-		Up:    vert,
-		Down:  nil,
-		Right: nil,
-		Left:  nil,
-		UR:    right,
-		UL:    left,
-		DR:    nil,
-		DL:    nil,
-		Kn:    nil,
+		Up:     vert,
+		Down:   nil,
+		Right:  nil,
+		Left:   nil,
+		UR:     right,
+		UL:     left,
+		DR:     nil,
+		DL:     nil,
+		Kn:     nil,
+		EnPass: EnPass,
 	}
 
 	return &theoryMoves
@@ -517,48 +520,6 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 	return &theoryMoves
 }
 
-func (figure *FigureRook) ToString() string {
-	if figure.IsWhite() {
-		return "R"
-	}
-	return "r"
-}
-
-func (figure *FigureKnight) ToString() string {
-	if figure.IsWhite() {
-		return "H"
-	}
-	return "h"
-}
-
-func (figure *FigureBishop) ToString() string {
-	if figure.IsWhite() {
-		return "B"
-	}
-	return "b"
-}
-
-func (figure *FigureQueen) ToString() string {
-	if figure.IsWhite() {
-		return "Q"
-	}
-	return "q"
-}
-
-func (figure *FigureKing) ToString() string {
-	if figure.IsWhite() {
-		return "K"
-	}
-	return "k"
-}
-
-func (figure *FigurePawn) ToString() string {
-	if figure.IsWhite() {
-		return "P"
-	}
-	return "p"
-}
-
 func (figure *FigureRook) AddMove(game *Game, crd []int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
 	if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
@@ -632,28 +593,4 @@ func GetTheorySteps(crd []int) [][]int {
 		{crd[0], crd[1] - 1},
 		{crd[0] - 1, crd[1] - 1},
 	}
-}
-
-func (figure *FigureKing) GetCastling() bool {
-	return figure.Castling
-}
-
-func (figure *FigureRook) GetCastling() bool {
-	return figure.Castling
-}
-
-func (figure *FigureQueen) GetCastling() bool {
-	return true
-}
-
-func (figure *FigureKnight) GetCastling() bool {
-	return true
-}
-
-func (figure *FigurePawn) GetCastling() bool {
-	return true
-}
-
-func (figure *FigureBishop) GetCastling() bool {
-	return true
 }

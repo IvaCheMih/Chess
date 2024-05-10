@@ -7,13 +7,11 @@ import (
 
 type Figure interface {
 	IsWhite() bool
-	ToString() string
 	GetType() byte
 	GetPossibleMoves(*Game) *TheoryMoves
 	ChangeGameIndex([]int)
 	GetGameIndex() []int
 	Delete()
-	GetCastling() bool
 }
 
 func CreateField(board models.Board, game dto.CreateGameResponse) (map[int]*Figure, int, int) {
@@ -37,14 +35,6 @@ func CreateField(board models.Board, game dto.CreateGameResponse) (map[int]*Figu
 	}
 
 	return field, blackKingCell, whiteKingCell
-}
-
-func FigureToString(figure *Figure) string {
-	if figure == nil {
-		return "0"
-	}
-
-	return (*figure).ToString()
 }
 
 func CreateFigure(_type byte, isWhite bool, index int, game dto.CreateGameResponse) *Figure {
