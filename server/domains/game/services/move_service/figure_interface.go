@@ -52,7 +52,7 @@ func CreateFigure(_type byte, isWhite bool, index int, game dto.CreateGameRespon
 
 func CreateFigure1(_type byte, isWhite bool, coordinates []int, game dto.CreateGameResponse) Figure {
 	var bf = BaseFigure{isWhite, _type, coordinates}
-	//var tm = TheoryMoves{nil, nil, nil, nil, nil, nil, nil, nil, nil}
+
 	switch _type {
 	case 'p':
 		return &FigurePawn{bf}

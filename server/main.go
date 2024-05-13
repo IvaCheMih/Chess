@@ -16,40 +16,29 @@ import (
 	"time"
 )
 
-const connect = "postgres://user:pass@localhost:8090/test?sslmode=disable"
-
 var db *gorm.DB
 
 var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
+var env = []string{"POSTGRES_URL", "JWT_SECRET"}
+
 func Init() {
 
-	//postgresqlUrl, exists := os.LookupEnv("POSTGRES_URL")
-	//
-	//if !exists {
-	//	panic("postgresqlUrl is not found")
-	//}
+	domains.GetURLsFromEnv(env)
 
 	time.Sleep(5 * time.Second)
 
-	postgresqlUrl := connect
-
 	migrationService := domains.CreateMigrationService()
 
-	migrationService.RunUp(postgresqlUrl, "file://migrations/postgresql")
+	migrationService.RunUp(domains.PostgresqlUrl, "file://migrations/postgresql")
 
 	move_service.FigureRepo = move_service.CreateFigureRepo()
 
 	var err error
 
-	//db, err = sql.Open("postgres", postgresqlUrl)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	db, err = gorm.Open(postgres.Open(postgresqlUrl), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(domains.PostgresqlUrl), &gorm.Config{})
 
 	if err != nil {
 		log.Fatalln(err)
@@ -67,9 +56,7 @@ func Init() {
 	gamesService := game.CreateGamesService(&boardCellsRepository, &figuresRepository, &gamesRepository, &movesRepository)
 	gamesHandlers = game.CreateGamesHandlers(&gamesService)
 
-	authRepository := auth.CreateAuthRepository(db)
-	authService := auth.CreateAuthService(&authRepository)
-	authHandlers = auth.CreateAuthHandlers(&authService)
+	authHandlers = auth.CreateAuthHandlers()
 }
 
 func Shutdown() {
@@ -113,7 +100,7 @@ func main() {
 	server.Post("/session", userHandlers.CreateSession)
 
 	server.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
+		SigningKey: jwtware.SigningKey{Key: []byte(domains.JWT_secret)},
 	}))
 
 	server.Post("/game", authHandlers.CheckAuth, gamesHandlers.CreateGame)

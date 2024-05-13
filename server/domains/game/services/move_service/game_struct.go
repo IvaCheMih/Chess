@@ -8,19 +8,19 @@ import (
 )
 
 type Game struct {
-	N                     int
-	M                     int
-	WhiteClientId         *int
-	BlackClientId         *int
-	Figures               map[int]*Figure
-	IsCheckWhite          IsCheck
-	IsCheckBlack          IsCheck
-	WhiteCastling         WhiteCastling
-	BlackCastling         BlackCastling
-	LastPawnMove          int
-	Side                  int
-	RookNewIdIfItCastling int
-	RookOldIdIfItCastling int
+	N             int
+	M             int
+	WhiteClientId *int
+	BlackClientId *int
+	Figures       map[int]*Figure
+	IsCheckWhite  IsCheck
+	IsCheckBlack  IsCheck
+	WhiteCastling WhiteCastling
+	BlackCastling BlackCastling
+	LastPawnMove  int
+	Side          int
+	//RookNewIdIfItCastling int
+	//RookOldIdIfItCastling int
 }
 
 type IsCheck struct {
@@ -423,20 +423,20 @@ func (g *Game) ChangeRookIfCastling(to int) {
 	switch to {
 	case 2:
 		g.ChangeToAndFrom(3, 0)
-		g.RookNewIdIfItCastling = 3
-		g.RookOldIdIfItCastling = 0
+		//g.RookNewIdIfItCastling = 3
+		//g.RookOldIdIfItCastling = 0
 	case 6:
 		g.ChangeToAndFrom(5, 7)
-		g.RookNewIdIfItCastling = 5
-		g.RookOldIdIfItCastling = 7
+		//g.RookNewIdIfItCastling = 5
+		//g.RookOldIdIfItCastling = 7
 	case 57:
 		g.ChangeToAndFrom(59, 56)
-		g.RookNewIdIfItCastling = 59
-		g.RookOldIdIfItCastling = 56
+		//g.RookNewIdIfItCastling = 59
+		//g.RookOldIdIfItCastling = 56
 	case 62:
 		g.ChangeToAndFrom(61, 63)
-		g.RookNewIdIfItCastling = 61
-		g.RookOldIdIfItCastling = 63
+		//g.RookNewIdIfItCastling = 61
+		//g.RookOldIdIfItCastling = 63
 	}
 }
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"github.com/IvaCheMih/chess/server/domains"
 	"github.com/IvaCheMih/chess/server/domains/user/dto"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -45,7 +46,7 @@ func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 
 	var response dto.CreateSessionResponse
 
-	response.Token, err = token.SignedString([]byte("secret"))
+	response.Token, err = token.SignedString([]byte(domains.JWT_secret))
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}

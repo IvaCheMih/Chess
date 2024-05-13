@@ -6,13 +6,10 @@ import (
 )
 
 type AuthHandlers struct {
-	AuthService *AuthService
 }
 
-func CreateAuthHandlers(authService *AuthService) AuthHandlers {
-	return AuthHandlers{
-		AuthService: authService,
-	}
+func CreateAuthHandlers() AuthHandlers {
+	return AuthHandlers{}
 }
 
 func (a *AuthHandlers) CheckAuth(c *fiber.Ctx) error {
@@ -21,12 +18,6 @@ func (a *AuthHandlers) CheckAuth(c *fiber.Ctx) error {
 	userId64 := claims["userId"].(float64)
 
 	userId := int(userId64)
-
-	//err := a.AuthService.CheckUserId(userId)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return err
-	//}
 
 	c.Context().SetUserValue("userId", userId)
 
