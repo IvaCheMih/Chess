@@ -206,7 +206,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	err = UpdateBoardAfterMove(g, board, from, to, game, isCastling, tx)
+	err = UpdateBoardAfterMove(g, board, from, to, game, indexesToChange, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -315,8 +315,9 @@ func CheckCorrectNewFigure(figureId int) bool {
 	return true
 }
 
-func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int, game move_service.Game, isCastling bool, tx *gorm.DB) error {
+func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int, game move_service.Game, indexesToChange []int, tx *gorm.DB) error {
 	if board.Cells[to] != nil {
+
 		err := g.boardRepo.Delete(board.Cells[to].Id, tx)
 
 		if err != nil {
@@ -329,8 +330,12 @@ func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int,
 		return err
 	}
 
-	if isCastling {
-		err = g.boardRepo.Update(board.Cells[game.RookOldIdIfItCastling].Id, game.RookNewIdIfItCastling, tx)
+	if len(indexesToChange) > 2 {
+		if indexesToChange[2] == -1 {
+			err = g.boardRepo.Delete(board.Cells[indexesToChange[3]].Id, tx)
+		} else {
+			err = g.boardRepo.Update(board.Cells[indexesToChange[2]].Id, indexesToChange[3], tx)
+		}
 	}
 
 	return err

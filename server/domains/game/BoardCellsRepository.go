@@ -66,6 +66,8 @@ func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
 
 	err := tx.Delete(&models.BoardCell{}, id).Error
 
+	fmt.Println(err)
+
 	return err
 }
 

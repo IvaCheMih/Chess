@@ -18,34 +18,18 @@ func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board
 
 	possibleMoves := (*figure).GetPossibleMoves(&game)
 
-	printMoves(possibleMoves)
-
 	coordinatesToChange := []int{from, to}
 
-	isTrueMove := CheckMove(possibleMoves, &coordinatesToChange)
-
-	return isTrueMove, coordinatesToChange
+	return CheckMove(possibleMoves, coordinatesToChange)
 }
 
-func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int, indexesToChange []int) (Game, bool) {
-	//cellFrom := boardCells[from]
-	//cellTo := boardCells[to]
-
-	from = indexesToChange[0]
-	to = indexesToChange[1]
+func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, indexesToChange []int) (Game, bool) {
+	from := indexesToChange[0]
+	to := indexesToChange[1]
 
 	gameAfterMove := CreateGameStruct(responseGetGame, board)
 
 	gameAfterMove.ChangeToAndFrom(to, from)
-
-	if len(indexesToChange) > 2 {
-		if indexesToChange[2] != -1 {
-			gameAfterMove.ChangeToAndFrom(indexesToChange[2], indexesToChange[3])
-		} else {
-			fig := gameAfterMove.GetFigureByIndex(indexesToChange[3])
-			(*fig).Delete()
-		}
-	}
 
 	figure := gameAfterMove.GetFigureByIndex(to)
 
@@ -59,80 +43,82 @@ func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, 
 
 	gameAfterMove.ChangeCastlingFlag(figure)
 
+	gameAfterMove.ChangeLastPawnMove(figure, from, to)
+
 	return gameAfterMove, true
 }
 
-func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange *[]int) bool {
-	crdFrom := IndexToFieldCoordinates((*coordinatesToChange)[0])
-	crdTo := IndexToFieldCoordinates((*coordinatesToChange)[1])
+func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {
+	crdFrom := IndexToFieldCoordinates((coordinatesToChange)[0])
+	crdTo := IndexToFieldCoordinates((coordinatesToChange)[1])
 
 	if possibleMoves.Up != nil {
 		for _, pm := range possibleMoves.Up {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.Down != nil {
 		for _, pm := range possibleMoves.Down {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.Down != nil {
 		for _, pm := range possibleMoves.Down {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.Right != nil {
 		for _, pm := range possibleMoves.Right {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.Left != nil {
 		for _, pm := range possibleMoves.Left {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.UR != nil {
 		for _, pm := range possibleMoves.UR {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.UL != nil {
 		for _, pm := range possibleMoves.UL {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.DR != nil {
 		for _, pm := range possibleMoves.DR {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.DL != nil {
 		for _, pm := range possibleMoves.DL {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
 	if possibleMoves.Kn != nil {
 		for _, pm := range possibleMoves.Kn {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				return true
+				return true, coordinatesToChange
 			}
 		}
 	}
@@ -140,11 +126,10 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange *[]int) bool {
 	if possibleMoves.Castling != nil {
 		for _, pm := range possibleMoves.Castling {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				crdRook := []int{}
-				GetNewRookCoordinatesIfCastling((*coordinatesToChange)[1], &crdRook)
-				*coordinatesToChange = append(*coordinatesToChange, crdRook[0])
-				*coordinatesToChange = append(*coordinatesToChange, crdRook[1])
-				return true
+				crdRook := GetNewRookCoordinatesIfCastling((coordinatesToChange)[1])
+				coordinatesToChange = append(coordinatesToChange, crdRook[0])
+				coordinatesToChange = append(coordinatesToChange, crdRook[1])
+				return true, coordinatesToChange
 			}
 		}
 	}
@@ -152,33 +137,39 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange *[]int) bool {
 	if possibleMoves.EnPass != nil {
 		for _, pm := range possibleMoves.EnPass {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				*coordinatesToChange = append(*coordinatesToChange, -1)
-				*coordinatesToChange = append(*coordinatesToChange, FieldCoordinatesToIndex([]int{crdFrom[0], crdTo[1]}))
-				return true
+
+				coordinatesToChange = append(coordinatesToChange, -1)
+				coordinatesToChange = append(coordinatesToChange, FieldCoordinatesToIndex([]int{crdTo[0], crdFrom[1]}))
+
+				return true, coordinatesToChange
 			}
 		}
 	}
 
 	fmt.Println("Запрашиваемого хода нет в массиве")
-	return false
+	return false, []int{}
 }
 
-func GetNewRookCoordinatesIfCastling(to int, crd *[]int) {
+func GetNewRookCoordinatesIfCastling(to int) []int {
+	crd := []int{}
+
 	switch to {
 	case 2:
-		*crd = append(*crd, 0)
-		*crd = append(*crd, 3)
+		crd = append(crd, 0)
+		crd = append(crd, 3)
 	case 6:
-		*crd = append(*crd, 7)
-		*crd = append(*crd, 5)
+		crd = append(crd, 7)
+		crd = append(crd, 5)
 	case 57:
-		*crd = append(*crd, 56)
-		*crd = append(*crd, 59)
+		crd = append(crd, 56)
+		crd = append(crd, 59)
 	case 62:
 
-		*crd = append(*crd, 63)
-		*crd = append(*crd, 61)
+		crd = append(crd, 63)
+		crd = append(crd, 61)
 	}
+
+	return crd
 }
 
 func printMoves(possibleMoves *TheoryMoves) {
@@ -207,6 +198,14 @@ func printMoves(possibleMoves *TheoryMoves) {
 		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
 	}
 	for _, v := range possibleMoves.Kn {
+		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
+	}
+
+	for _, v := range possibleMoves.Castling {
+		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
+	}
+
+	for _, v := range possibleMoves.EnPass {
 		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
 	}
 

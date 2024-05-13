@@ -180,24 +180,19 @@ func (game *Game) ChangeLastPawnMove(figure *Figure, from int, to int) {
 }
 
 func (game *Game) IsKingCheck(index int) bool {
-	fmt.Println("начало проверки аттак на короля")
 	if game.CheckKnightAttack(index) {
 		return true
 	}
-	fmt.Println("Король не находится под атакой коня")
 
 	if game.CheckDiagonalAttack(index) {
-		fmt.Println("проверка диаг атаки")
 		return true
 	}
 
 	if game.CheckVertGorAttack(index) {
-		fmt.Println("проверка верт атаки")
 		return true
 	}
 
 	if game.CheckPawnAttack(index) {
-		fmt.Println("проверка пешечной атаки")
 		return true
 	}
 
@@ -226,14 +221,7 @@ func (game *Game) CheckKnightAttack(index int) bool {
 }
 
 func (game *Game) CheckDiagonalAttack(index int) bool {
-	fmt.Println("Начало диаг проверки")
-
-	fmt.Println(index)
-
 	crd := IndexToFieldCoordinates(index)
-	fmt.Println(crd)
-
-	fmt.Println(100)
 
 	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] + i}); i++ {
 		fmt.Println([]int{crd[0] + i, crd[1] + i})
@@ -245,7 +233,6 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 			break
 		}
 	}
-	fmt.Println(101)
 
 	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] - i}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + i, crd[1] - i}, 'b')
@@ -257,8 +244,6 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 		}
 	}
 
-	fmt.Println(102)
-
 	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] + i}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - i, crd[1] + i}, 'b')
 		if isCheck {
@@ -268,8 +253,6 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 			break
 		}
 	}
-
-	fmt.Println(103)
 
 	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] - i}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - i, crd[1] - i}, 'b')
@@ -281,16 +264,13 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 		}
 	}
 
-	fmt.Println("Конец диаг проверки")
 	return false
 }
 
 func (game *Game) CheckVertGorAttack(index int) bool {
 	crd := IndexToFieldCoordinates(index)
 
-	fmt.Println("Начало верт проверки")
 	for i := 1; IsOnRealBoard([]int{crd[0], crd[1] + i}); i++ {
-		fmt.Println(index + i)
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0], crd[1] + i}, 'r')
 		if isCheck {
 			return true
@@ -300,9 +280,7 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 		}
 	}
 
-	fmt.Println("направо нет шаха")
 	for i := 1; IsOnRealBoard([]int{crd[0], crd[1] - i}); i++ {
-		fmt.Println(500)
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0], crd[1] - i}, 'r')
 		if isCheck {
 			return true
@@ -312,7 +290,6 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 		}
 	}
 
-	fmt.Println("налево нет шаха")
 	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1]}); i++ {
 
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] + i, crd[1]}, 'r')
@@ -323,7 +300,7 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 			break
 		}
 	}
-	fmt.Println("вверх нет шаха")
+
 	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1]}); i++ {
 		isCheck, endFor := game.CheckAttackCell(crd, []int{crd[0] - i, crd[1]}, 'r')
 		if isCheck {
@@ -333,8 +310,6 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 			break
 		}
 	}
-	fmt.Println("вниз нет шаха")
-	fmt.Println("конец верт проверки")
 	return false
 }
 
@@ -345,9 +320,7 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 	if game.Side == *game.WhiteClientId {
 		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
 	} else {
-		fmt.Println(game.IsCheckWhite.KingGameID)
 		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
-		fmt.Println((*king).IsWhite())
 	}
 
 	fig := game.GetFigureByFieldCoordinates(cellCoordinate)
@@ -360,9 +333,6 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 	}
 	if (*fig).IsWhite() != (*king).IsWhite() {
 		if (*fig).GetType() == triggerFigure || (*fig).GetType() == 'q' {
-			fmt.Println((*fig).IsWhite())
-			fmt.Println((*king).IsWhite())
-			fmt.Println("Это поле атакует: ", (*fig).GetType(), cellCoordinate)
 			return true, true
 		}
 		return false, true
@@ -371,7 +341,6 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 }
 
 func (game *Game) CheckPawnAttack(indexKing int) bool {
-	fmt.Println("Начало пешечной проверки")
 
 	var king *Figure
 
@@ -416,7 +385,6 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 			}
 		}
 	}
-	fmt.Println("Начало пешечной проверки")
 	return false
 }
 

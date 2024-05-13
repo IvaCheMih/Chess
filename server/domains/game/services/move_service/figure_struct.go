@@ -55,10 +55,12 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	vert := [][]int{}
 	EnPass := [][]int{}
-	crd := figure.CellCoordinate
 	crdLastPawnMove := []int{}
 
+	crd := figure.CellCoordinate
+
 	if game.LastPawnMove > -1 {
+
 		crdLastPawnMove = IndexToFieldCoordinates(game.LastPawnMove)
 
 		if crdLastPawnMove[0] == crd[0]+1 || crdLastPawnMove[0] == crd[0]-1 {
