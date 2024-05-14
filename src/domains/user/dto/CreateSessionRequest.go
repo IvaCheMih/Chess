@@ -1,10 +1,10 @@
 package dto
 
 type CreateSessionRequest struct {
-	Id       int    `json:"id"`
-	Password string `json:"password"`
+	Id       int
+	Password string
 }
 
 type CreateSessionResponse struct {
-	Token string `json:"token"`
+	Token string
 }

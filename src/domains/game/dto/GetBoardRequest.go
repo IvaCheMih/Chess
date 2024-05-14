@@ -1,10 +1,10 @@
 package dto
 
 type BoardCellEntity struct {
-	IndexCell int `json:"index"`
-	FigureId  int `json:"figureId"`
+	IndexCell int
+	FigureId  int
 }
 
 type GetBoardResponse struct {
-	BoardCells []BoardCellEntity `json:"boardCells"`
+	BoardCells []BoardCellEntity
 }

@@ -1,10 +1,10 @@
 package dto
 
 type CreateUserRequest struct {
-	Password string `json:"password"`
+	Password string
 }
 
 type CreateUserResponse struct {
-	Id       int    `json:"id"`
-	Password string `json:"password"`
+	Id       int
+	Password string
 }

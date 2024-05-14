@@ -25,19 +25,19 @@ type Move struct {
 }
 
 type Game struct {
-	Id                 int  `json:"id"`
-	WhiteUserId        int  `json:"whiteUserId"`
-	BlackUserId        int  `json:"blackUserId"`
-	IsStarted          bool `json:"isStarted"`
-	IsEnded            bool `json:"isEnded"`
-	IsCheckWhite       bool `json:"isCheckWhite"`
-	WhiteKingCastling  bool `json:"whiteKingCastling"`
-	WhiteRookACastling bool `json:"whiteRookCastling"`
-	WhiteRookHCastling bool `json:"whiteRookHCastling"`
-	IsCheckBlack       bool `json:"isCheckBlack"`
-	BlackKingCastling  bool `json:"blackKingCastling"`
-	BlackRookACastling bool `json:"blackRookACastling"`
-	BlackRookHCastling bool `json:"blackRookHCastling"`
-	LastPawnMove       int  `json:"lastPawnMove"`
-	Side               int  `json:"side"`
+	Id                 int
+	WhiteUserId        int
+	BlackUserId        int
+	IsStarted          bool
+	IsEnded            bool
+	IsCheckWhite       bool
+	WhiteKingCastling  bool
+	WhiteRookACastling bool
+	WhiteRookHCastling bool
+	IsCheckBlack       bool
+	BlackKingCastling  bool
+	BlackRookACastling bool
+	BlackRookHCastling bool
+	LastPawnMove       int
+	Side               int
 }
