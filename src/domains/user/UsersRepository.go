@@ -2,7 +2,7 @@ package user
 
 import (
 	"errors"
-	"github.com/IvaCheMih/chess/server/domains/user/models"
+	"github.com/IvaCheMih/chess/src/domains/user/models"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
 )

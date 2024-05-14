@@ -1,8 +1,8 @@
 package move_service
 
 import (
-	"github.com/IvaCheMih/chess/server/domains/game/dto"
-	"github.com/IvaCheMih/chess/server/domains/game/models"
+	"github.com/IvaCheMih/chess/src/domains/game/dto"
+	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
 type Figure interface {

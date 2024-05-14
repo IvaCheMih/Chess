@@ -2,7 +2,7 @@ package game
 
 import (
 	"fmt"
-	"github.com/IvaCheMih/chess/server/domains/game/dto"
+	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/gofiber/fiber/v2"
 )
 

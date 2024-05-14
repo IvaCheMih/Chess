@@ -6,9 +6,9 @@ ADD go.mod go.sum ./
 
 RUN go mod download
 
-COPY ./server/ ./server
+COPY ./src/ ./src
 
-RUN go build -o chess ./server
+RUN go build -o chess ./src
 
 FROM ubuntu
 

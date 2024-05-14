@@ -3,9 +3,9 @@ package game
 import (
 	"errors"
 	"fmt"
-	"github.com/IvaCheMih/chess/server/domains/game/dto"
-	"github.com/IvaCheMih/chess/server/domains/game/models"
-	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
+	"github.com/IvaCheMih/chess/src/domains/game/dto"
+	"github.com/IvaCheMih/chess/src/domains/game/models"
+	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
 	"gorm.io/gorm"
 )
 

@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/IvaCheMih/chess/server/domains/game/models"
+import "github.com/IvaCheMih/chess/src/domains/game/models"
 
 type CreateNewFigureBody struct {
 	FigureId int

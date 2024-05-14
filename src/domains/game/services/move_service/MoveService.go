@@ -2,8 +2,8 @@ package move_service
 
 import (
 	"fmt"
-	"github.com/IvaCheMih/chess/server/domains/game/dto"
-	"github.com/IvaCheMih/chess/server/domains/game/models"
+	"github.com/IvaCheMih/chess/src/domains/game/dto"
+	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
 func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) (bool, []int) {

@@ -2,8 +2,8 @@ package game
 
 import (
 	"database/sql"
-	"github.com/IvaCheMih/chess/server/domains/game/models"
-	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
+	"github.com/IvaCheMih/chess/src/domains/game/models"
+	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -102,7 +102,7 @@ func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gor
 
 func (g *GamesRepository) UpdateIsEnded(gameId int) (models.Game, error) {
 
-	res := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{"isEnded": true})
+	res := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{"is_ended": true})
 	if res.Error != nil {
 		return models.Game{}, res.Error
 	}

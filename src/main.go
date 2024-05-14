@@ -1,12 +1,12 @@
 package main
 
 import (
-	_ "github.com/IvaCheMih/chess/server/docs"
-	"github.com/IvaCheMih/chess/server/domains"
-	"github.com/IvaCheMih/chess/server/domains/auth"
-	"github.com/IvaCheMih/chess/server/domains/game"
-	"github.com/IvaCheMih/chess/server/domains/game/services/move_service"
-	"github.com/IvaCheMih/chess/server/domains/user"
+	_ "github.com/IvaCheMih/chess/src/docs"
+	"github.com/IvaCheMih/chess/src/domains/auth"
+	"github.com/IvaCheMih/chess/src/domains/game"
+	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
+	"github.com/IvaCheMih/chess/src/domains/services"
+	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
@@ -22,23 +22,21 @@ var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
-var env = []string{"POSTGRES_URL", "JWT_SECRET"}
-
 func Init() {
 
-	domains.GetURLsFromEnv(env)
+	services.GetFromEnv(env)
 
 	time.Sleep(5 * time.Second)
 
-	migrationService := domains.CreateMigrationService()
+	migrationService := services.CreateMigrationService()
 
-	migrationService.RunUp(domains.PostgresqlUrl, "file://migrations/postgresql")
+	migrationService.RunUp(services.PostgresqlUrl, "file://migrations/postgresql")
 
 	move_service.FigureRepo = move_service.CreateFigureRepo()
 
 	var err error
 
-	db, err = gorm.Open(postgres.Open(domains.PostgresqlUrl), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(services.PostgresqlUrl), &gorm.Config{})
 
 	if err != nil {
 		log.Fatalln(err)
@@ -58,6 +56,8 @@ func Init() {
 
 	authHandlers = auth.CreateAuthHandlers()
 }
+
+var env = []string{"POSTGRES_URL", "JWT_SECRET"}
 
 func Shutdown() {
 	sqlDB, _ := db.DB()
@@ -100,7 +100,7 @@ func main() {
 	server.Post("/session", userHandlers.CreateSession)
 
 	server.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte(domains.JWT_secret)},
+		SigningKey: jwtware.SigningKey{Key: []byte(services.JWT_secret)},
 	}))
 
 	server.Post("/game", authHandlers.CheckAuth, gamesHandlers.CreateGame)

@@ -2,7 +2,7 @@ package user
 
 import (
 	"fmt"
-	"github.com/IvaCheMih/chess/server/domains/user/dto"
+	"github.com/IvaCheMih/chess/src/domains/user/dto"
 	_ "github.com/lib/pq"
 )
 
