@@ -5,9 +5,16 @@ import "os"
 var PostgresqlUrl string
 var JWT_secret string
 
-func GetFromEnv(env []string) {
+func GetFromEnv() {
+	var exist bool
 
-	PostgresqlUrl, _ = os.LookupEnv(env[0])
+	PostgresqlUrl, exist = os.LookupEnv("POSTGRES_URL")
+	if !exist {
+		panic("PostgresqlUrl is not found")
+	}
 
-	JWT_secret, _ = os.LookupEnv(env[1])
+	JWT_secret, exist = os.LookupEnv("JWT_SECRET")
+	if !exist {
+		panic("JWT_secret is not found")
+	}
 }

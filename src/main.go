@@ -24,7 +24,7 @@ var authHandlers auth.AuthHandlers
 
 func Init() {
 
-	services.GetFromEnv(env)
+	services.GetFromEnv()
 
 	time.Sleep(5 * time.Second)
 
@@ -56,8 +56,6 @@ func Init() {
 
 	authHandlers = auth.CreateAuthHandlers()
 }
-
-var env = []string{"POSTGRES_URL", "JWT_SECRET"}
 
 func Shutdown() {
 	sqlDB, _ := db.DB()
