@@ -10,18 +10,16 @@ import (
 )
 
 type GamesService struct {
-	boardRepo  *BoardCellsRepository
-	figureRepo *FiguresRepository
-	gamesRepo  *GamesRepository
-	movesRepo  *MovesRepository
+	boardRepo *BoardCellsRepository
+	gamesRepo *GamesRepository
+	movesRepo *MovesRepository
 }
 
-func CreateGamesService(boardRepo *BoardCellsRepository, figureRepo *FiguresRepository, gamesRepo *GamesRepository, movesRepo *MovesRepository) GamesService {
+func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesRepository, movesRepo *MovesRepository) GamesService {
 	return GamesService{
-		boardRepo:  boardRepo,
-		figureRepo: figureRepo,
-		gamesRepo:  gamesRepo,
-		movesRepo:  movesRepo,
+		boardRepo: boardRepo,
+		gamesRepo: gamesRepo,
+		movesRepo: movesRepo,
 	}
 }
 
@@ -143,16 +141,12 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, errors.New("Move is not correct")
 	}
 
-	response, err := g.gamesRepo.GetById(gameId)
+	gameModel, err := g.gamesRepo.GetById(gameId)
 	if err != nil {
 		return models.Move{}, err
 	}
 
-	var responseGetGame dto.CreateGameResponse
-
-	FromModelsToDtoCreateGame(response, &responseGetGame)
-
-	if err = CheckCorrectRequestSideUser(userId, responseGetGame); err != nil {
+	if err = CheckCorrectRequestSideUser(userId, gameModel); err != nil {
 		fmt.Println(err)
 		return models.Move{}, err
 	}
@@ -160,13 +154,13 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	isCorrect, indexesToChange := move_service.CheckCorrectMove(responseGetGame, board, from, to)
+	isCorrect, indexesToChange := move_service.CheckCorrectMove(gameModel, board, from, to)
 
 	if !isCorrect {
 		return models.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
 	}
 
-	game, check := move_service.CheckIsItCheck(responseGetGame, board, indexesToChange)
+	game, check := move_service.CheckIsItCheck(gameModel, board, indexesToChange)
 
 	if !check {
 		return models.Move{}, errors.New("Move is not possible (CheckIsItCheck)")
@@ -255,20 +249,20 @@ func (g *GamesService) GiveUp(gameId int, userId any) (models.Game, error) {
 
 }
 
-func CheckCorrectRequestSideUser(userId any, responseGetGame dto.CreateGameResponse) error {
-	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
+func CheckCorrectRequestSideUser(userId any, game models.Game) error {
+	if userId != game.WhiteUserId && userId != game.BlackUserId {
 		return errors.New("This is not your game")
 	}
 
-	if !responseGetGame.IsStarted || responseGetGame.IsEnded {
+	if !game.IsStarted || game.IsEnded {
 		return errors.New("Game is not active")
 	}
 
-	if responseGetGame.WhiteUserId == responseGetGame.Side && userId != responseGetGame.WhiteUserId {
+	if game.WhiteUserId == game.Side && userId != game.WhiteUserId {
 		return errors.New("Its not your move now")
 	}
 
-	if responseGetGame.BlackUserId == responseGetGame.Side && userId != responseGetGame.BlackUserId {
+	if game.BlackUserId == game.Side && userId != game.BlackUserId {
 		return errors.New("Its not your move now")
 	}
 	return nil

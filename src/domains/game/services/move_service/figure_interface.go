@@ -1,7 +1,6 @@
 package move_service
 
 import (
-	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
@@ -14,7 +13,7 @@ type Figure interface {
 	Delete()
 }
 
-func CreateField(board models.Board, game dto.CreateGameResponse) (map[int]*Figure, int, int) {
+func CreateField(board models.Board, gameModel models.Game) (map[int]*Figure, int, int) {
 	blackKingCell, whiteKingCell := 0, 0
 	field := map[int]*Figure{}
 
@@ -30,18 +29,18 @@ func CreateField(board models.Board, game dto.CreateGameResponse) (map[int]*Figu
 
 		isWhite := cell.FigureId <= 7
 
-		field[cell.IndexCell] = CreateFigure(FigureRepo[cell.FigureId], isWhite, cell.IndexCell, game)
+		field[cell.IndexCell] = CreateFigureI(FigureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
 
 	}
 
 	return field, blackKingCell, whiteKingCell
 }
 
-func CreateFigure(_type byte, isWhite bool, index int, game dto.CreateGameResponse) *Figure {
+func CreateFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *Figure {
 
 	coordinates := IndexToFieldCoordinates(index)
 
-	figure := CreateFigure1(_type, isWhite, coordinates, game)
+	figure := CreateFigure(_type, isWhite, coordinates, gameModel)
 
 	if figure == nil {
 		return nil
@@ -50,7 +49,7 @@ func CreateFigure(_type byte, isWhite bool, index int, game dto.CreateGameRespon
 	return &figure
 }
 
-func CreateFigure1(_type byte, isWhite bool, coordinates []int, game dto.CreateGameResponse) Figure {
+func CreateFigure(_type byte, isWhite bool, coordinates []int, gameModel models.Game) Figure {
 	var bf = BaseFigure{isWhite, _type, coordinates}
 
 	switch _type {
@@ -60,11 +59,11 @@ func CreateFigure1(_type byte, isWhite bool, coordinates []int, game dto.CreateG
 
 		castling := false
 		if isWhite {
-			if game.WhiteRookACastling {
+			if gameModel.WhiteRookACastling {
 				castling = true
 			}
 		} else {
-			if game.BlackRookACastling {
+			if gameModel.BlackRookACastling {
 				castling = true
 			}
 		}
@@ -73,11 +72,11 @@ func CreateFigure1(_type byte, isWhite bool, coordinates []int, game dto.CreateG
 	case 'h':
 		castling := false
 		if isWhite {
-			if game.WhiteRookHCastling {
+			if gameModel.WhiteRookHCastling {
 				castling = true
 			}
 		} else {
-			if game.BlackRookHCastling {
+			if gameModel.BlackRookHCastling {
 				castling = true
 			}
 		}
@@ -91,11 +90,11 @@ func CreateFigure1(_type byte, isWhite bool, coordinates []int, game dto.CreateG
 	case 'K':
 		castling := false
 		if isWhite {
-			if game.WhiteKingCastling {
+			if gameModel.WhiteKingCastling {
 				castling = true
 			}
 		} else {
-			if game.BlackKingCastling {
+			if gameModel.BlackKingCastling {
 				castling = true
 			}
 		}

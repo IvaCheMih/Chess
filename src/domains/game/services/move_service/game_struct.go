@@ -2,7 +2,6 @@ package move_service
 
 import (
 	"fmt"
-	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"math"
 )
@@ -17,7 +16,7 @@ type Game struct {
 	IsCheckBlack  IsCheck
 	WhiteCastling WhiteCastling
 	BlackCastling BlackCastling
-	LastPawnMove  int
+	LastPawnMove  *int
 	Side          int
 	//RookNewIdIfItCastling int
 	//RookOldIdIfItCastling int
@@ -42,22 +41,22 @@ type BlackCastling struct {
 
 var FigureRepo = make(map[int]byte)
 
-func CreateGameStruct(game dto.CreateGameResponse, board models.Board) Game {
+func CreateGameStruct(gameModel models.Game, board models.Board) Game {
 
-	figures, blackKingCell, whiteKingCell := CreateField(board, game)
+	figures, blackKingCell, whiteKingCell := CreateField(board, gameModel)
 
 	return Game{
 		N:             8,
 		M:             12,
-		WhiteClientId: &game.WhiteUserId,
-		BlackClientId: &game.BlackUserId,
+		WhiteClientId: &gameModel.WhiteUserId,
+		BlackClientId: &gameModel.BlackUserId,
 		Figures:       figures,
-		IsCheckWhite:  IsCheck{game.IsCheckWhite, whiteKingCell},
-		IsCheckBlack:  IsCheck{game.IsCheckBlack, blackKingCell},
-		WhiteCastling: WhiteCastling{game.WhiteKingCastling, game.WhiteRookACastling, game.WhiteRookHCastling},
-		BlackCastling: BlackCastling{game.BlackKingCastling, game.BlackRookACastling, game.BlackRookHCastling},
-		LastPawnMove:  game.LastPawnMove,
-		Side:          game.Side,
+		IsCheckWhite:  IsCheck{gameModel.IsCheckWhite, whiteKingCell},
+		IsCheckBlack:  IsCheck{gameModel.IsCheckBlack, blackKingCell},
+		WhiteCastling: WhiteCastling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
+		BlackCastling: BlackCastling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
+		LastPawnMove:  gameModel.LastPawnMove,
+		Side:          gameModel.Side,
 	}
 }
 
@@ -171,12 +170,12 @@ func (game *Game) ChangeCastlingFlag(figure *Figure) {
 func (game *Game) ChangeLastPawnMove(figure *Figure, from int, to int) {
 	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 9 {
 
-		game.LastPawnMove = to
+		game.LastPawnMove = &to
 
 		return
 	}
 
-	game.LastPawnMove = -1
+	game.LastPawnMove = nil
 }
 
 func (game *Game) IsKingCheck(index int) bool {
@@ -398,14 +397,14 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 
 	crdLPM := []int{}
 
-	if g.LastPawnMove != -1 {
-		crdLPM = IndexToFieldCoordinates(g.LastPawnMove)
+	if g.LastPawnMove != nil {
+		crdLPM = IndexToFieldCoordinates(*g.LastPawnMove)
 	}
 
 	if figureTo != nil {
 		(*figureTo).Delete()
 	} else {
-		if (*figureFrom).GetType() == 'p' && g.LastPawnMove != -1 && coordinateFrom[0] == crdLPM[0] && coordinateTo[1] == crdLPM[1] {
+		if (*figureFrom).GetType() == 'p' && g.LastPawnMove != nil && coordinateFrom[0] == crdLPM[0] && coordinateTo[1] == crdLPM[1] {
 			pawn := g.GetFigureByFieldCoordinates(crdLPM)
 			(*pawn).Delete()
 		}
@@ -423,20 +422,12 @@ func (g *Game) ChangeRookIfCastling(to int) {
 	switch to {
 	case 2:
 		g.ChangeToAndFrom(3, 0)
-		//g.RookNewIdIfItCastling = 3
-		//g.RookOldIdIfItCastling = 0
 	case 6:
 		g.ChangeToAndFrom(5, 7)
-		//g.RookNewIdIfItCastling = 5
-		//g.RookOldIdIfItCastling = 7
 	case 57:
 		g.ChangeToAndFrom(59, 56)
-		//g.RookNewIdIfItCastling = 59
-		//g.RookOldIdIfItCastling = 56
 	case 62:
 		g.ChangeToAndFrom(61, 63)
-		//g.RookNewIdIfItCastling = 61
-		//g.RookOldIdIfItCastling = 63
 	}
 }
 

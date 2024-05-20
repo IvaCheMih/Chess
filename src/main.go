@@ -44,14 +44,13 @@ func Init() {
 
 	usersRepository := user.CreateUsersRepository(db)
 	boardCellsRepository := game.CreateBoardCellsRepository(db)
-	figuresRepository := game.CreateFiguresRepository(db)
 	movesRepository := game.CreateMovesRepository(db)
 	gamesRepository := game.CreateGamesRepository(db)
 
 	usersServices := user.CreateUsersService(&usersRepository)
 	userHandlers = user.CreateUserHandlers(&usersServices)
 
-	gamesService := game.CreateGamesService(&boardCellsRepository, &figuresRepository, &gamesRepository, &movesRepository)
+	gamesService := game.CreateGamesService(&boardCellsRepository, &gamesRepository, &movesRepository)
 	gamesHandlers = game.CreateGamesHandlers(&gamesService)
 
 	authHandlers = auth.CreateAuthHandlers()

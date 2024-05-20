@@ -38,6 +38,6 @@ type Game struct {
 	BlackKingCastling  bool
 	BlackRookACastling bool
 	BlackRookHCastling bool
-	LastPawnMove       int
+	LastPawnMove       *int
 	Side               int
 }

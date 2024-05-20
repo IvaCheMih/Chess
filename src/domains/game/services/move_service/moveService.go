@@ -2,13 +2,12 @@ package move_service
 
 import (
 	"fmt"
-	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
-func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board, from int, to int) (bool, []int) {
+func CheckCorrectMove(gameModel models.Game, board models.Board, from int, to int) (bool, []int) {
 
-	game := CreateGameStruct(responseGetGame, board)
+	game := CreateGameStruct(gameModel, board)
 
 	figure := game.GetFigureByIndex(from)
 
@@ -23,11 +22,11 @@ func CheckCorrectMove(responseGetGame dto.CreateGameResponse, board models.Board
 	return CheckMove(possibleMoves, coordinatesToChange)
 }
 
-func CheckIsItCheck(responseGetGame dto.CreateGameResponse, board models.Board, indexesToChange []int) (Game, bool) {
+func CheckIsItCheck(gameModel models.Game, board models.Board, indexesToChange []int) (Game, bool) {
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
-	gameAfterMove := CreateGameStruct(responseGetGame, board)
+	gameAfterMove := CreateGameStruct(gameModel, board)
 
 	gameAfterMove.ChangeToAndFrom(to, from)
 
