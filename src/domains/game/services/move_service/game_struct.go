@@ -7,9 +7,7 @@ import (
 )
 
 type Game struct {
-	N int
-	//WhiteClientId *int
-	//BlackClientId *int
+	N             int
 	Figures       map[int]*Figure
 	IsCheckWhite  IsCheck
 	IsCheckBlack  IsCheck
@@ -119,7 +117,7 @@ func (game *Game) ChangeKingGameID(to int) {
 	if (*figure).GetType() != 'K' {
 		return
 	}
-	if (*figure).IsWhite() {
+	if (*figure).IsItWhite() {
 		game.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
 	} else {
 		game.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
@@ -143,19 +141,19 @@ func (game *Game) ChangeCastlingFlag(to int) {
 
 	switch (*figure).GetType() {
 	case 'K':
-		if (*figure).IsWhite() {
+		if (*figure).IsItWhite() {
 			game.WhiteCastling.KingCastling = true
 		} else {
 			game.BlackCastling.KingCastling = true
 		}
 	case 'a':
-		if (*figure).IsWhite() {
+		if (*figure).IsItWhite() {
 			game.WhiteCastling.RookACastling = true
 		} else {
 			game.BlackCastling.RookACastling = true
 		}
 	case 'h':
-		if (*figure).IsWhite() {
+		if (*figure).IsItWhite() {
 			game.WhiteCastling.RookHCastling = true
 		} else {
 			game.BlackCastling.RookHCastling = true
@@ -201,8 +199,8 @@ func (game *Game) CheckKnightAttack(index int) bool {
 	for _, knPosition := range TheoryKnightSteps {
 		if game.CheckCellOnBoardByIndex(index + knPosition) {
 			if fig := game.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'h' {
-				if (*fig).IsWhite() != (*king).IsWhite() {
-					if (*king).IsWhite() {
+				if (*fig).IsItWhite() != (*king).IsItWhite() {
+					if (*king).IsItWhite() {
 						game.IsCheckWhite.IsItCheck = true
 						return true
 					} else {
@@ -325,10 +323,10 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 	if fig == nil {
 		return false, false
 	}
-	if (*fig).IsWhite() == (*king).IsWhite() {
+	if (*fig).IsItWhite() == (*king).IsItWhite() {
 		return false, true
 	}
-	if (*fig).IsWhite() != (*king).IsWhite() {
+	if (*fig).IsItWhite() != (*king).IsItWhite() {
 		if (*fig).GetType() == triggerFigure || (*fig).GetType() == 'q' {
 			return true, true
 		}
@@ -349,35 +347,35 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 
 	crd := IndexToFieldCoordinates(indexKing)
 
-	if (*king).IsWhite() && IsOnRealBoard([]int{crd[0], crd[1] + 1}) {
+	if (*king).IsItWhite() && IsOnRealBoard([]int{crd[0], crd[1] + 1}) {
 
 		if fig := game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] + 1}); fig != nil {
 
-			if (*fig).IsWhite() != (*king).IsWhite() {
+			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if (*king).IsWhite() && IsOnRealBoard([]int{crd[0], crd[1] - 1}) {
+	if (*king).IsItWhite() && IsOnRealBoard([]int{crd[0], crd[1] - 1}) {
 		if fig := game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - 1}); fig != nil {
-			if (*fig).IsWhite() != (*king).IsWhite() {
+			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsWhite() && IsOnRealBoard([]int{crd[0] + 1, crd[1]}) {
+	if !(*king).IsItWhite() && IsOnRealBoard([]int{crd[0] + 1, crd[1]}) {
 		if fig := game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1]}); fig != nil {
-			if (*fig).IsWhite() != (*king).IsWhite() {
+			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsWhite() && IsOnRealBoard([]int{crd[0] - 1, crd[1]}) {
+	if !(*king).IsItWhite() && IsOnRealBoard([]int{crd[0] - 1, crd[1]}) {
 		if fig := game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1]}); fig != nil {
-			if (*fig).IsWhite() != (*king).IsWhite() {
+			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
@@ -423,11 +421,11 @@ func (g *Game) IsItYourFigure(figure *Figure) bool {
 		return false
 	}
 
-	if g.Side && !(*figure).IsWhite() {
+	if g.Side && !(*figure).IsItWhite() {
 		return false
 	}
 
-	if !g.Side && (*figure).IsWhite() {
+	if !g.Side && (*figure).IsItWhite() {
 		return false
 	}
 

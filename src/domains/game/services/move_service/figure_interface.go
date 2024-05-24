@@ -5,7 +5,7 @@ import (
 )
 
 type Figure interface {
-	IsWhite() bool
+	IsItWhite() bool
 	GetType() byte
 	GetPossibleMoves(*Game) *TheoryMoves
 	ChangeCoordinates([]int)

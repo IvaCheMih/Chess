@@ -1,9 +1,5 @@
 package move_service
 
-import (
-	"fmt"
-)
-
 type FigurePawn struct {
 	BaseFigure
 }
@@ -47,7 +43,7 @@ type TheoryMoves struct {
 func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	n := 0
 
-	if figure.IsWhite() {
+	if figure.IsItWhite() {
 		n = 1
 	} else {
 		n = -1
@@ -57,7 +53,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	EnPass := [][]int{}
 	crdLastPawnMove := []int{}
 
-	crd := figure.CellCoordinate
+	crd := figure.CellCoordinates
 
 	if game.LastPawnMove != nil {
 
@@ -89,8 +85,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	left := [][]int{}
 
 	if IsOnRealBoard([]int{crd[0] + 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1] - n}) != nil {
-		if figure.IsWhite() != (*game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1] - n})).IsWhite() {
-			fmt.Println("пешка пытается кушоц налево")
+		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1] - n})).IsItWhite() {
 			left = append(left, []int{crd[0] + 1, crd[1] - n})
 		}
 	}
@@ -98,8 +93,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	right := [][]int{}
 
 	if IsOnRealBoard([]int{crd[0] - 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1] - n}) != nil {
-		if figure.IsWhite() != (*game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1] - n})).IsWhite() {
-			fmt.Println("пешка пытается кушоц направо")
+		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1] - n})).IsItWhite() {
 			right = append(right, []int{crd[0] - 1, crd[1] - n})
 		}
 	}
@@ -133,7 +127,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 		Kn:    nil,
 	}
 
-	crd := figure.CellCoordinate
+	crd := figure.CellCoordinates
 
 	for index := crd[1] + 1; IsOnRealBoard([]int{crd[0], index}); index++ {
 
@@ -188,7 +182,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 }
 
 func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
-	crd := figure.CellCoordinate
+	crd := figure.CellCoordinates
 
 	theorySteps := [][]int{
 		{crd[0] + 2, crd[1] + 1},
@@ -207,7 +201,7 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 			continue
 		} else {
 			fig := game.GetFigureByFieldCoordinates(coordinates)
-			if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
+			if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 				continue
 			}
 			kn = append(kn, coordinates)
@@ -230,7 +224,7 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 }
 
 func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
-	crd := figure.CellCoordinate
+	crd := figure.CellCoordinates
 
 	var theoryMoves = TheoryMoves{
 		Up:    nil,
@@ -308,7 +302,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		Kn:    nil,
 	}
 
-	crd := figure.CellCoordinate
+	crd := figure.CellCoordinates
 
 	for index := crd[1] + 1; IsOnRealBoard([]int{crd[0], index}); index++ {
 
@@ -411,7 +405,7 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 }
 
 func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
-	crd := figure.CellCoordinate
+	crd := figure.CellCoordinates
 
 	theorySteps := GetTheorySteps(crd)
 
@@ -423,7 +417,6 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			canMove := true
 
 			for _, move1 := range GetTheorySteps(move) {
-				fmt.Println("смотрим есть ли король на: ", move1)
 				if move1[0] == crd[0] && move1[1] == crd[1] {
 					continue
 				}
@@ -443,7 +436,6 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 				}
 			}
 			if canMove {
-				fmt.Println("король может пойти на клетку: ", move)
 				k = append(k, move)
 			}
 
@@ -452,14 +444,10 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	castling := [][]int{}
 
-	fmt.Println()
-	fmt.Println("НАЧАЛО ПРОВЕРКИ РОКИРОВКИ")
-
 	if !figure.Castling {
-		if figure.IsWhite() && crd[0] == 4 && crd[1] == 7 {
+		if figure.IsItWhite() && crd[0] == 4 && crd[1] == 7 {
 			rookA := game.GetFigureByFieldCoordinates([]int{0, 7})
-			if rookA != nil && (*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.RookACastling {
-				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
+			if rookA != nil && (*rookA).IsItWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.RookACastling {
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(59) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(59)) == nil &&
 					!game.IsKingCheck(58) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(58)) == nil &&
@@ -469,8 +457,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 
 			rookH := game.GetFigureByFieldCoordinates([]int{7, 7})
-			if rookH != nil && (*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.RookHCastling {
-				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
+			if rookH != nil && (*rookH).IsItWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.RookHCastling {
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(61) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(61)) == nil &&
 					!game.IsKingCheck(62) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(62)) == nil {
@@ -479,10 +466,9 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 		}
 
-		if !figure.IsWhite() && crd[0] == 4 && crd[1] == 0 {
+		if !figure.IsItWhite() && crd[0] == 4 && crd[1] == 0 {
 			rookA := game.GetFigureByFieldCoordinates([]int{0, 0})
-			if rookA != nil && !(*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.RookACastling {
-				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
+			if rookA != nil && !(*rookA).IsItWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.RookACastling {
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(3) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(3)) == nil &&
 					!game.IsKingCheck(2) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(2)) == nil &&
@@ -492,8 +478,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 
 			rookH := game.GetFigureByFieldCoordinates([]int{7, 0})
-			if rookH != nil && !(*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.RookHCastling {
-				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
+			if rookH != nil && !(*rookH).IsItWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.RookHCastling {
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(5) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(5)) == nil &&
 					!game.IsKingCheck(6) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(6)) == nil {
@@ -502,9 +487,6 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 		}
 	}
-
-	fmt.Println("КОНЕЦ ПРОВЕРКИ РОКИРОВКИ")
-	fmt.Println()
 
 	var theoryMoves = TheoryMoves{
 		Up:       nil,
@@ -524,11 +506,11 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 
 func (figure *FigureRook) AddMove(game *Game, crd []int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false, false
 	}
 
-	if fig != nil && (*fig).IsWhite() != (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() != (*figure).IsItWhite() {
 		return true, false
 	}
 
@@ -537,11 +519,11 @@ func (figure *FigureRook) AddMove(game *Game, crd []int) (bool, bool) {
 
 func (figure *FigureBishop) AddMove(game *Game, crd []int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false, false
 	}
 
-	if fig != nil && (*fig).IsWhite() != (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() != (*figure).IsItWhite() {
 		return true, false
 	}
 
@@ -550,11 +532,11 @@ func (figure *FigureBishop) AddMove(game *Game, crd []int) (bool, bool) {
 
 func (figure *FigureQueen) AddMove(game *Game, crd []int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false, false
 	}
 
-	if fig != nil && (*fig).IsWhite() != (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() != (*figure).IsItWhite() {
 		return true, false
 	}
 
@@ -563,7 +545,7 @@ func (figure *FigureQueen) AddMove(game *Game, crd []int) (bool, bool) {
 
 func (figure *FigureKing) AddMove(game *Game, crd []int) bool {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsWhite() == (*figure).IsWhite() {
+	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false
 	}
 	return true
