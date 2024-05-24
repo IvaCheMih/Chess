@@ -387,19 +387,8 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureTo := g.GetFigureByFieldCoordinates(coordinateTo)
 	figureFrom := g.GetFigureByFieldCoordinates(coordinateFrom)
 
-	crdLPM := []int{}
-
-	if g.LastPawnMove != nil {
-		crdLPM = IndexToFieldCoordinates(*g.LastPawnMove)
-	}
-
 	if figureTo != nil {
 		(*figureTo).Delete()
-	} else {
-		if (*figureFrom).GetType() == 'p' && g.LastPawnMove != nil && coordinateFrom[0] == crdLPM[0] && coordinateTo[1] == crdLPM[1] {
-			pawn := g.GetFigureByFieldCoordinates(crdLPM)
-			(*pawn).Delete()
-		}
 	}
 
 	(*figureFrom).ChangeCoordinates(coordinateTo)
@@ -410,18 +399,18 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureTo = g.GetFigureByIndex(to)
 }
 
-func (g *Game) ChangeRookIfCastling(to int) {
-	switch to {
-	case 2:
-		g.ChangeToAndFrom(3, 0)
-	case 6:
-		g.ChangeToAndFrom(5, 7)
-	case 57:
-		g.ChangeToAndFrom(59, 56)
-	case 62:
-		g.ChangeToAndFrom(61, 63)
-	}
-}
+//func (g *Game) ChangeRookIfCastling(to int) {
+//	switch to {
+//	case 2:
+//		g.ChangeToAndFrom(3, 0)
+//	case 6:
+//		g.ChangeToAndFrom(5, 7)
+//	case 57:
+//		g.ChangeToAndFrom(59, 56)
+//	case 62:
+//		g.ChangeToAndFrom(61, 63)
+//	}
+//}
 
 func (g *Game) IsItYourFigure(figure *Figure) bool {
 	if figure == nil {
@@ -437,6 +426,24 @@ func (g *Game) IsItYourFigure(figure *Figure) bool {
 	}
 
 	return true
+}
+
+func (g *Game) DeletePawn(indexesToChange []int) {
+	if indexesToChange[1] != -1 {
+		return
+	}
+
+	figure := g.GetFigureByIndex(indexesToChange[3])
+
+	(*figure).Delete()
+}
+
+func (g *Game) ChangeRookField(indexesToChange []int) {
+	if indexesToChange[1] == -1 {
+		return
+	}
+
+	g.ChangeToAndFrom(indexesToChange[2], indexesToChange[3])
 }
 
 var TheoryKnightSteps = []int{

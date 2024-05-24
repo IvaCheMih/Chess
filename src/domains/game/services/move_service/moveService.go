@@ -33,6 +33,11 @@ func IsItCheck(indexesToChange []int, game *Game) bool {
 
 	game.ChangeToAndFrom(to, from)
 
+	if len(indexesToChange) > 2 {
+		game.DeletePawn(indexesToChange)
+		game.ChangeRookField(indexesToChange)
+	}
+
 	figure := game.GetFigureByIndex(to)
 
 	if figure != nil {
