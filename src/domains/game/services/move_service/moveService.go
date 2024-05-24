@@ -38,19 +38,15 @@ func IsItCheck(indexesToChange []int, game *Game) bool {
 		game.ChangeRookField(indexesToChange)
 	}
 
-	figure := game.GetFigureByIndex(to)
-
-	if figure != nil {
-		game.ChangeKingGameID(figure)
-	}
+	game.ChangeKingGameID(to)
 
 	if game.Check() {
 		return false
 	}
 
-	game.ChangeCastlingFlag(figure)
+	game.ChangeCastlingFlag(to)
 
-	game.ChangeLastPawnMove(figure, from, to)
+	game.ChangeLastPawnMove(from, to)
 
 	return true
 }

@@ -113,7 +113,9 @@ func (game *Game) CheckCellOnBoardByIndex(index int) bool {
 	return false
 }
 
-func (game *Game) ChangeKingGameID(figure *Figure) {
+func (game *Game) ChangeKingGameID(to int) {
+	figure := game.GetFigureByIndex(to)
+
 	if (*figure).GetType() != 'K' {
 		return
 	}
@@ -136,7 +138,9 @@ func (game *Game) Check() bool {
 	return false
 }
 
-func (game *Game) ChangeCastlingFlag(figure *Figure) {
+func (game *Game) ChangeCastlingFlag(to int) {
+	figure := game.GetFigureByIndex(to)
+
 	switch (*figure).GetType() {
 	case 'K':
 		if (*figure).IsWhite() {
@@ -159,7 +163,9 @@ func (game *Game) ChangeCastlingFlag(figure *Figure) {
 	}
 }
 
-func (game *Game) ChangeLastPawnMove(figure *Figure, from int, to int) {
+func (game *Game) ChangeLastPawnMove(from int, to int) {
+	figure := game.GetFigureByIndex(to)
+
 	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 9 {
 
 		game.LastPawnMove = &to
@@ -443,7 +449,7 @@ func (g *Game) ChangeRookField(indexesToChange []int) {
 		return
 	}
 
-	g.ChangeToAndFrom(indexesToChange[2], indexesToChange[3])
+	g.ChangeToAndFrom(indexesToChange[3], indexesToChange[2])
 }
 
 var TheoryKnightSteps = []int{
