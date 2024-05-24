@@ -28,7 +28,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	createNewBoard := false
 
 	userColor := "white_user_id"
-	gameSide := userId
+	gameSide := false
 
 	if !userRequestedColor {
 		userColor = "black_user_id"
@@ -40,7 +40,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	}
 
 	if userColor == "black_user_id" {
-		gameSide = response.WhiteUserId
+		gameSide = true
 	}
 
 	tx := g.gamesRepo.db.Begin()
@@ -154,16 +154,16 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	isCorrect, indexesToChange := move_service.CheckCorrectMove(gameModel, board, from, to)
+	indexesToChange, game := move_service.IsMoveCorrect(gameModel, board, from, to)
 
-	if !isCorrect {
-		return models.Move{}, errors.New("Move is not possible (CheckCorrectMove)")
+	if len(indexesToChange) == 0 {
+		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	game, check := move_service.CheckIsItCheck(gameModel, board, indexesToChange)
+	check := move_service.IsItCheck(indexesToChange, &game)
 
 	if !check {
-		return models.Move{}, errors.New("Move is not possible (CheckIsItCheck)")
+		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
 	}
 
 	tx := g.gamesRepo.db.Begin()
@@ -189,11 +189,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	if game.Side == *game.WhiteClientId {
-		game.Side = *game.BlackClientId
-	} else {
-		game.Side = *game.WhiteClientId
-	}
+	game.Side = !game.Side
 
 	err = g.gamesRepo.UpdateGame(gameId, game, tx)
 	if err != nil {
@@ -258,11 +254,11 @@ func CheckCorrectRequestSideUser(userId any, game models.Game) error {
 		return errors.New("Game is not active")
 	}
 
-	if game.WhiteUserId == game.Side && userId != game.WhiteUserId {
+	if game.Side && userId != game.WhiteUserId {
 		return errors.New("Its not your move now")
 	}
 
-	if game.BlackUserId == game.Side && userId != game.BlackUserId {
+	if !game.Side && userId != game.BlackUserId {
 		return errors.New("Its not your move now")
 	}
 	return nil

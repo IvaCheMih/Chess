@@ -8,8 +8,8 @@ type Figure interface {
 	IsWhite() bool
 	GetType() byte
 	GetPossibleMoves(*Game) *TheoryMoves
-	ChangeGameIndex([]int)
-	GetGameIndex() []int
+	ChangeCoordinates([]int)
+	GetCoordinates() []int
 	Delete()
 }
 

@@ -19,5 +19,5 @@ type CreateGameResponse struct {
 	BlackRookHCastling bool
 	IsCheckBlack       bool
 	LastPawnMove       *int
-	Side               int
+	Side               bool
 }

@@ -5,46 +5,49 @@ import (
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
-func CheckCorrectMove(gameModel models.Game, board models.Board, from int, to int) (bool, []int) {
+func IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int) ([]int, Game) {
 
 	game := CreateGameStruct(gameModel, board)
 
 	figure := game.GetFigureByIndex(from)
 
 	if !game.IsItYourFigure(figure) {
-		return false, []int{}
+		return []int{}, Game{}
 	}
 
 	possibleMoves := (*figure).GetPossibleMoves(&game)
 
-	coordinatesToChange := []int{from, to}
+	isCorrect, indexesToChange := CheckMove(possibleMoves, []int{from, to})
+	if !isCorrect {
+		return []int{}, Game{}
+	}
 
-	return CheckMove(possibleMoves, coordinatesToChange)
+	return indexesToChange, game
 }
 
-func CheckIsItCheck(gameModel models.Game, board models.Board, indexesToChange []int) (Game, bool) {
+func IsItCheck(indexesToChange []int, game *Game) bool {
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
-	gameAfterMove := CreateGameStruct(gameModel, board)
+	//game := CreateGameStruct(gameModel, board)
 
-	gameAfterMove.ChangeToAndFrom(to, from)
+	game.ChangeToAndFrom(to, from)
 
-	figure := gameAfterMove.GetFigureByIndex(to)
+	figure := game.GetFigureByIndex(to)
 
 	if figure != nil {
-		gameAfterMove.ChangeKingGameID(figure)
+		game.ChangeKingGameID(figure)
 	}
 
-	if gameAfterMove.CheckIsCheck() {
-		return Game{}, false
+	if game.Check() {
+		return false
 	}
 
-	gameAfterMove.ChangeCastlingFlag(figure)
+	game.ChangeCastlingFlag(figure)
 
-	gameAfterMove.ChangeLastPawnMove(figure, from, to)
+	game.ChangeLastPawnMove(figure, from, to)
 
-	return gameAfterMove, true
+	return true
 }
 
 func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {

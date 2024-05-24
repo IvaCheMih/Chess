@@ -24,7 +24,6 @@ func (g *GamesRepository) CreateGame(userId int, color bool, tx *gorm.DB) (model
 
 	if color {
 		game.WhiteUserId = userId
-		game.Side = userId
 	} else {
 		game.BlackUserId = userId
 	}
@@ -55,7 +54,7 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	return game, err
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide int, userId int, tx *gorm.DB) (models.Game, error) {
+func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide bool, userId int, tx *gorm.DB) (models.Game, error) {
 	var game models.Game
 	var res *gorm.DB
 
@@ -86,13 +85,13 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gorm.DB) error {
 	err := tx.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{
 		"is_check_white":        game.IsCheckWhite.IsItCheck,
-		"white_king_castling":   game.WhiteCastling.WhiteKingCastling,
-		"white_rook_a_castling": game.WhiteCastling.WhiteRookACastling,
-		"white_rook_h_castling": game.WhiteCastling.WhiteRookHCastling,
+		"white_king_castling":   game.WhiteCastling.KingCastling,
+		"white_rook_a_castling": game.WhiteCastling.RookACastling,
+		"white_rook_h_castling": game.WhiteCastling.RookHCastling,
 		"is_check_black":        game.IsCheckBlack.IsItCheck,
-		"black_king_castling":   game.BlackCastling.BlackKingCastling,
-		"black_rook_a_castling": game.BlackCastling.BlackRookACastling,
-		"black_rook_h_castling": game.BlackCastling.BlackRookHCastling,
+		"black_king_castling":   game.BlackCastling.KingCastling,
+		"black_rook_a_castling": game.BlackCastling.RookACastling,
+		"black_rook_h_castling": game.BlackCastling.RookHCastling,
 		"last_pawn_move":        game.LastPawnMove,
 		"side":                  game.Side,
 	}).Error

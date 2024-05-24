@@ -7,19 +7,16 @@ import (
 )
 
 type Game struct {
-	N             int
-	M             int
-	WhiteClientId *int
-	BlackClientId *int
+	N int
+	//WhiteClientId *int
+	//BlackClientId *int
 	Figures       map[int]*Figure
 	IsCheckWhite  IsCheck
 	IsCheckBlack  IsCheck
-	WhiteCastling WhiteCastling
-	BlackCastling BlackCastling
+	WhiteCastling Castling
+	BlackCastling Castling
 	LastPawnMove  *int
-	Side          int
-	//RookNewIdIfItCastling int
-	//RookOldIdIfItCastling int
+	Side          bool
 }
 
 type IsCheck struct {
@@ -27,16 +24,10 @@ type IsCheck struct {
 	KingGameID int
 }
 
-type WhiteCastling struct {
-	WhiteKingCastling  bool
-	WhiteRookACastling bool
-	WhiteRookHCastling bool
-}
-
-type BlackCastling struct {
-	BlackKingCastling  bool
-	BlackRookACastling bool
-	BlackRookHCastling bool
+type Castling struct {
+	KingCastling  bool
+	RookACastling bool
+	RookHCastling bool
 }
 
 var FigureRepo = make(map[int]byte)
@@ -45,18 +36,19 @@ func CreateGameStruct(gameModel models.Game, board models.Board) Game {
 
 	figures, blackKingCell, whiteKingCell := CreateField(board, gameModel)
 
+	side := gameModel.Side
+
 	return Game{
-		N:             8,
-		M:             12,
-		WhiteClientId: &gameModel.WhiteUserId,
-		BlackClientId: &gameModel.BlackUserId,
+		N: 8,
+		//WhiteClientId: &gameModel.WhiteUserId,
+		//BlackClientId: &gameModel.BlackUserId,
 		Figures:       figures,
 		IsCheckWhite:  IsCheck{gameModel.IsCheckWhite, whiteKingCell},
 		IsCheckBlack:  IsCheck{gameModel.IsCheckBlack, blackKingCell},
-		WhiteCastling: WhiteCastling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
-		BlackCastling: BlackCastling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
+		WhiteCastling: Castling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
+		BlackCastling: Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
 		LastPawnMove:  gameModel.LastPawnMove,
-		Side:          gameModel.Side,
+		Side:          side,
 	}
 }
 
@@ -126,18 +118,18 @@ func (game *Game) ChangeKingGameID(figure *Figure) {
 		return
 	}
 	if (*figure).IsWhite() {
-		game.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetGameIndex())
+		game.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
 	} else {
-		game.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetGameIndex())
+		game.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
 	}
 }
 
-func (game *Game) CheckIsCheck() bool {
-	if game.Side == *game.WhiteClientId && game.IsKingCheck(game.IsCheckWhite.KingGameID) {
+func (game *Game) Check() bool {
+	if game.Side && game.IsKingCheck(game.IsCheckWhite.KingGameID) {
 		return true
 	}
 
-	if game.Side == *game.BlackClientId && game.IsKingCheck(game.IsCheckBlack.KingGameID) {
+	if !game.Side && game.IsKingCheck(game.IsCheckBlack.KingGameID) {
 		return true
 	}
 
@@ -148,21 +140,21 @@ func (game *Game) ChangeCastlingFlag(figure *Figure) {
 	switch (*figure).GetType() {
 	case 'K':
 		if (*figure).IsWhite() {
-			game.WhiteCastling.WhiteKingCastling = true
+			game.WhiteCastling.KingCastling = true
 		} else {
-			game.BlackCastling.BlackKingCastling = true
+			game.BlackCastling.KingCastling = true
 		}
 	case 'a':
 		if (*figure).IsWhite() {
-			game.WhiteCastling.WhiteRookACastling = true
+			game.WhiteCastling.RookACastling = true
 		} else {
-			game.BlackCastling.BlackRookACastling = true
+			game.BlackCastling.RookACastling = true
 		}
 	case 'h':
 		if (*figure).IsWhite() {
-			game.WhiteCastling.WhiteRookHCastling = true
+			game.WhiteCastling.RookHCastling = true
 		} else {
-			game.BlackCastling.BlackRookHCastling = true
+			game.BlackCastling.RookHCastling = true
 		}
 	}
 }
@@ -316,7 +308,7 @@ func (game *Game) CheckAttackCell(kingCoordinate []int, cellCoordinate []int, tr
 
 	var king *Figure
 
-	if game.Side == *game.WhiteClientId {
+	if game.Side {
 		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
 	} else {
 		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
@@ -343,7 +335,7 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 
 	var king *Figure
 
-	if game.Side == *game.WhiteClientId {
+	if game.Side {
 		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
 	} else {
 		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
@@ -410,7 +402,7 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 		}
 	}
 
-	(*figureFrom).ChangeGameIndex(coordinateTo)
+	(*figureFrom).ChangeCoordinates(coordinateTo)
 
 	g.Figures[to] = g.Figures[from]
 	g.Figures[from] = nil
@@ -436,11 +428,11 @@ func (g *Game) IsItYourFigure(figure *Figure) bool {
 		return false
 	}
 
-	if *g.WhiteClientId == g.Side && !(*figure).IsWhite() {
+	if g.Side && !(*figure).IsWhite() {
 		return false
 	}
 
-	if *g.BlackClientId == g.Side && (*figure).IsWhite() {
+	if !g.Side && (*figure).IsWhite() {
 		return false
 	}
 

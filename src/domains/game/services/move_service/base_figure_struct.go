@@ -14,11 +14,11 @@ func (figure *BaseFigure) GetType() byte {
 	return figure.Type
 }
 
-func (figure *BaseFigure) ChangeGameIndex(toCoordinate []int) {
-	figure.CellCoordinate = toCoordinate
+func (figure *BaseFigure) ChangeCoordinates(newCoordinate []int) {
+	figure.CellCoordinate = newCoordinate
 }
 
-func (figure *BaseFigure) GetGameIndex() []int {
+func (figure *BaseFigure) GetCoordinates() []int {
 	return figure.CellCoordinate
 }
 

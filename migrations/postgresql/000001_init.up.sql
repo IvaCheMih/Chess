@@ -34,7 +34,7 @@ CREATE TABLE games (
     black_rook_h_castling   BOOLEAN      NOT NULL default false,
 
     last_pawn_move          integer      ,
-    side                    integer      NOT NULL default 1,
+    side                    BOOLEAN      NOT NULL default true,
 
     CONSTRAINT games_pkey PRIMARY KEY (id)
 );

@@ -458,7 +458,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 	if !figure.Castling {
 		if figure.IsWhite() && crd[0] == 4 && crd[1] == 7 {
 			rookA := game.GetFigureByFieldCoordinates([]int{0, 7})
-			if rookA != nil && (*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.WhiteRookACastling {
+			if rookA != nil && (*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.RookACastling {
 				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(59) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(59)) == nil &&
@@ -469,7 +469,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 
 			rookH := game.GetFigureByFieldCoordinates([]int{7, 7})
-			if rookH != nil && (*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.WhiteRookHCastling {
+			if rookH != nil && (*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.RookHCastling {
 				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(61) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(61)) == nil &&
@@ -481,7 +481,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 
 		if !figure.IsWhite() && crd[0] == 4 && crd[1] == 0 {
 			rookA := game.GetFigureByFieldCoordinates([]int{0, 0})
-			if rookA != nil && !(*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.BlackRookACastling {
+			if rookA != nil && !(*rookA).IsWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.RookACastling {
 				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(3) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(3)) == nil &&
@@ -492,7 +492,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 
 			rookH := game.GetFigureByFieldCoordinates([]int{7, 0})
-			if rookH != nil && !(*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.BlackRookHCastling {
+			if rookH != nil && !(*rookH).IsWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.RookHCastling {
 				fmt.Println("ПРОВЕРЯЕМ АТАКОВАНЫ ЛИ КЛЕТКИ МЕЖДУ КОРОЛЁМ И ЛАДЬЁЙ")
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(5) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(5)) == nil &&
