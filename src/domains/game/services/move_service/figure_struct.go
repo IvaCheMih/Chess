@@ -27,17 +27,17 @@ type FigureKing struct {
 }
 
 type TheoryMoves struct {
-	Up       [][]int
-	Down     [][]int
-	Right    [][]int
-	Left     [][]int
-	UR       [][]int
-	UL       [][]int
-	DR       [][]int
-	DL       [][]int
-	Kn       [][]int
-	EnPass   [][]int
-	Castling [][]int
+	Up       [][2]int
+	Down     [][2]int
+	Right    [][2]int
+	Left     [][2]int
+	UR       [][2]int
+	UL       [][2]int
+	DR       [][2]int
+	DL       [][2]int
+	Kn       [][2]int
+	EnPass   [][2]int
+	Castling [][2]int
 }
 
 func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
@@ -49,9 +49,9 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 		n = -1
 	}
 
-	vert := [][]int{}
-	EnPass := [][]int{}
-	crdLastPawnMove := []int{}
+	vert := [][2]int{}
+	EnPass := [][2]int{}
+	crdLastPawnMove := [2]int{}
 
 	crd := figure.CellCoordinates
 
@@ -61,40 +61,40 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 
 		if crdLastPawnMove[0] == crd[0]+1 || crdLastPawnMove[0] == crd[0]-1 {
 			if crd[1] == crdLastPawnMove[1] {
-				EnPass = append(EnPass, []int{crdLastPawnMove[0], crdLastPawnMove[1] - n})
+				EnPass = append(EnPass, [2]int{crdLastPawnMove[0], crdLastPawnMove[1] - n})
 			}
 		}
 	}
 
-	if IsOnRealBoard([]int{crd[0], crd[1] - n}) && game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - n}) == nil {
-		vert = append(vert, []int{crd[0], crd[1] - n})
+	if IsOnRealBoard([2]int{crd[0], crd[1] - n}) && game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - n}) == nil {
+		vert = append(vert, [2]int{crd[0], crd[1] - n})
 	}
 
 	if n == 1 && crd[1] == 6 {
-		if game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - n}) == nil && game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - 2*n}) == nil {
-			vert = append(vert, []int{crd[0], crd[1] - 2*n})
+		if game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - n}) == nil && game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - 2*n}) == nil {
+			vert = append(vert, [2]int{crd[0], crd[1] - 2*n})
 		}
 	}
 
 	if n == -1 && crd[1] == 1 {
-		if game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - n}) == nil && game.GetFigureByFieldCoordinates([]int{crd[0], crd[1] - 2*n}) == nil {
-			vert = append(vert, []int{crd[0], crd[1] - 2*n})
+		if game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - n}) == nil && game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - 2*n}) == nil {
+			vert = append(vert, [2]int{crd[0], crd[1] - 2*n})
 		}
 	}
 
-	left := [][]int{}
+	left := [][2]int{}
 
-	if IsOnRealBoard([]int{crd[0] + 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1] - n}) != nil {
-		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([]int{crd[0] + 1, crd[1] - n})).IsItWhite() {
-			left = append(left, []int{crd[0] + 1, crd[1] - n})
+	if IsOnRealBoard([2]int{crd[0] + 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - n}) != nil {
+		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - n})).IsItWhite() {
+			left = append(left, [2]int{crd[0] + 1, crd[1] - n})
 		}
 	}
 
-	right := [][]int{}
+	right := [][2]int{}
 
-	if IsOnRealBoard([]int{crd[0] - 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1] - n}) != nil {
-		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([]int{crd[0] - 1, crd[1] - n})).IsItWhite() {
-			right = append(right, []int{crd[0] - 1, crd[1] - n})
+	if IsOnRealBoard([2]int{crd[0] - 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - n}) != nil {
+		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - n})).IsItWhite() {
+			right = append(right, [2]int{crd[0] - 1, crd[1] - n})
 		}
 	}
 
@@ -116,10 +116,10 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 
 func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 	var theoryMoves = TheoryMoves{
-		Up:    [][]int{},
-		Down:  [][]int{},
-		Right: [][]int{},
-		Left:  [][]int{},
+		Up:    [][2]int{},
+		Down:  [][2]int{},
+		Right: [][2]int{},
+		Left:  [][2]int{},
 		UR:    nil,
 		UL:    nil,
 		DR:    nil,
@@ -129,12 +129,12 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	crd := figure.CellCoordinates
 
-	for index := crd[1] + 1; IsOnRealBoard([]int{crd[0], index}); index++ {
+	for index := crd[1] + 1; IsOnRealBoard([2]int{crd[0], index}); index++ {
 
-		add, _continue := figure.AddMove(game, []int{crd[0], index})
+		add, _continue := figure.AddMove(game, [2]int{crd[0], index})
 
 		if add {
-			theoryMoves.Up = append(theoryMoves.Up, []int{crd[0], index})
+			theoryMoves.Up = append(theoryMoves.Up, [2]int{crd[0], index})
 		}
 
 		if !_continue {
@@ -142,11 +142,11 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for index := crd[1] - 1; IsOnRealBoard([]int{crd[0], index}); index-- {
-		add, _continue := figure.AddMove(game, []int{crd[0], index})
+	for index := crd[1] - 1; IsOnRealBoard([2]int{crd[0], index}); index-- {
+		add, _continue := figure.AddMove(game, [2]int{crd[0], index})
 
 		if add {
-			theoryMoves.Down = append(theoryMoves.Down, []int{crd[0], index})
+			theoryMoves.Down = append(theoryMoves.Down, [2]int{crd[0], index})
 		}
 
 		if !_continue {
@@ -154,11 +154,11 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for index := crd[0] + 1; IsOnRealBoard([]int{index, crd[1]}); index++ {
-		add, _continue := figure.AddMove(game, []int{index, crd[1]})
+	for index := crd[0] + 1; IsOnRealBoard([2]int{index, crd[1]}); index++ {
+		add, _continue := figure.AddMove(game, [2]int{index, crd[1]})
 
 		if add {
-			theoryMoves.Right = append(theoryMoves.Right, []int{index, crd[1]})
+			theoryMoves.Right = append(theoryMoves.Right, [2]int{index, crd[1]})
 		}
 
 		if !_continue {
@@ -166,11 +166,11 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for index := crd[0] - 1; IsOnRealBoard([]int{index, crd[1]}); index-- {
-		add, _continue := figure.AddMove(game, []int{index, crd[1]})
+	for index := crd[0] - 1; IsOnRealBoard([2]int{index, crd[1]}); index-- {
+		add, _continue := figure.AddMove(game, [2]int{index, crd[1]})
 
 		if add {
-			theoryMoves.Left = append(theoryMoves.Left, []int{index, crd[1]})
+			theoryMoves.Left = append(theoryMoves.Left, [2]int{index, crd[1]})
 		}
 
 		if !_continue {
@@ -184,7 +184,7 @@ func (figure *FigureRook) GetPossibleMoves(game *Game) *TheoryMoves {
 func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 	crd := figure.CellCoordinates
 
-	theorySteps := [][]int{
+	theorySteps := [][2]int{
 		{crd[0] + 2, crd[1] + 1},
 		{crd[0] + 2, crd[1] - 1},
 		{crd[0] - 2, crd[1] + 1},
@@ -194,7 +194,7 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 		{crd[0] + 1, crd[1] + 2},
 		{crd[0] + 1, crd[1] - 2},
 	}
-	kn := [][]int{}
+	kn := [][2]int{}
 
 	for _, coordinates := range theorySteps {
 		if !IsOnRealBoard(coordinates) {
@@ -231,18 +231,18 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 		Down:  nil,
 		Right: nil,
 		Left:  nil,
-		UR:    [][]int{},
-		UL:    [][]int{},
-		DR:    [][]int{},
-		DL:    [][]int{},
+		UR:    [][2]int{},
+		UL:    [][2]int{},
+		DR:    [][2]int{},
+		DL:    [][2]int{},
 		Kn:    nil,
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] + i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] + i, crd[1] + i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] + i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] + i, crd[1] + i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] + i, crd[1] + i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] + i, crd[1] + i})
 		}
 
 		if !_continue {
@@ -250,11 +250,11 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] + i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] - i, crd[1] + i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1] + i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] - i, crd[1] + i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] - i, crd[1] + i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] - i, crd[1] + i})
 		}
 
 		if !_continue {
@@ -262,11 +262,11 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] - i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] + i, crd[1] - i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] - i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] + i, crd[1] - i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] + i, crd[1] - i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] + i, crd[1] - i})
 		}
 
 		if !_continue {
@@ -274,11 +274,11 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] - i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] - i, crd[1] - i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1] - i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] - i, crd[1] - i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] - i, crd[1] - i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] - i, crd[1] - i})
 		}
 
 		if !_continue {
@@ -291,25 +291,25 @@ func (figure *FigureBishop) GetPossibleMoves(game *Game) *TheoryMoves {
 
 func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 	var theoryMoves = TheoryMoves{
-		Up:    [][]int{},
-		Down:  [][]int{},
-		Right: [][]int{},
-		Left:  [][]int{},
-		UR:    [][]int{},
-		UL:    [][]int{},
-		DR:    [][]int{},
-		DL:    [][]int{},
+		Up:    [][2]int{},
+		Down:  [][2]int{},
+		Right: [][2]int{},
+		Left:  [][2]int{},
+		UR:    [][2]int{},
+		UL:    [][2]int{},
+		DR:    [][2]int{},
+		DL:    [][2]int{},
 		Kn:    nil,
 	}
 
 	crd := figure.CellCoordinates
 
-	for index := crd[1] + 1; IsOnRealBoard([]int{crd[0], index}); index++ {
+	for index := crd[1] + 1; IsOnRealBoard([2]int{crd[0], index}); index++ {
 
-		add, _continue := figure.AddMove(game, []int{crd[0], index})
+		add, _continue := figure.AddMove(game, [2]int{crd[0], index})
 
 		if add {
-			theoryMoves.Up = append(theoryMoves.Up, []int{crd[0], index})
+			theoryMoves.Up = append(theoryMoves.Up, [2]int{crd[0], index})
 		}
 
 		if !_continue {
@@ -317,11 +317,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for index := crd[1] - 1; IsOnRealBoard([]int{crd[0], index}); index-- {
-		add, _continue := figure.AddMove(game, []int{crd[0], index})
+	for index := crd[1] - 1; IsOnRealBoard([2]int{crd[0], index}); index-- {
+		add, _continue := figure.AddMove(game, [2]int{crd[0], index})
 
 		if add {
-			theoryMoves.Down = append(theoryMoves.Down, []int{crd[0], index})
+			theoryMoves.Down = append(theoryMoves.Down, [2]int{crd[0], index})
 		}
 
 		if !_continue {
@@ -329,11 +329,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for index := crd[0] + 1; IsOnRealBoard([]int{index, crd[1]}); index++ {
-		add, _continue := figure.AddMove(game, []int{index, crd[1]})
+	for index := crd[0] + 1; IsOnRealBoard([2]int{index, crd[1]}); index++ {
+		add, _continue := figure.AddMove(game, [2]int{index, crd[1]})
 
 		if add {
-			theoryMoves.Right = append(theoryMoves.Right, []int{index, crd[1]})
+			theoryMoves.Right = append(theoryMoves.Right, [2]int{index, crd[1]})
 		}
 
 		if !_continue {
@@ -341,11 +341,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for index := crd[0] - 1; IsOnRealBoard([]int{index, crd[1]}); index-- {
-		add, _continue := figure.AddMove(game, []int{index, crd[1]})
+	for index := crd[0] - 1; IsOnRealBoard([2]int{index, crd[1]}); index-- {
+		add, _continue := figure.AddMove(game, [2]int{index, crd[1]})
 
 		if add {
-			theoryMoves.Left = append(theoryMoves.Left, []int{index, crd[1]})
+			theoryMoves.Left = append(theoryMoves.Left, [2]int{index, crd[1]})
 		}
 
 		if !_continue {
@@ -353,11 +353,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] + i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] + i, crd[1] + i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] + i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] + i, crd[1] + i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] + i, crd[1] + i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] + i, crd[1] + i})
 		}
 
 		if !_continue {
@@ -365,11 +365,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] + i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] - i, crd[1] + i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1] + i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] - i, crd[1] + i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] - i, crd[1] + i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] - i, crd[1] + i})
 		}
 
 		if !_continue {
@@ -377,11 +377,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] + i, crd[1] - i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] + i, crd[1] - i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] - i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] + i, crd[1] - i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] + i, crd[1] - i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] + i, crd[1] - i})
 		}
 
 		if !_continue {
@@ -389,11 +389,11 @@ func (figure *FigureQueen) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	for i := 1; IsOnRealBoard([]int{crd[0] - i, crd[1] - i}); i++ {
-		add, _continue := figure.AddMove(game, []int{crd[0] - i, crd[1] - i})
+	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1] - i}); i++ {
+		add, _continue := figure.AddMove(game, [2]int{crd[0] - i, crd[1] - i})
 
 		if add {
-			theoryMoves.UR = append(theoryMoves.UR, []int{crd[0] - i, crd[1] - i})
+			theoryMoves.UR = append(theoryMoves.UR, [2]int{crd[0] - i, crd[1] - i})
 		}
 
 		if !_continue {
@@ -409,7 +409,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 
 	theorySteps := GetTheorySteps(crd)
 
-	var k = [][]int{}
+	var k = [][2]int{}
 
 	for _, move := range theorySteps {
 		if IsOnRealBoard(move) && figure.AddMove(game, move) {
@@ -442,47 +442,47 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 		}
 	}
 
-	castling := [][]int{}
+	castling := [][2]int{}
 
 	if !figure.Castling {
 		if figure.IsItWhite() && crd[0] == 4 && crd[1] == 7 {
-			rookA := game.GetFigureByFieldCoordinates([]int{0, 7})
+			rookA := game.GetFigureByFieldCoordinates([2]int{0, 7})
 			if rookA != nil && (*rookA).IsItWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.RookACastling {
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(59) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(59)) == nil &&
 					!game.IsKingCheck(58) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(58)) == nil &&
 					!game.IsKingCheck(57) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(57)) == nil {
-					castling = append(castling, []int{2, 7})
+					castling = append(castling, [2]int{2, 7})
 				}
 			}
 
-			rookH := game.GetFigureByFieldCoordinates([]int{7, 7})
+			rookH := game.GetFigureByFieldCoordinates([2]int{7, 7})
 			if rookH != nil && (*rookH).IsItWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.RookHCastling {
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(61) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(61)) == nil &&
 					!game.IsKingCheck(62) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(62)) == nil {
-					castling = append(castling, []int{6, 7})
+					castling = append(castling, [2]int{6, 7})
 				}
 			}
 		}
 
 		if !figure.IsItWhite() && crd[0] == 4 && crd[1] == 0 {
-			rookA := game.GetFigureByFieldCoordinates([]int{0, 0})
+			rookA := game.GetFigureByFieldCoordinates([2]int{0, 0})
 			if rookA != nil && !(*rookA).IsItWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.RookACastling {
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(3) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(3)) == nil &&
 					!game.IsKingCheck(2) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(2)) == nil &&
 					!game.IsKingCheck(1) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(1)) == nil {
-					castling = append(castling, []int{2, 0})
+					castling = append(castling, [2]int{2, 0})
 				}
 			}
 
-			rookH := game.GetFigureByFieldCoordinates([]int{7, 0})
+			rookH := game.GetFigureByFieldCoordinates([2]int{7, 0})
 			if rookH != nil && !(*rookH).IsItWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.RookHCastling {
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(5) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(5)) == nil &&
 					!game.IsKingCheck(6) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(6)) == nil {
-					castling = append(castling, []int{6, 0})
+					castling = append(castling, [2]int{6, 0})
 				}
 			}
 		}
@@ -504,7 +504,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 	return &theoryMoves
 }
 
-func (figure *FigureRook) AddMove(game *Game, crd []int) (bool, bool) {
+func (figure *FigureRook) AddMove(game *Game, crd [2]int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
 	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false, false
@@ -517,7 +517,7 @@ func (figure *FigureRook) AddMove(game *Game, crd []int) (bool, bool) {
 	return true, true
 }
 
-func (figure *FigureBishop) AddMove(game *Game, crd []int) (bool, bool) {
+func (figure *FigureBishop) AddMove(game *Game, crd [2]int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
 	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false, false
@@ -530,7 +530,7 @@ func (figure *FigureBishop) AddMove(game *Game, crd []int) (bool, bool) {
 	return true, true
 }
 
-func (figure *FigureQueen) AddMove(game *Game, crd []int) (bool, bool) {
+func (figure *FigureQueen) AddMove(game *Game, crd [2]int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
 	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false, false
@@ -543,7 +543,7 @@ func (figure *FigureQueen) AddMove(game *Game, crd []int) (bool, bool) {
 	return true, true
 }
 
-func (figure *FigureKing) AddMove(game *Game, crd []int) bool {
+func (figure *FigureKing) AddMove(game *Game, crd [2]int) bool {
 	fig := game.GetFigureByFieldCoordinates(crd)
 	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
 		return false
@@ -551,7 +551,7 @@ func (figure *FigureKing) AddMove(game *Game, crd []int) bool {
 	return true
 }
 
-func IsOnRealBoard(coordinates []int) bool {
+func IsOnRealBoard(coordinates [2]int) bool {
 	if coordinates[0] < 0 || 7 < coordinates[0] {
 		return false
 	}
@@ -563,8 +563,8 @@ func IsOnRealBoard(coordinates []int) bool {
 	return true
 }
 
-func GetTheorySteps(crd []int) [][]int {
-	return [][]int{
+func GetTheorySteps(crd [2]int) [][2]int {
+	return [][2]int{
 		{crd[0] + 1, crd[1] + 1},
 		{crd[0], crd[1] + 1},
 		{crd[0] - 1, crd[1] + 1},

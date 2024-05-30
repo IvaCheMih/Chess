@@ -8,8 +8,8 @@ type Figure interface {
 	IsItWhite() bool
 	GetType() byte
 	GetPossibleMoves(*Game) *TheoryMoves
-	ChangeCoordinates([]int)
-	GetCoordinates() []int
+	ChangeCoordinates([2]int)
+	GetCoordinates() [2]int
 	Delete()
 }
 
@@ -49,7 +49,7 @@ func CreateFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *
 	return &figure
 }
 
-func CreateFigure(_type byte, isWhite bool, coordinates []int, gameModel models.Game) Figure {
+func CreateFigure(_type byte, isWhite bool, coordinates [2]int, gameModel models.Game) Figure {
 	var bf = BaseFigure{isWhite, _type, coordinates}
 
 	switch _type {
@@ -103,13 +103,13 @@ func CreateFigure(_type byte, isWhite bool, coordinates []int, gameModel models.
 	return nil
 }
 
-func IndexToFieldCoordinates(ind int) []int {
+func IndexToFieldCoordinates(ind int) [2]int {
 	x := ind % 8
 	y := ind / 8
 
-	return []int{x, y}
+	return [2]int{x, y}
 }
 
-func FieldCoordinatesToIndex(coordinates []int) int {
+func FieldCoordinatesToIndex(coordinates [2]int) int {
 	return coordinates[1]*8 + coordinates[0]
 }

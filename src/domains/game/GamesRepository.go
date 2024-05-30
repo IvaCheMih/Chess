@@ -20,7 +20,6 @@ func CreateGamesRepository(db *gorm.DB) GamesRepository {
 
 func (g *GamesRepository) CreateGame(userId int, color bool, tx *gorm.DB) (models.Game, error) {
 	var game models.Game
-	var err error
 
 	if color {
 		game.WhiteUserId = userId
@@ -34,9 +33,7 @@ func (g *GamesRepository) CreateGame(userId int, color bool, tx *gorm.DB) (model
 		return models.Game{}, result.Error
 	}
 
-	err = RowToGame(result.Row(), &game)
-
-	return game, err
+	return RowToGame(result.Row())
 }
 
 func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, error) {
@@ -49,9 +46,7 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 		return models.Game{}, res.Error
 	}
 
-	err := RowToGame(res.Row(), &game)
-
-	return game, err
+	return RowToGame(res.Row())
 }
 
 func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide bool, userId int, tx *gorm.DB) (models.Game, error) {
@@ -64,9 +59,8 @@ func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId strin
 		return models.Game{}, res.Error
 	}
 
-	err := RowToGame(res.Row(), &game)
+	return RowToGame(res.Row())
 
-	return game, err
 }
 
 func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
@@ -77,9 +71,7 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 		return models.Game{}, res.Error
 	}
 
-	err := RowToGame(res.Row(), &game)
-
-	return game, err
+	return RowToGame(res.Row())
 }
 
 func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gorm.DB) error {
@@ -100,21 +92,18 @@ func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gor
 }
 
 func (g *GamesRepository) UpdateIsEnded(gameId int) (models.Game, error) {
-
 	res := g.db.Model(&models.Game{}).Where("id=?", gameId).Updates(map[string]interface{}{"is_ended": true})
 	if res.Error != nil {
 		return models.Game{}, res.Error
 	}
 
-	var modelGame models.Game
-
-	err := RowToGame(res.Row(), &modelGame)
-
-	return modelGame, err
+	return RowToGame(res.Row())
 }
 
-func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
-	return row.Scan(
+func RowToGame(row *sql.Row) (models.Game, error) {
+	var requestCreateGame models.Game
+
+	err := row.Scan(
 		&requestCreateGame.Id,
 
 		&requestCreateGame.WhiteUserId,
@@ -138,4 +127,6 @@ func RowToGame(row *sql.Row, requestCreateGame *models.Game) error {
 		&requestCreateGame.LastPawnMove,
 		&requestCreateGame.Side,
 	)
+
+	return requestCreateGame, err
 }

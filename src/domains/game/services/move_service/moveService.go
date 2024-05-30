@@ -142,7 +142,7 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []i
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
 
 				coordinatesToChange = append(coordinatesToChange, -1)
-				coordinatesToChange = append(coordinatesToChange, FieldCoordinatesToIndex([]int{crdTo[0], crdFrom[1]}))
+				coordinatesToChange = append(coordinatesToChange, FieldCoordinatesToIndex([2]int{crdTo[0], crdFrom[1]}))
 
 				return true, coordinatesToChange
 			}

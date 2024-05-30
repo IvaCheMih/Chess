@@ -24,17 +24,21 @@ var authHandlers auth.AuthHandlers
 
 func Init() {
 
-	services.GetFromEnv()
+	err := services.GetFromEnv()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	time.Sleep(5 * time.Second)
 
 	migrationService := services.CreateMigrationService()
 
-	migrationService.RunUp(services.PostgresqlUrl, "file://migrations/postgresql")
+	err = migrationService.RunUp(services.PostgresqlUrl, "file://migrations/postgresql")
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	move_service.FigureRepo = move_service.CreateFigureRepo()
-
-	var err error
 
 	db, err = gorm.Open(postgres.Open(services.PostgresqlUrl), &gorm.Config{})
 
@@ -100,15 +104,15 @@ func main() {
 		SigningKey: jwtware.SigningKey{Key: []byte(services.JWT_secret)},
 	}))
 
-	server.Post("/game", authHandlers.CheckAuth, gamesHandlers.CreateGame)
+	server.Post("/game", authHandlers.Auth, gamesHandlers.CreateGame)
 
-	server.Get("/game/:gameId/board", authHandlers.CheckAuth, gamesHandlers.GetBoard)
+	server.Get("/game/:gameId/board", authHandlers.Auth, gamesHandlers.GetBoard)
 
-	server.Get("/game/:gameId/history", authHandlers.CheckAuth, gamesHandlers.GetHistory)
+	server.Get("/game/:gameId/history", authHandlers.Auth, gamesHandlers.GetHistory)
 
-	server.Post("/game/:gameId/move", authHandlers.CheckAuth, gamesHandlers.Move)
+	server.Post("/game/:gameId/move", authHandlers.Auth, gamesHandlers.Move)
 
-	server.Post("/game/:gameId/give-up", authHandlers.CheckAuth, gamesHandlers.GiveUp)
+	server.Post("/game/:gameId/give-up", authHandlers.Auth, gamesHandlers.GiveUp)
 
 	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)

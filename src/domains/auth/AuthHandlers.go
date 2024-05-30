@@ -12,7 +12,7 @@ func CreateAuthHandlers() AuthHandlers {
 	return AuthHandlers{}
 }
 
-func (a *AuthHandlers) CheckAuth(c *fiber.Ctx) error {
+func (a *AuthHandlers) Auth(c *fiber.Ctx) error {
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	userId64 := claims["userId"].(float64)

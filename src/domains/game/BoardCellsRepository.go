@@ -36,7 +36,6 @@ func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *gorm.DB) erro
 }
 
 func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
-	var cells = map[int]*models.BoardCell{}
 	var board_cell = []models.BoardCell{}
 
 	res := b.db.Find(&board_cell).Where("game_id=?", gameId)
@@ -49,7 +48,7 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 		return models.Board{}, res.Error
 	}
 
-	err = RowsToCells(rows, &cells)
+	cells, err := RowsToCells(rows)
 
 	return models.Board{Cells: cells}, err
 }
@@ -71,17 +70,19 @@ func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
 	return err
 }
 
-func RowsToCells(rows *sql.Rows, cells *map[int]*models.BoardCell) error {
+func RowsToCells(rows *sql.Rows) (map[int]*models.BoardCell, error) {
+	var cells = map[int]*models.BoardCell{}
+
 	for rows.Next() {
 		var cell = models.BoardCell{}
 
 		err := rows.Scan(&cell.Id, &cell.GameId, &cell.IndexCell, &cell.FigureId)
 		if err != nil {
-			return err
+			return map[int]*models.BoardCell{}, err
 		}
 
-		(*cells)[cell.IndexCell] = &cell
+		cells[cell.IndexCell] = &cell
 	}
 
-	return nil
+	return cells, nil
 }

@@ -3,7 +3,7 @@ package move_service
 type BaseFigure struct {
 	IsWhite         bool
 	Type            byte
-	CellCoordinates []int
+	CellCoordinates [2]int
 }
 
 func (figure *BaseFigure) IsItWhite() bool {
@@ -14,11 +14,11 @@ func (figure *BaseFigure) GetType() byte {
 	return figure.Type
 }
 
-func (figure *BaseFigure) ChangeCoordinates(newCoordinates []int) {
+func (figure *BaseFigure) ChangeCoordinates(newCoordinates [2]int) {
 	figure.CellCoordinates = newCoordinates
 }
 
-func (figure *BaseFigure) GetCoordinates() []int {
+func (figure *BaseFigure) GetCoordinates() [2]int {
 	return figure.CellCoordinates
 }
 

@@ -160,9 +160,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	check := move_service.IsItCheck(indexesToChange, &game)
-
-	if !check {
+	if !move_service.IsItCheck(indexesToChange, &game) {
 		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
 	}
 
