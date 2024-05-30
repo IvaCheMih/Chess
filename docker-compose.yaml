@@ -1,6 +1,21 @@
 version: "3.7"
 
 services:
+  postgres:
+    image: postgres:latest
+    healthcheck:
+      test: 'exit 0'
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'pass'
+      POSTGRES_DB: 'test'
+
+    command: postgres -c max_connections=20 -c shared_buffers=200MB
+    #    ports:
+    #      - "8090:5432"
+    networks:
+      - infra
+
   application:
     depends_on:
       - postgres
@@ -12,20 +27,7 @@ services:
       - infra
     env_file: .env
 
-  postgres:
-    image: postgres:latest
-    healthcheck:
-      test: 'exit 0'
-    environment:
-      POSTGRES_USER: 'user'
-      POSTGRES_PASSWORD: 'pass'
-      POSTGRES_DB: 'test'
 
-    command: postgres -c max_connections=20 -c shared_buffers=200MB
-#    ports:
-#      - "8090:5432"
-    networks:
-      - infra
 
 networks:
   infra:
