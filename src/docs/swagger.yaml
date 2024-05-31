@@ -4,7 +4,7 @@ definitions:
     properties:
       figureId:
         type: integer
-      index:
+      indexCell:
         type: integer
     type: object
   dto.CreateGameBody:
@@ -14,8 +14,12 @@ definitions:
     type: object
   dto.CreateGameResponse:
     properties:
-      blackKingCell:
-        type: integer
+      blackKingCastling:
+        type: boolean
+      blackRookACastling:
+        type: boolean
+      blackRookHCastling:
+        type: boolean
       blackUserId:
         type: integer
       gameId:
@@ -28,10 +32,16 @@ definitions:
         type: boolean
       isStarted:
         type: boolean
+      lastPawnMove:
+        type: integer
       side:
-        type: integer
-      whiteKingCell:
-        type: integer
+        type: boolean
+      whiteKingCastling:
+        type: boolean
+      whiteRookACastling:
+        type: boolean
+      whiteRookHCastling:
+        type: boolean
       whiteUserId:
         type: integer
     type: object
@@ -63,6 +73,8 @@ definitions:
     properties:
       from:
         type: string
+      newFigure:
+        type: integer
       to:
         type: string
     type: object
@@ -82,11 +94,15 @@ definitions:
     type: object
   models.Game:
     properties:
-      blackKingCell:
-        type: integer
+      blackKingCastling:
+        type: boolean
+      blackRookACastling:
+        type: boolean
+      blackRookHCastling:
+        type: boolean
       blackUserId:
         type: integer
-      gameId:
+      id:
         type: integer
       isCheckBlack:
         type: boolean
@@ -96,20 +112,24 @@ definitions:
         type: boolean
       isStarted:
         type: boolean
+      lastPawnMove:
+        type: integer
       side:
-        type: integer
-      whiteKingCell:
-        type: integer
+        type: boolean
+      whiteKingCastling:
+        type: boolean
+      whiteRookACastling:
+        type: boolean
+      whiteRookHCastling:
+        type: boolean
       whiteUserId:
         type: integer
     type: object
   models.Move:
     properties:
-      blackKingCell:
-        type: integer
       figureId:
         type: integer
-      from:
+      from_id:
         type: integer
       gameId:
         type: integer
@@ -125,9 +145,7 @@ definitions:
         type: integer
       newFigureId:
         type: integer
-      to:
-        type: integer
-      whiteKingCell:
+      to_id:
         type: integer
     type: object
 host: localhost:8080

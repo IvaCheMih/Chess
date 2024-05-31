@@ -285,7 +285,7 @@
                 "figureId": {
                     "type": "integer"
                 },
-                "index": {
+                "indexCell": {
                     "type": "integer"
                 }
             }
@@ -301,8 +301,14 @@
         "dto.CreateGameResponse": {
             "type": "object",
             "properties": {
-                "blackKingCell": {
-                    "type": "integer"
+                "blackKingCastling": {
+                    "type": "boolean"
+                },
+                "blackRookACastling": {
+                    "type": "boolean"
+                },
+                "blackRookHCastling": {
+                    "type": "boolean"
                 },
                 "blackUserId": {
                     "type": "integer"
@@ -322,11 +328,20 @@
                 "isStarted": {
                     "type": "boolean"
                 },
-                "side": {
+                "lastPawnMove": {
                     "type": "integer"
                 },
-                "whiteKingCell": {
-                    "type": "integer"
+                "side": {
+                    "type": "boolean"
+                },
+                "whiteKingCastling": {
+                    "type": "boolean"
+                },
+                "whiteRookACastling": {
+                    "type": "boolean"
+                },
+                "whiteRookHCastling": {
+                    "type": "boolean"
                 },
                 "whiteUserId": {
                     "type": "integer"
@@ -377,6 +392,9 @@
                 "from": {
                     "type": "string"
                 },
+                "newFigure": {
+                    "type": "integer"
+                },
                 "to": {
                     "type": "string"
                 }
@@ -407,13 +425,19 @@
         "models.Game": {
             "type": "object",
             "properties": {
-                "blackKingCell": {
-                    "type": "integer"
+                "blackKingCastling": {
+                    "type": "boolean"
+                },
+                "blackRookACastling": {
+                    "type": "boolean"
+                },
+                "blackRookHCastling": {
+                    "type": "boolean"
                 },
                 "blackUserId": {
                     "type": "integer"
                 },
-                "gameId": {
+                "id": {
                     "type": "integer"
                 },
                 "isCheckBlack": {
@@ -428,11 +452,20 @@
                 "isStarted": {
                     "type": "boolean"
                 },
-                "side": {
+                "lastPawnMove": {
                     "type": "integer"
                 },
-                "whiteKingCell": {
-                    "type": "integer"
+                "side": {
+                    "type": "boolean"
+                },
+                "whiteKingCastling": {
+                    "type": "boolean"
+                },
+                "whiteRookACastling": {
+                    "type": "boolean"
+                },
+                "whiteRookHCastling": {
+                    "type": "boolean"
                 },
                 "whiteUserId": {
                     "type": "integer"
@@ -442,13 +475,10 @@
         "models.Move": {
             "type": "object",
             "properties": {
-                "blackKingCell": {
-                    "type": "integer"
-                },
                 "figureId": {
                     "type": "integer"
                 },
-                "from": {
+                "from_id": {
                     "type": "integer"
                 },
                 "gameId": {
@@ -472,10 +502,7 @@
                 "newFigureId": {
                     "type": "integer"
                 },
-                "to": {
-                    "type": "integer"
-                },
-                "whiteKingCell": {
+                "to_id": {
                     "type": "integer"
                 }
             }

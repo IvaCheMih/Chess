@@ -10,6 +10,7 @@ type Figure interface {
 	GetPossibleMoves(*Game) *TheoryMoves
 	ChangeCoordinates([2]int)
 	GetCoordinates() [2]int
+	ChangeType(byte)
 	Delete()
 }
 

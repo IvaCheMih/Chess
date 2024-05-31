@@ -137,7 +137,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	if !CheckCorrectRequest(requestFromTo.From, requestFromTo.To) {
+	if !CheckCorrectRequest(requestFromTo) {
 		return models.Move{}, errors.New("Move is not correct")
 	}
 
@@ -160,7 +160,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	if !move_service.IsItCheck(indexesToChange, &game) {
+	if !move_service.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
 		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
 	}
 
@@ -194,7 +194,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	err = UpdateBoardAfterMove(g, board, from, to, indexesToChange, tx)
+	err = UpdateBoardAfterMove(g, board, from, to, indexesToChange, game.NewFigureId, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -286,24 +286,21 @@ func CheckCellOnBoardByIndex(index int) bool {
 	return false
 }
 
-func CheckCorrectRequest(f, t string) bool {
-	from, to := CoordinatesToIndex(f), CoordinatesToIndex(t)
+func CheckCorrectRequest(move dto.DoMoveBody) bool {
+	from, to := CoordinatesToIndex(move.From), CoordinatesToIndex(move.To)
 
 	if !CheckCellOnBoardByIndex(from) || !CheckCellOnBoardByIndex(to) {
 		return false
 	}
+
 	return true
 }
 
-func CheckCorrectNewFigure(figureId int) bool {
-	figureType, ok := move_service.FigureRepo[figureId]
-	if !ok || figureType == 'p' || figureType == 'K' {
-		return false
+func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int, newFigureId int, indexesToChange []int, tx *gorm.DB) error {
+	if newFigureId != 0 {
+		board.Cells[to].FigureId = newFigureId
 	}
-	return true
-}
 
-func UpdateBoardAfterMove(g *GamesService, board models.Board, from int, to int, indexesToChange []int, tx *gorm.DB) error {
 	if board.Cells[to] != nil {
 
 		err := g.boardRepo.Delete(board.Cells[to].Id, tx)

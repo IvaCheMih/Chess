@@ -25,3 +25,7 @@ func (figure *BaseFigure) GetCoordinates() [2]int {
 func (figure *BaseFigure) Delete() {
 	figure = nil
 }
+
+func (figure *BaseFigure) ChangeType(newType byte) {
+	figure.Type = newType
+}

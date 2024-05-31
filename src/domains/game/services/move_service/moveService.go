@@ -25,7 +25,7 @@ func IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int) 
 	return indexesToChange, game
 }
 
-func IsItCheck(indexesToChange []int, game *Game) bool {
+func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
@@ -39,6 +39,10 @@ func IsItCheck(indexesToChange []int, game *Game) bool {
 	}
 
 	game.ChangeKingGameID(to)
+
+	if !game.NewFigure(to, newFigure) {
+		return false
+	}
 
 	if game.Check() {
 		return false

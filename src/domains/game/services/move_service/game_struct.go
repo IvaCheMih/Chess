@@ -15,6 +15,7 @@ type Game struct {
 	BlackCastling Castling
 	LastPawnMove  *int
 	Side          bool
+	NewFigureId   int
 }
 
 type IsCheck struct {
@@ -47,29 +48,8 @@ func CreateGameStruct(gameModel models.Game, board models.Board) Game {
 		BlackCastling: Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
 		LastPawnMove:  gameModel.LastPawnMove,
 		Side:          side,
+		NewFigureId:   0,
 	}
-}
-
-func CreateFigureRepo() map[int]byte {
-	var figureRepo = make(map[int]byte)
-
-	figureRepo[1] = 'a'
-	figureRepo[2] = 'k'
-	figureRepo[3] = 'b'
-	figureRepo[4] = 'q'
-	figureRepo[5] = 'K'
-	figureRepo[6] = 'p'
-	figureRepo[7] = 'h'
-
-	figureRepo[8] = 'a'
-	figureRepo[9] = 'k'
-	figureRepo[10] = 'b'
-	figureRepo[11] = 'q'
-	figureRepo[12] = 'K'
-	figureRepo[13] = 'p'
-	figureRepo[14] = 'h'
-
-	return figureRepo
 }
 
 func (game *Game) GetFigureByIndex(index int) *Figure {
@@ -450,6 +430,64 @@ func (g *Game) ChangeRookField(indexesToChange []int) {
 	g.ChangeToAndFrom(indexesToChange[3], indexesToChange[2])
 }
 
+func (g *Game) NewFigure(to int, newFigure byte) bool {
+	figure := g.GetFigureByIndex(to)
+
+	if (*figure).GetType() == 'p' {
+		fmt.Println(100)
+		if (*figure).IsItWhite() {
+			fmt.Println(101)
+
+			if to < 8 {
+				fmt.Println(102)
+
+				if !isNewFigureCorrect(newFigure) {
+					fmt.Println(103)
+
+					return false
+				}
+				fmt.Println(104)
+
+				(*g.Figures[to]).ChangeType(newFigure)
+
+				(*figure).ChangeType(newFigure)
+
+				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
+			}
+		} else {
+			if to > 55 {
+				if !isNewFigureCorrect(newFigure) {
+					return false
+				}
+				(*g.Figures[to]).ChangeType(newFigure)
+
+				(*figure).ChangeType(newFigure)
+
+				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
+			}
+		}
+	}
+
+	return true
+}
+
+func isNewFigureCorrect(newFigure byte) bool {
+	switch newFigure {
+	case 'k':
+		return true
+	case 'h':
+		return true
+	case 'a':
+		return true
+	case 'q':
+		return true
+	case 'b':
+		return true
+	default:
+		return false
+	}
+}
+
 var TheoryKnightSteps = []int{
 	(2 * 8) + 1,
 	(2 * 8) - 1,
@@ -466,4 +504,57 @@ func IndexToCoordinates(index int) string {
 	x := (index % 8) + int('A')
 
 	return string(byte(x)) + string(byte(y))
+}
+
+func mutateNewFigureId(newFigure byte, color bool) int {
+	if color {
+		switch rune(newFigure) {
+		case 'a':
+			return 1
+		case 'h':
+			return 7
+		case 'k':
+			return 2
+		case 'b':
+			return 3
+		case 'q':
+			return 4
+		}
+	}
+
+	switch rune(newFigure) {
+	case 'a':
+		return 8
+	case 'h':
+		return 14
+	case 'k':
+		return 9
+	case 'b':
+		return 10
+	case 'q':
+		return 11
+	}
+	return 0
+}
+
+func CreateFigureRepo() map[int]byte {
+	var figureRepo = make(map[int]byte)
+
+	figureRepo[1] = 'a'
+	figureRepo[2] = 'k'
+	figureRepo[3] = 'b'
+	figureRepo[4] = 'q'
+	figureRepo[5] = 'K'
+	figureRepo[6] = 'p'
+	figureRepo[7] = 'h'
+
+	figureRepo[8] = 'a'
+	figureRepo[9] = 'k'
+	figureRepo[10] = 'b'
+	figureRepo[11] = 'q'
+	figureRepo[12] = 'K'
+	figureRepo[13] = 'p'
+	figureRepo[14] = 'h'
+
+	return figureRepo
 }

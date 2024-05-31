@@ -1,8 +1,9 @@
 package dto
 
 type DoMoveBody struct {
-	From string
-	To   string
+	From      string
+	To        string
+	NewFigure byte
 }
 
 type DoMoveResponse struct {

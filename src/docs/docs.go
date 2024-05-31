@@ -288,7 +288,7 @@ const docTemplate = `{
                 "figureId": {
                     "type": "integer"
                 },
-                "index": {
+                "indexCell": {
                     "type": "integer"
                 }
             }
@@ -304,8 +304,14 @@ const docTemplate = `{
         "dto.CreateGameResponse": {
             "type": "object",
             "properties": {
-                "blackKingCell": {
-                    "type": "integer"
+                "blackKingCastling": {
+                    "type": "boolean"
+                },
+                "blackRookACastling": {
+                    "type": "boolean"
+                },
+                "blackRookHCastling": {
+                    "type": "boolean"
                 },
                 "blackUserId": {
                     "type": "integer"
@@ -325,11 +331,20 @@ const docTemplate = `{
                 "isStarted": {
                     "type": "boolean"
                 },
-                "side": {
+                "lastPawnMove": {
                     "type": "integer"
                 },
-                "whiteKingCell": {
-                    "type": "integer"
+                "side": {
+                    "type": "boolean"
+                },
+                "whiteKingCastling": {
+                    "type": "boolean"
+                },
+                "whiteRookACastling": {
+                    "type": "boolean"
+                },
+                "whiteRookHCastling": {
+                    "type": "boolean"
                 },
                 "whiteUserId": {
                     "type": "integer"
@@ -380,6 +395,9 @@ const docTemplate = `{
                 "from": {
                     "type": "string"
                 },
+                "newFigure": {
+                    "type": "integer"
+                },
                 "to": {
                     "type": "string"
                 }
@@ -410,13 +428,19 @@ const docTemplate = `{
         "models.Game": {
             "type": "object",
             "properties": {
-                "blackKingCell": {
-                    "type": "integer"
+                "blackKingCastling": {
+                    "type": "boolean"
+                },
+                "blackRookACastling": {
+                    "type": "boolean"
+                },
+                "blackRookHCastling": {
+                    "type": "boolean"
                 },
                 "blackUserId": {
                     "type": "integer"
                 },
-                "gameId": {
+                "id": {
                     "type": "integer"
                 },
                 "isCheckBlack": {
@@ -431,11 +455,20 @@ const docTemplate = `{
                 "isStarted": {
                     "type": "boolean"
                 },
-                "side": {
+                "lastPawnMove": {
                     "type": "integer"
                 },
-                "whiteKingCell": {
-                    "type": "integer"
+                "side": {
+                    "type": "boolean"
+                },
+                "whiteKingCastling": {
+                    "type": "boolean"
+                },
+                "whiteRookACastling": {
+                    "type": "boolean"
+                },
+                "whiteRookHCastling": {
+                    "type": "boolean"
                 },
                 "whiteUserId": {
                     "type": "integer"
@@ -445,13 +478,10 @@ const docTemplate = `{
         "models.Move": {
             "type": "object",
             "properties": {
-                "blackKingCell": {
-                    "type": "integer"
-                },
                 "figureId": {
                     "type": "integer"
                 },
-                "from": {
+                "from_id": {
                     "type": "integer"
                 },
                 "gameId": {
@@ -475,10 +505,7 @@ const docTemplate = `{
                 "newFigureId": {
                     "type": "integer"
                 },
-                "to": {
-                    "type": "integer"
-                },
-                "whiteKingCell": {
+                "to_id": {
                     "type": "integer"
                 }
             }

@@ -13,7 +13,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
-	"time"
 )
 
 var db *gorm.DB
@@ -29,7 +28,7 @@ func Init() {
 		log.Fatalln(err)
 	}
 
-	time.Sleep(5 * time.Second)
+	//time.Sleep(5 * time.Second)
 
 	migrationService := services.CreateMigrationService()
 
