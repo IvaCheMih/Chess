@@ -232,7 +232,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	return responseMove, err
 }
 
-func (g *GamesService) GiveUp(gameId int, userId any) (models.Game, error) {
+func (g *GamesService) GiveUp(gameId int) (models.Game, error) {
 
 	game, err := g.gamesRepo.UpdateIsEnded(gameId)
 	if err != nil {
