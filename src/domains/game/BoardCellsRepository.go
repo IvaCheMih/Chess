@@ -61,6 +61,14 @@ func (b *BoardCellsRepository) Update(id int, to int, tx *gorm.DB) error {
 	return err
 }
 
+func (b *BoardCellsRepository) UpdateNewFigure(id int, to int, newFigureId int, tx *gorm.DB) error {
+
+	err := tx.Model(&models.BoardCell{}).Where("id=?", id).Updates(map[string]interface{}{"index_cell": to, "figure_id": newFigureId}).Error
+	fmt.Println(err)
+
+	return err
+}
+
 func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
 
 	err := tx.Delete(&models.BoardCell{}, id).Error
