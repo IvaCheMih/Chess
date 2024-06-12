@@ -153,9 +153,9 @@ func (h *GamesHandlers) GiveUp(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	userId := c.Context().Value("userId")
+	//userId := c.Context().Value("userId")
 
-	responseMove, err := h.gameService.GiveUp(request.GameId, userId)
+	responseMove, err := h.gameService.GiveUp(request.GameId)
 	if err != nil {
 		fmt.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)

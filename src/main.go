@@ -23,12 +23,12 @@ var authHandlers auth.AuthHandlers
 
 func Init() {
 
-	err := services.GetFromEnv()
+	var err error
+
+	err = services.GetFromEnv()
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	//time.Sleep(5 * time.Second)
 
 	migrationService := services.CreateMigrationService()
 
@@ -116,5 +116,4 @@ func main() {
 	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)
 	}
-
 }

@@ -434,19 +434,11 @@ func (g *Game) NewFigure(to int, newFigure byte) bool {
 	figure := g.GetFigureByIndex(to)
 
 	if (*figure).GetType() == 'p' {
-		fmt.Println(100)
 		if (*figure).IsItWhite() {
-			fmt.Println(101)
-
 			if to < 8 {
-				fmt.Println(102)
-
 				if !isNewFigureCorrect(newFigure) {
-					fmt.Println(103)
-
 					return false
 				}
-				fmt.Println(104)
 
 				(*g.Figures[to]).ChangeType(newFigure)
 
