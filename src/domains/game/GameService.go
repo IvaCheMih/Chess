@@ -86,6 +86,9 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, error) {
 
 	game, err := g.gamesRepo.GetById(gameId)
+	if err != nil {
+		return dto.GetBoardResponse{}, err
+	}
 
 	if userId != game.WhiteUserId && userId != game.BlackUserId {
 		return dto.GetBoardResponse{}, err
