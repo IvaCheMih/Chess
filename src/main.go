@@ -10,6 +10,7 @@ import (
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -22,13 +23,14 @@ var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
 func Init() {
-
-	var err error
-
-	err = services.GetFromEnv()
+	viper.AutomaticEnv()
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	services.GetFromEnv()
 
 	migrationService := services.CreateMigrationService()
 
@@ -86,7 +88,6 @@ func Shutdown() {
 //	@name                       Authorization
 //	@description                JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.
 func main() {
-
 	Init()
 
 	defer Shutdown()

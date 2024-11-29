@@ -3,8 +3,11 @@ package test
 import (
 	"fmt"
 	gameDto "github.com/IvaCheMih/chess/src/domains/game/dto"
+	"github.com/IvaCheMih/chess/src/domains/services"
 	userDto "github.com/IvaCheMih/chess/src/domains/user/dto"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 )
 
@@ -36,6 +39,14 @@ var boardFirst = [][]int{
 }
 
 func TestGame(t *testing.T) {
+	viper.AutomaticEnv()
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	services.GetFromEnv()
 
 	expectedFirst := MakeExpected(boardFirst)
 
