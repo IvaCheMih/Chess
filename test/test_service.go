@@ -198,31 +198,3 @@ func GetBoard(token string, gameId int) (error, gameDto.GetBoardResponse) {
 
 	return err, board
 }
-
-//func compareExpectedAndActual(board gameDto.GetBoardResponse, expectedFile string) bool {
-//	file, err := os.Open(expectedFile)
-//	if err != nil {
-//		fmt.Println(err)
-//		os.Exit(1)
-//	}
-//	defer file.Close()
-//
-//	expected := make([]byte, 2048)
-//
-//	for {
-//		_, er := file.Read(expected)
-//		if er == io.EOF {
-//			break
-//		}
-//	}
-//
-//	actual, _ := json.Marshal(board)
-//
-//	for i, b := range actual {
-//		if b != expected[i] {
-//			return false
-//		}
-//	}
-//
-//	return true
-//}

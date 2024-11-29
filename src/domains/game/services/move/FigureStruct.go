@@ -1,4 +1,4 @@
-package move_service
+package move
 
 type FigurePawn struct {
 	BaseFigure

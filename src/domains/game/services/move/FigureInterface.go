@@ -1,4 +1,4 @@
-package move_service
+package move
 
 import (
 	"github.com/IvaCheMih/chess/src/domains/game/models"

@@ -2,7 +2,7 @@ package game
 
 import (
 	"github.com/IvaCheMih/chess/src/domains/game/models"
-	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
+	"github.com/IvaCheMih/chess/src/domains/game/services/move"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -41,18 +41,12 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	return game, nil
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide bool, userId int, tx *gorm.DB) (models.Game, error) {
-	var game models.Game
-
-	err := tx.Table(`games`).
-		Model(&game).Where("id=?", gameId).
+func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide bool, userId int, tx *gorm.DB) error {
+	return tx.Table(`games`).
+		Where("id=?", gameId).
 		Updates(map[string]interface{}{userColorId: userId, "side": gameSide, "is_started": true}).
 		Error
-	if err != nil {
-		return models.Game{}, err
-	}
 
-	return game, err
 }
 
 func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
@@ -68,7 +62,7 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 	return game, err
 }
 
-func (g *GamesRepository) UpdateGame(gameId int, game move_service.Game, tx *gorm.DB) error {
+func (g *GamesRepository) UpdateGame(gameId int, game move.Game, tx *gorm.DB) error {
 	return tx.Table(`games`).
 		Model(&models.Game{}).
 		Where("id=?", gameId).

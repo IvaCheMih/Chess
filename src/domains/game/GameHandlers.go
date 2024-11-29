@@ -1,9 +1,9 @@
 package game
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/gofiber/fiber/v2"
+	"log"
 )
 
 type GamesHandlers struct {
@@ -29,7 +29,7 @@ func CreateGamesHandlers(gameService *GamesService) GamesHandlers {
 func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 	request, err := dto.GetRequestNewGame(c)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -37,7 +37,7 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 
 	responseCreateGame, err := h.gameService.CreateGame(userId.(int), request.IsWhite)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -58,7 +58,7 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 	request, err := dto.GetGameId(c)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -66,7 +66,7 @@ func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 
 	getBoardResponse, err := h.gameService.GetBoard(request.GameId, userId)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -86,7 +86,7 @@ func (h *GamesHandlers) GetBoard(c *fiber.Ctx) error {
 func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 	request, err := dto.GetGameId(c)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -94,7 +94,7 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 
 	responseGetHistory, err := h.gameService.GetHistory(request.GameId, userId)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -115,13 +115,13 @@ func (h *GamesHandlers) GetHistory(c *fiber.Ctx) error {
 func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 	request, err := dto.GetGameId(c)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
 	requestDoMove, err := dto.GetRequestDoMoveFromBody(c)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -129,7 +129,7 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 
 	responseMove, err := h.gameService.Move(request.GameId, userId, requestDoMove)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -149,7 +149,7 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 func (h *GamesHandlers) GiveUp(c *fiber.Ctx) error {
 	request, err := dto.GetGameId(c)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -157,7 +157,7 @@ func (h *GamesHandlers) GiveUp(c *fiber.Ctx) error {
 
 	responseMove, err := h.gameService.GiveUp(request.GameId)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 

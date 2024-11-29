@@ -4,7 +4,7 @@ import (
 	_ "github.com/IvaCheMih/chess/src/docs"
 	"github.com/IvaCheMih/chess/src/domains/auth"
 	"github.com/IvaCheMih/chess/src/domains/game"
-	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
+	"github.com/IvaCheMih/chess/src/domains/game/services/move"
 	"github.com/IvaCheMih/chess/src/domains/services"
 	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
@@ -39,10 +39,9 @@ func Init() {
 		log.Fatalln(err)
 	}
 
-	move_service.FigureRepo = move_service.CreateFigureRepo()
+	move.FigureRepo = move.CreateFigureRepo()
 
 	db, err = gorm.Open(postgres.Open(services.PostgresqlUrl), &gorm.Config{})
-
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -79,7 +78,7 @@ func Shutdown() {
 // @license.name 				Apache 2.0
 // @license.url 				http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 						localhost:8080
+// @host 						127.0.0.1:8080
 // @BasePath 					/
 // @schemes 					http
 //
@@ -114,7 +113,7 @@ func main() {
 
 	server.Post("/game/:gameId/give-up", authHandlers.Auth, gamesHandlers.GiveUp)
 
-	if err := server.Listen(":8080"); err != nil {
+	if err := server.Listen("127.0.0.1:8080"); err != nil {
 		log.Fatal(err)
 	}
 }

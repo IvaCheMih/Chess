@@ -1,7 +1,6 @@
-package move_service
+package move
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"math"
 )
@@ -199,7 +198,6 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 	crd := IndexToFieldCoordinates(index)
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] + i}); i++ {
-		fmt.Println([]int{crd[0] + i, crd[1] + i})
 		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1] + i}, 'b')
 		if isCheck {
 			return true

@@ -1,8 +1,8 @@
-package move_service
+package move
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
+	"log"
 )
 
 func IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int) ([]int, Game) {
@@ -153,7 +153,7 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []i
 		}
 	}
 
-	fmt.Println("Запрашиваемого хода нет в массиве")
+	log.Println("Запрашиваемого хода нет в массиве")
 	return false, []int{}
 }
 
@@ -177,43 +177,4 @@ func GetNewRookCoordinatesIfCastling(to int) []int {
 	}
 
 	return crd
-}
-
-func printMoves(possibleMoves *TheoryMoves) { //nolint:unused
-	for _, v := range possibleMoves.Down {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Up {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Left {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Right {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.DL {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.DR {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.UR {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.UL {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Kn {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-
-	for _, v := range possibleMoves.Castling {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-
-	for _, v := range possibleMoves.EnPass {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-
 }
