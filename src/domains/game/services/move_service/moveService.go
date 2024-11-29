@@ -179,7 +179,7 @@ func GetNewRookCoordinatesIfCastling(to int) []int {
 	return crd
 }
 
-func printMoves(possibleMoves *TheoryMoves) {
+func printMoves(possibleMoves *TheoryMoves) { //nolint:unused
 	for _, v := range possibleMoves.Down {
 		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
 	}

@@ -1,8 +1,6 @@
 package game
 
 import (
-	"database/sql"
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
@@ -19,78 +17,67 @@ func CreateBoardCellsRepository(db *gorm.DB) BoardCellsRepository {
 }
 
 func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *gorm.DB) error {
-	var board_cells = []models.BoardCell{}
+	var boardCells = make([]models.BoardCell, len(startField))
 
-	for _, cell := range startField {
-		c := models.BoardCell{
+	for i, cell := range startField {
+		boardCells[i] = models.BoardCell{
 			GameId:    gameId,
 			IndexCell: cell[0],
 			FigureId:  cell[1],
 		}
-		board_cells = append(board_cells, c)
 	}
 
-	err := tx.Create(board_cells).Error
-
-	return err
+	return tx.Table(`board_cells`).
+		Create(boardCells).
+		Error
 }
 
 func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
-	var board_cell = []models.BoardCell{}
+	var boardCell = []models.BoardCell{}
 
-	res := b.db.Find(&board_cell).Where("game_id=?", gameId)
+	err := b.db.Table(`board_cells`).
+		Find(&boardCell).
+		Where("game_id=?", gameId).
+		Error
+	if err != nil {
+		return models.Board{}, err
+	}
+
+	res := b.db.Find(&boardCell).Where("game_id=?", gameId)
 	if res.Error != nil {
 		return models.Board{}, res.Error
 	}
 
-	rows, err := res.Rows()
-	if err != nil {
-		return models.Board{}, res.Error
-	}
+	var cells = map[int]*models.BoardCell{}
 
-	cells, err := RowsToCells(rows)
+	for i := range boardCell {
+		cells[boardCell[i].IndexCell] = &boardCell[i]
+	}
 
 	return models.Board{Cells: cells}, err
 }
 
 func (b *BoardCellsRepository) Update(id int, to int, tx *gorm.DB) error {
-
-	err := tx.Model(&models.BoardCell{}).Where("id=?", id).Updates(map[string]interface{}{"index_cell": to}).Error
-	fmt.Println(err)
-
-	return err
+	return tx.Table(`board_cells`).
+		Where("id=?", id).
+		Updates(map[string]interface{}{
+			"index_cell": to,
+		}).
+		Error
 }
 
 func (b *BoardCellsRepository) UpdateNewFigure(id int, to int, newFigureId int, tx *gorm.DB) error {
-
-	err := tx.Model(&models.BoardCell{}).Where("id=?", id).Updates(map[string]interface{}{"index_cell": to, "figure_id": newFigureId}).Error
-	fmt.Println(err)
-
-	return err
+	return tx.Table(`board_cells`).
+		Where("id=?", id).
+		Updates(map[string]interface{}{
+			"index_cell": to, "figure_id": newFigureId,
+		}).
+		Error
 }
 
 func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
-
-	err := tx.Delete(&models.BoardCell{}, id).Error
-
-	fmt.Println(err)
-
-	return err
-}
-
-func RowsToCells(rows *sql.Rows) (map[int]*models.BoardCell, error) {
-	var cells = map[int]*models.BoardCell{}
-
-	for rows.Next() {
-		var cell = models.BoardCell{}
-
-		err := rows.Scan(&cell.Id, &cell.GameId, &cell.IndexCell, &cell.FigureId)
-		if err != nil {
-			return map[int]*models.BoardCell{}, err
-		}
-
-		cells[cell.IndexCell] = &cell
-	}
-
-	return cells, nil
+	return tx.Table(`board_cells`).
+		Where("id=?", id).
+		Delete(&models.BoardCell{}).
+		Error
 }

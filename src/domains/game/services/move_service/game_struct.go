@@ -364,7 +364,6 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 }
 
 func (g *Game) ChangeToAndFrom(to int, from int) {
-
 	coordinateTo := IndexToFieldCoordinates(to)
 	coordinateFrom := IndexToFieldCoordinates(from)
 
@@ -380,7 +379,7 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	g.Figures[to] = g.Figures[from]
 	g.Figures[from] = nil
 
-	figureTo = g.GetFigureByIndex(to)
+	figureTo = g.GetFigureByIndex(to) //nolint:ineffassign,staticcheck
 }
 
 //func (g *Game) ChangeRookIfCastling(to int) {

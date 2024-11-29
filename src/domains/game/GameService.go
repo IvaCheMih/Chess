@@ -55,7 +55,15 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	}
 
 	if err != nil && err.Error() == "record not found" {
-		response, err = g.gamesRepo.CreateGame(userId, userRequestedColor, tx)
+		var game = models.Game{}
+
+		if userRequestedColor {
+			game.WhiteUserId = userId
+		} else {
+			game.BlackUserId = userId
+		}
+
+		response, err = g.gamesRepo.CreateGame(tx, game)
 		createNewBoard = true
 		if err != nil {
 			return dto.CreateGameResponse{}, err
@@ -102,7 +110,10 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
 	for index, cell := range board.Cells {
-		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
+		responseBoard[index] = dto.BoardCellEntity{
+			IndexCell: cell.IndexCell,
+			FigureId:  cell.FigureId,
+		}
 	}
 
 	getBoardResponse := dto.GetBoardResponse{
@@ -185,7 +196,24 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, maxNumber+1, tx)
+	killedFigureId := 0
+	if board.Cells[to] != nil {
+		killedFigureId = board.Cells[to].FigureId
+	}
+
+	var move = models.Move{
+		GameId:         gameId,
+		MoveNumber:     maxNumber,
+		From_id:        from,
+		To_id:          to,
+		FigureId:       board.Cells[from].FigureId,
+		KilledFigureId: killedFigureId,
+		NewFigureId:    0,
+		IsCheckWhite:   game.IsCheckWhite.IsItCheck,
+		IsCheckBlack:   game.IsCheckBlack.IsItCheck,
+	}
+
+	responseMove, err := g.movesRepo.AddMove(move, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -212,7 +240,10 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	for index, cell := range cells.Cells {
-		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
+		responseBoard[index] = dto.BoardCellEntity{
+			IndexCell: cell.IndexCell,
+			FigureId:  cell.FigureId,
+		}
 
 	}
 
@@ -236,8 +267,12 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 }
 
 func (g *GamesService) GiveUp(gameId int) (models.Game, error) {
+	err := g.gamesRepo.UpdateIsEnded(gameId)
+	if err != nil {
+		return models.Game{}, err
+	}
 
-	game, err := g.gamesRepo.UpdateIsEnded(gameId)
+	game, err := g.gamesRepo.GetById(gameId)
 	if err != nil {
 		return models.Game{}, err
 	}
