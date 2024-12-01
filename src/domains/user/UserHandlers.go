@@ -1,7 +1,6 @@
 package user
 
 import (
-	"github.com/IvaCheMih/chess/src/domains/services"
 	"github.com/IvaCheMih/chess/src/domains/user/dto"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -10,11 +9,13 @@ import (
 
 type UserHandlers struct {
 	usersService *UsersService
+	jwtSecret    string
 }
 
-func CreateUserHandlers(usersService *UsersService) UserHandlers {
+func CreateUserHandlers(usersService *UsersService, jwtSecret string) UserHandlers {
 	return UserHandlers{
 		usersService: usersService,
+		jwtSecret:    jwtSecret,
 	}
 }
 
@@ -45,7 +46,7 @@ func (h *UserHandlers) CreateSession(c *fiber.Ctx) error {
 
 	var response dto.CreateSessionResponse
 
-	response.Token, err = token.SignedString([]byte(services.JWT_secret))
+	response.Token, err = token.SignedString([]byte(h.jwtSecret))
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}

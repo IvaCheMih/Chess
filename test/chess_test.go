@@ -46,11 +46,11 @@ func TestGame(t *testing.T) {
 		err := viper.ReadInConfig()
 		require.NoError(t, err)
 
-		services.GetFromEnv()
+		envs := services.NewEnvService()
 
 		expectedFirst := MakeExpected(boardFirst)
 
-		DoTestChessGame(t, movesFirst, expectedFirst)
+		DoTestChessGame(t, movesFirst, expectedFirst, envs.AppURL)
 	})
 }
 
@@ -69,14 +69,14 @@ func MakeExpected(boardMas [][]int) gamedto.GetBoardResponse {
 	return board
 }
 
-func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.GetBoardResponse) {
+func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.GetBoardResponse, appURL string) {
 	var user1password = userdto.CreateUserRequest{Password: "password"}
 	var user2password = userdto.CreateUserRequest{Password: "password"}
 
-	err, user1response := CreateUser(user1password)
+	err, user1response := CreateUser(user1password, appURL)
 	require.NoError(t, err)
 
-	err, user2response := CreateUser(user2password)
+	err, user2response := CreateUser(user2password, appURL)
 	require.NoError(t, err)
 
 	var session1 = userdto.CreateSessionRequest{ //nolint:gosimple
@@ -89,20 +89,20 @@ func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.
 		Password: user2response.Password,
 	}
 
-	err, session1response := CreateSession(session1)
+	err, session1response := CreateSession(session1, appURL)
 	require.NoError(t, err)
 
-	err, session2response := CreateSession(session2)
+	err, session2response := CreateSession(session2, appURL)
 	require.NoError(t, err)
 
 	var game1user = gamedto.CreateGameBody{IsWhite: true}
 	var game2user = gamedto.CreateGameBody{
 		IsWhite: false}
 
-	err, game1response := CreateGame(game1user, session1response.Token)
+	err, game1response := CreateGame(game1user, session1response.Token, appURL)
 	require.NoError(t, err)
 
-	err, game2response := CreateGame(game2user, session2response.Token)
+	err, game2response := CreateGame(game2user, session2response.Token, appURL)
 	require.NoError(t, err)
 
 	if game1response.GameId != game2response.GameId {
@@ -112,15 +112,15 @@ func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.
 
 	for i, move := range moves {
 		if i%2 == 0 {
-			err, _ = CreateMove(move, session1response.Token, game1response.GameId)
+			err, _ = CreateMove(move, session1response.Token, game1response.GameId, appURL)
 			require.NoError(t, err)
 		} else {
-			err, _ = CreateMove(move, session2response.Token, game2response.GameId)
+			err, _ = CreateMove(move, session2response.Token, game2response.GameId, appURL)
 			require.NoError(t, err)
 		}
 	}
 
-	err, board := GetBoard(session1response.Token, game1response.GameId)
+	err, board := GetBoard(session1response.Token, game1response.GameId, appURL)
 	require.NoError(t, err)
 
 	if !assert.Equal(t, board, expected) {

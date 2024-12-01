@@ -9,7 +9,6 @@ import (
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -21,29 +20,15 @@ var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
-func Init() {
-	viper.AutomaticEnv()
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	//err := services.GetFromEnv()
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-
-	services.GetFromEnv()
-
+func Init(envs *services.EnvService) {
 	migrationService := services.CreateMigrationService()
 
-	err = migrationService.RunUp(services.PostgresqlUrl, "file://migrations/postgresql")
+	err := migrationService.RunUp(envs.PostgresqlUrl, envs.Migrations)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	db, err = gorm.Open(postgres.Open(services.PostgresqlUrl), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(envs.PostgresqlUrl), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -54,7 +39,7 @@ func Init() {
 	gamesRepository := game.CreateGamesRepository(db)
 
 	usersServices := user.CreateUsersService(&usersRepository)
-	userHandlers = user.CreateUserHandlers(&usersServices)
+	userHandlers = user.CreateUserHandlers(&usersServices, envs.JWTSecret)
 
 	gamesService := game.CreateGamesService(&boardCellsRepository, &gamesRepository, &movesRepository)
 	gamesHandlers = game.CreateGamesHandlers(&gamesService)
@@ -89,7 +74,9 @@ func Shutdown() {
 //	@name                       Authorization
 //	@description                JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.
 func main() {
-	Init()
+	envs := services.NewEnvService()
+
+	Init(envs)
 
 	defer Shutdown()
 
@@ -102,7 +89,7 @@ func main() {
 	server.Post("/session", userHandlers.CreateSession)
 
 	server.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte(services.JWT_secret)},
+		SigningKey: jwtware.SigningKey{Key: []byte(envs.JWTSecret)},
 	}))
 
 	server.Post("/game", authHandlers.Auth, gamesHandlers.CreateGame)

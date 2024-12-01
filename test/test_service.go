@@ -4,20 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	gameDto "github.com/IvaCheMih/chess/src/domains/game/dto"
-	"github.com/IvaCheMih/chess/src/domains/services"
 	userDto "github.com/IvaCheMih/chess/src/domains/user/dto"
 	"io"
 	"net/http"
 	"strconv"
 )
 
-func CreateUser(user1password userDto.CreateUserRequest) (error, userDto.CreateUserResponse) {
+func CreateUser(user1password userDto.CreateUserRequest, appURL string) (error, userDto.CreateUserResponse) {
 	body, err := json.Marshal(user1password)
 	if err != nil {
 		return err, userDto.CreateUserResponse{}
 	}
 
-	url := services.APP_URL + "user/"
+	url := appURL + "user/"
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
@@ -46,13 +45,13 @@ func CreateUser(user1password userDto.CreateUserRequest) (error, userDto.CreateU
 	return err, user1response
 }
 
-func CreateSession(session userDto.CreateSessionRequest) (error, userDto.CreateSessionResponse) {
+func CreateSession(session userDto.CreateSessionRequest, appURL string) (error, userDto.CreateSessionResponse) {
 	body, err := json.Marshal(session)
 	if err != nil {
 		return err, userDto.CreateSessionResponse{}
 	}
 
-	url := services.APP_URL + "session/"
+	url := appURL + "session/"
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
@@ -81,13 +80,13 @@ func CreateSession(session userDto.CreateSessionRequest) (error, userDto.CreateS
 	return err, session1response
 }
 
-func CreateGame(game gameDto.CreateGameBody, token string) (error, gameDto.CreateGameResponse) {
+func CreateGame(game gameDto.CreateGameBody, token string, appURL string) (error, gameDto.CreateGameResponse) {
 	body, err := json.Marshal(game)
 	if err != nil {
 		return err, gameDto.CreateGameResponse{}
 	}
 
-	url := services.APP_URL + "game/"
+	url := appURL + "game/"
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
@@ -121,13 +120,13 @@ func CreateGame(game gameDto.CreateGameBody, token string) (error, gameDto.Creat
 	return err, gameResponse
 }
 
-func CreateMove(move gameDto.DoMoveBody, token string, gameId int) (error, gameDto.DoMoveResponse) {
+func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string) (error, gameDto.DoMoveResponse) {
 	body, err := json.Marshal(move)
 	if err != nil {
 		return err, gameDto.DoMoveResponse{}
 	}
 
-	url := services.APP_URL + "game/" + strconv.Itoa(gameId) + "/move/"
+	url := appURL + "game/" + strconv.Itoa(gameId) + "/move/"
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 
@@ -166,9 +165,9 @@ func CreateMove(move gameDto.DoMoveBody, token string, gameId int) (error, gameD
 	return err, doMove
 }
 
-func GetBoard(token string, gameId int) (error, gameDto.GetBoardResponse) {
+func GetBoard(token string, gameId int, appURL string) (error, gameDto.GetBoardResponse) {
 
-	url := services.APP_URL + "game/" + strconv.Itoa(gameId) + "/board/"
+	url := appURL + "game/" + strconv.Itoa(gameId) + "/board/"
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 
