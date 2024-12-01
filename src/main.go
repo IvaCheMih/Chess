@@ -29,6 +29,11 @@ func Init() {
 		log.Fatalln(err)
 	}
 
+	//err := services.GetFromEnv()
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+
 	services.GetFromEnv()
 
 	migrationService := services.CreateMigrationService()
@@ -110,7 +115,7 @@ func main() {
 
 	server.Post("/game/:gameId/give-up", authHandlers.Auth, gamesHandlers.GiveUp)
 
-	if err := server.Listen("127.0.0.1:8080"); err != nil {
+	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }

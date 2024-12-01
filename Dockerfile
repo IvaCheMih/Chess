@@ -1,4 +1,4 @@
-FROM golang:1.21.4 AS builder
+FROM golang:1.23.2 AS builder
 
 WORKDIR /app
 
@@ -15,6 +15,7 @@ FROM ubuntu
 WORKDIR /app
 
 ADD ./migrations/ ./migrations/
+ADD .env .env
 
 COPY --from=builder /app/chess .
 

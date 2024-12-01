@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:latest
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'pass'
+      POSTGRES_DB: 'test'
+
+    command: postgres -c max_connections=20 -c shared_buffers=200MB
+#    ports:
+#        - "8090:5432"
+    networks:
+      - infra
+
+  application:
+    depends_on:
+      postgres:
+          condition: service_healthy
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    networks:
+      - infra
+    env_file: .env
+
+
+
+networks:
+  infra:
+    driver: bridge

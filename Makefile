@@ -11,8 +11,19 @@ test:
 	go clean -testcache
 	go test -v ./... -short
 
-run-local:
+run-remote:
+	docker-compose -f docker-compose-remote.yaml up -d
+
+run-local-all:
+	docker-compose -f docker-compose-local.yaml up -d
+	sleep 2
 	go run src/main.go
 
-run-docker:
-	docker-compose up -d
+run-local-docker:
+	docker-compose -f docker-compose-local.yaml up -d
+
+run-local-app:
+	go run src/main.go
+
+swagger:
+	( cd src ; swag init )
