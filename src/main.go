@@ -4,7 +4,6 @@ import (
 	_ "github.com/IvaCheMih/chess/src/docs"
 	"github.com/IvaCheMih/chess/src/domains/auth"
 	"github.com/IvaCheMih/chess/src/domains/game"
-	"github.com/IvaCheMih/chess/src/domains/game/services/move"
 	"github.com/IvaCheMih/chess/src/domains/services"
 	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
@@ -38,8 +37,6 @@ func Init() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	move.FigureRepo = move.CreateFigureRepo()
 
 	db, err = gorm.Open(postgres.Open(services.PostgresqlUrl), &gorm.Config{})
 	if err != nil {

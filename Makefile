@@ -13,3 +13,6 @@ test:
 
 run-local:
 	go run src/main.go
+
+run-docker:
+	docker-compose up -d

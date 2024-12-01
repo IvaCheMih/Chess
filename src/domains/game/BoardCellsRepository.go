@@ -8,18 +8,21 @@ import (
 
 type BoardCellsRepository struct {
 	db *gorm.DB
+
+	startField [][]int
 }
 
 func CreateBoardCellsRepository(db *gorm.DB) BoardCellsRepository {
 	return BoardCellsRepository{
-		db: db,
+		db:         db,
+		startField: makeStartField(),
 	}
 }
 
 func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *gorm.DB) error {
-	var boardCells = make([]models.BoardCell, len(startField))
+	var boardCells = make([]models.BoardCell, len(b.startField))
 
-	for i, cell := range startField {
+	for i, cell := range b.startField {
 		boardCells[i] = models.BoardCell{
 			GameId:    gameId,
 			IndexCell: cell[0],
@@ -80,4 +83,13 @@ func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
 		Where("id=?", id).
 		Delete(&models.BoardCell{}).
 		Error
+}
+
+func makeStartField() [][]int {
+	return [][]int{
+		{0, 8}, {1, 9}, {2, 10}, {3, 11}, {4, 12}, {5, 10}, {6, 9}, {7, 14},
+		{8, 13}, {9, 13}, {10, 13}, {11, 13}, {12, 13}, {13, 13}, {14, 13}, {15, 13},
+		{48, 6}, {49, 6}, {50, 6}, {51, 6}, {52, 6}, {53, 6}, {54, 6}, {55, 6},
+		{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 7},
+	}
 }

@@ -1,7 +1,6 @@
 package move
 
 import (
-	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"math"
 )
 
@@ -26,29 +25,6 @@ type Castling struct {
 	KingCastling  bool
 	RookACastling bool
 	RookHCastling bool
-}
-
-var FigureRepo = make(map[int]byte)
-
-func CreateGameStruct(gameModel models.Game, board models.Board) Game {
-
-	figures, blackKingCell, whiteKingCell := CreateField(board, gameModel)
-
-	side := gameModel.Side
-
-	return Game{
-		N: 8,
-		//WhiteClientId: &gameModel.WhiteUserId,
-		//BlackClientId: &gameModel.BlackUserId,
-		Figures:       figures,
-		IsCheckWhite:  IsCheck{gameModel.IsCheckWhite, whiteKingCell},
-		IsCheckBlack:  IsCheck{gameModel.IsCheckBlack, blackKingCell},
-		WhiteCastling: Castling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
-		BlackCastling: Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
-		LastPawnMove:  gameModel.LastPawnMove,
-		Side:          side,
-		NewFigureId:   0,
-	}
 }
 
 func (game *Game) GetFigureByIndex(index int) *Figure {

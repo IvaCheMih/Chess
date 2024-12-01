@@ -14,13 +14,21 @@ type GamesService struct {
 	boardRepo *BoardCellsRepository
 	gamesRepo *GamesRepository
 	movesRepo *MovesRepository
+
+	moveService *moveservice.MoveService
+
+	figureRepo map[int]byte
 }
 
 func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesRepository, movesRepo *MovesRepository) GamesService {
+	figureRepo := moveservice.CreateFigureRepo()
 	return GamesService{
 		boardRepo: boardRepo,
 		gamesRepo: gamesRepo,
 		movesRepo: movesRepo,
+
+		figureRepo:  figureRepo,
+		moveService: moveservice.NewMoveService(figureRepo),
 	}
 }
 
@@ -172,7 +180,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	indexesToChange, game := moveservice.IsMoveCorrect(gameModel, board, from, to)
+	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to)
 
 	if len(indexesToChange) == 0 {
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
@@ -262,9 +270,10 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		if getBoardResponse.BoardCells[i].FigureId == 0 {
 			fmt.Print(0)
 		} else {
-			fmt.Print(string(moveservice.FigureRepo[getBoardResponse.BoardCells[i].FigureId]))
+			fmt.Print(string(g.figureRepo[getBoardResponse.BoardCells[i].FigureId]))
 		}
 	}
+	fmt.Println()
 
 	return responseMove, err
 }
@@ -393,11 +402,4 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 	createGameResponse.LastPawnMove = response.LastPawnMove
 	createGameResponse.Side = response.Side
-}
-
-var startField = [][]int{
-	{0, 8}, {1, 9}, {2, 10}, {3, 11}, {4, 12}, {5, 10}, {6, 9}, {7, 14},
-	{8, 13}, {9, 13}, {10, 13}, {11, 13}, {12, 13}, {13, 13}, {14, 13}, {15, 13},
-	{48, 6}, {49, 6}, {50, 6}, {51, 6}, {52, 6}, {53, 6}, {54, 6}, {55, 6},
-	{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 7},
 }
