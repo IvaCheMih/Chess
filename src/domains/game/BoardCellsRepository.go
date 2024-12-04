@@ -19,7 +19,7 @@ func CreateBoardCellsRepository(db *gorm.DB) BoardCellsRepository {
 	}
 }
 
-func (b *BoardCellsRepository) CreateNewBoardCells(gameId int, tx *gorm.DB) error {
+func (b *BoardCellsRepository) CreateNewBoardCells(tx *gorm.DB, gameId int) error {
 	var boardCells = make([]models.BoardCell, len(b.startField))
 
 	for i, cell := range b.startField {
@@ -60,7 +60,7 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 	return models.Board{Cells: cells}, err
 }
 
-func (b *BoardCellsRepository) Update(id int, to int, tx *gorm.DB) error {
+func (b *BoardCellsRepository) Update(tx *gorm.DB, id int, to int) error {
 	return tx.Table(`board_cells`).
 		Where("id=?", id).
 		Updates(map[string]interface{}{
@@ -69,7 +69,7 @@ func (b *BoardCellsRepository) Update(id int, to int, tx *gorm.DB) error {
 		Error
 }
 
-func (b *BoardCellsRepository) UpdateNewFigure(id int, to int, newFigureId int, tx *gorm.DB) error {
+func (b *BoardCellsRepository) UpdateNewFigure(tx *gorm.DB, id int, to int, newFigureId int) error {
 	return tx.Table(`board_cells`).
 		Where("id=?", id).
 		Updates(map[string]interface{}{
@@ -78,7 +78,7 @@ func (b *BoardCellsRepository) UpdateNewFigure(id int, to int, newFigureId int, 
 		Error
 }
 
-func (b *BoardCellsRepository) Delete(id int, tx *gorm.DB) error {
+func (b *BoardCellsRepository) Delete(tx *gorm.DB, id int) error {
 	return tx.Table(`board_cells`).
 		Where("id=?", id).
 		Delete(&models.BoardCell{}).

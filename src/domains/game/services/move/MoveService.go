@@ -2,21 +2,56 @@ package move
 
 import (
 	"github.com/IvaCheMih/chess/src/domains/game/models"
-	"log"
 )
 
 type MoveService struct {
-	figureRepo map[int]byte
+	figureRepo        map[int]byte
+	newFigures        map[byte]struct{}
+	theoryKnightSteps *[]int
 }
+
+type EndgameReason string
+
+const (
+	Mate       EndgameReason = "Mate"
+	Pat        EndgameReason = "Pat"
+	Repetition EndgameReason = "Repetition"
+	NoLosses   EndgameReason = "NoLosses"
+)
 
 func NewMoveService(figureRepo map[int]byte) *MoveService {
 	return &MoveService{
-		figureRepo: figureRepo,
+		figureRepo:        figureRepo,
+		newFigures:        MakeNewFigures(),
+		theoryKnightSteps: MakeTheoryKnightSteps(),
+	}
+}
+
+func MakeNewFigures() map[byte]struct{} {
+	return map[byte]struct{}{
+		'k': {},
+		'h': {},
+		'a': {},
+		'q': {},
+		'b': {},
+	}
+}
+
+func MakeTheoryKnightSteps() *[]int {
+	return &[]int{
+		(2 * 8) + 1,
+		(2 * 8) - 1,
+		(-1)*(2*8) + 1,
+		(-1)*(2*8) - 1,
+		8 + 2,
+		-8 + 2,
+		8 - 2,
+		-8 - 2,
 	}
 }
 
 func (m *MoveService) createGameStruct(gameModel models.Game, board models.Board) Game {
-	figures, blackKingCell, whiteKingCell := m.CreateField(board, gameModel)
+	figures, blackKingCell, whiteKingCell := m.createField(board, gameModel)
 
 	side := gameModel.Side
 
@@ -24,14 +59,16 @@ func (m *MoveService) createGameStruct(gameModel models.Game, board models.Board
 		N: 8,
 		//WhiteClientId: &gameModel.WhiteUserId,
 		//BlackClientId: &gameModel.BlackUserId,
-		Figures:       figures,
-		IsCheckWhite:  IsCheck{gameModel.IsCheckWhite, whiteKingCell},
-		IsCheckBlack:  IsCheck{gameModel.IsCheckBlack, blackKingCell},
-		WhiteCastling: Castling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
-		BlackCastling: Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
-		LastPawnMove:  gameModel.LastPawnMove,
-		Side:          side,
-		NewFigureId:   0,
+		Figures:           figures,
+		IsCheckWhite:      IsCheck{gameModel.IsCheckWhite, whiteKingCell},
+		IsCheckBlack:      IsCheck{gameModel.IsCheckBlack, blackKingCell},
+		WhiteCastling:     Castling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
+		BlackCastling:     Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
+		LastPawnMove:      gameModel.LastPawnMove,
+		Side:              side,
+		NewFigureId:       0,
+		newFigures:        m.newFigures,
+		theoryKnightSteps: m.theoryKnightSteps,
 	}
 }
 
@@ -44,14 +81,39 @@ func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, f
 		return []int{}, Game{}
 	}
 
+	// theory moves for this figure ("to" is on board)
 	possibleMoves := (*figure).GetPossibleMoves(&game)
 
-	isCorrect, indexesToChange := CheckMove(possibleMoves, []int{from, to})
+	// requested move is possible (is in possibleMoves)
+	isCorrect, indexesToChange := checkMove(possibleMoves, []int{from, to})
 	if !isCorrect {
 		return []int{}, Game{}
 	}
 
 	return indexesToChange, game
+}
+
+func (m *MoveService) createField(board models.Board, gameModel models.Game) (map[int]*Figure, int, int) {
+	blackKingCell, whiteKingCell := 0, 0
+	field := map[int]*Figure{}
+
+	for _, cell := range board.Cells {
+		if cell.FigureId == 5 {
+			whiteKingCell = cell.IndexCell
+
+		}
+		if cell.FigureId == 12 {
+			blackKingCell = cell.IndexCell
+
+		}
+
+		isWhite := cell.FigureId <= 7
+
+		field[cell.IndexCell] = createFigureI(m.figureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
+
+	}
+
+	return field, blackKingCell, whiteKingCell
 }
 
 func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
@@ -84,7 +146,7 @@ func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 	return true
 }
 
-func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {
+func checkMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {
 	crdFrom := IndexToFieldCoordinates((coordinatesToChange)[0])
 	crdTo := IndexToFieldCoordinates((coordinatesToChange)[1])
 
@@ -162,7 +224,7 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []i
 	if possibleMoves.Castling != nil {
 		for _, pm := range possibleMoves.Castling {
 			if pm[0] == crdTo[0] && pm[1] == crdTo[1] {
-				crdRook := GetNewRookCoordinatesIfCastling((coordinatesToChange)[1])
+				crdRook := getNewRookCoordinatesIfCastling((coordinatesToChange)[1])
 				coordinatesToChange = append(coordinatesToChange, crdRook[0])
 				coordinatesToChange = append(coordinatesToChange, crdRook[1])
 				return true, coordinatesToChange
@@ -182,11 +244,10 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []i
 		}
 	}
 
-	log.Println("Запрашиваемого хода нет в массиве")
 	return false, []int{}
 }
 
-func GetNewRookCoordinatesIfCastling(to int) []int {
+func getNewRookCoordinatesIfCastling(to int) []int {
 	crd := []int{}
 
 	switch to {

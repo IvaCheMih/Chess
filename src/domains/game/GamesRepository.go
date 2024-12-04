@@ -62,22 +62,28 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 	return game, err
 }
 
-func (g *GamesRepository) UpdateGame(gameId int, game move.Game, tx *gorm.DB) error {
+func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool) error {
+	var values = map[string]interface{}{
+		"is_check_white":        game.IsCheckWhite.IsItCheck,
+		"white_king_castling":   game.WhiteCastling.KingCastling,
+		"white_rook_a_castling": game.WhiteCastling.RookACastling,
+		"white_rook_h_castling": game.WhiteCastling.RookHCastling,
+		"is_check_black":        game.IsCheckBlack.IsItCheck,
+		"black_king_castling":   game.BlackCastling.KingCastling,
+		"black_rook_a_castling": game.BlackCastling.RookACastling,
+		"black_rook_h_castling": game.BlackCastling.RookHCastling,
+		"last_pawn_move":        game.LastPawnMove,
+		"side":                  game.Side,
+	}
+
+	if isEnd {
+		values["is_ended"] = true
+	}
+
 	return tx.Table(`games`).
 		Model(&models.Game{}).
 		Where("id=?", gameId).
-		Updates(map[string]interface{}{
-			"is_check_white":        game.IsCheckWhite.IsItCheck,
-			"white_king_castling":   game.WhiteCastling.KingCastling,
-			"white_rook_a_castling": game.WhiteCastling.RookACastling,
-			"white_rook_h_castling": game.WhiteCastling.RookHCastling,
-			"is_check_black":        game.IsCheckBlack.IsItCheck,
-			"black_king_castling":   game.BlackCastling.KingCastling,
-			"black_rook_a_castling": game.BlackCastling.RookACastling,
-			"black_rook_h_castling": game.BlackCastling.RookHCastling,
-			"last_pawn_move":        game.LastPawnMove,
-			"side":                  game.Side,
-		}).
+		Updates(values).
 		Error
 }
 
