@@ -1,13 +1,42 @@
-package move_service
+package move
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
+	"log"
 )
 
-func IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int) ([]int, Game) {
+type MoveService struct {
+	figureRepo map[int]byte
+}
 
-	game := CreateGameStruct(gameModel, board)
+func NewMoveService(figureRepo map[int]byte) *MoveService {
+	return &MoveService{
+		figureRepo: figureRepo,
+	}
+}
+
+func (m *MoveService) createGameStruct(gameModel models.Game, board models.Board) Game {
+	figures, blackKingCell, whiteKingCell := m.CreateField(board, gameModel)
+
+	side := gameModel.Side
+
+	return Game{
+		N: 8,
+		//WhiteClientId: &gameModel.WhiteUserId,
+		//BlackClientId: &gameModel.BlackUserId,
+		Figures:       figures,
+		IsCheckWhite:  IsCheck{gameModel.IsCheckWhite, whiteKingCell},
+		IsCheckBlack:  IsCheck{gameModel.IsCheckBlack, blackKingCell},
+		WhiteCastling: Castling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
+		BlackCastling: Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
+		LastPawnMove:  gameModel.LastPawnMove,
+		Side:          side,
+		NewFigureId:   0,
+	}
+}
+
+func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int) ([]int, Game) {
+	game := m.createGameStruct(gameModel, board)
 
 	figure := game.GetFigureByIndex(from)
 
@@ -153,7 +182,7 @@ func CheckMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []i
 		}
 	}
 
-	fmt.Println("Запрашиваемого хода нет в массиве")
+	log.Println("Запрашиваемого хода нет в массиве")
 	return false, []int{}
 }
 
@@ -177,43 +206,4 @@ func GetNewRookCoordinatesIfCastling(to int) []int {
 	}
 
 	return crd
-}
-
-func printMoves(possibleMoves *TheoryMoves) {
-	for _, v := range possibleMoves.Down {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Up {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Left {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Right {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.DL {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.DR {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.UR {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.UL {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-	for _, v := range possibleMoves.Kn {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-
-	for _, v := range possibleMoves.Castling {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-
-	for _, v := range possibleMoves.EnPass {
-		fmt.Print(IndexToCoordinates(FieldCoordinatesToIndex(v)), " ")
-	}
-
 }

@@ -5,21 +5,30 @@ import (
 	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
-	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
+	moveservice "github.com/IvaCheMih/chess/src/domains/game/services/move"
 	"gorm.io/gorm"
+	"log"
 )
 
 type GamesService struct {
 	boardRepo *BoardCellsRepository
 	gamesRepo *GamesRepository
 	movesRepo *MovesRepository
+
+	moveService *moveservice.MoveService
+
+	figureRepo map[int]byte
 }
 
 func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesRepository, movesRepo *MovesRepository) GamesService {
+	figureRepo := moveservice.CreateFigureRepo()
 	return GamesService{
 		boardRepo: boardRepo,
 		gamesRepo: gamesRepo,
 		movesRepo: movesRepo,
+
+		figureRepo:  figureRepo,
+		moveService: moveservice.NewMoveService(figureRepo),
 	}
 }
 
@@ -34,7 +43,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 		userColor = "black_user_id"
 	}
 
-	response, err := g.gamesRepo.FindNotStartedGame(userColor)
+	notStartedGame, err := g.gamesRepo.FindNotStartedGame(userColor)
 	if err != nil && err.Error() != "record not found" {
 		return dto.CreateGameResponse{}, err
 	}
@@ -55,21 +64,32 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	}
 
 	if err != nil && err.Error() == "record not found" {
-		response, err = g.gamesRepo.CreateGame(userId, userRequestedColor, tx)
-		createNewBoard = true
+		var game = models.Game{}
+
+		if userRequestedColor {
+			game.WhiteUserId = userId
+		} else {
+			game.BlackUserId = userId
+		}
+
+		notStartedGame, err = g.gamesRepo.CreateGame(tx, game)
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
+		createNewBoard = true
 	} else {
+		err = g.gamesRepo.UpdateColorUserIdByColor(notStartedGame.Id, userColor, gameSide, userId, tx)
+		if err != nil {
+			return dto.CreateGameResponse{}, err
+		}
 
-		response, err = g.gamesRepo.UpdateColorUserIdByColor(response.Id, userColor, gameSide, userId, tx)
+		notStartedGame, err = g.gamesRepo.GetById(notStartedGame.Id)
+		if err != nil {
+			return dto.CreateGameResponse{}, err
+		}
 	}
 
-	FromModelsToDtoCreateGame(response, &createGameResponse)
-
-	if err != nil {
-		return dto.CreateGameResponse{}, err
-	}
+	FromModelsToDtoCreateGame(notStartedGame, &createGameResponse)
 
 	if createNewBoard {
 		err = g.boardRepo.CreateNewBoardCells(createGameResponse.GameId, tx)
@@ -102,7 +122,10 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
 	for index, cell := range board.Cells {
-		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
+		responseBoard[index] = dto.BoardCellEntity{
+			IndexCell: cell.IndexCell,
+			FigureId:  cell.FigureId,
+		}
 	}
 
 	getBoardResponse := dto.GetBoardResponse{
@@ -150,20 +173,20 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	if err = CheckCorrectRequestSideUser(userId, gameModel); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return models.Move{}, err
 	}
 
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	indexesToChange, game := move_service.IsMoveCorrect(gameModel, board, from, to)
+	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to)
 
 	if len(indexesToChange) == 0 {
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	if !move_service.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
+	if !moveservice.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
 		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
 	}
 
@@ -179,13 +202,29 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	maxNumber, err := g.movesRepo.FindMaxMoveNumber(gameId)
-
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return models.Move{}, err
 	}
 
-	responseMove, err := g.movesRepo.AddMove(gameId, from, to, board, game.IsCheckWhite, game.IsCheckBlack, maxNumber+1, tx)
+	killedFigureId := 0
+	if board.Cells[to] != nil {
+		killedFigureId = board.Cells[to].FigureId
+	}
+
+	var move = models.Move{
+		GameId:         gameId,
+		MoveNumber:     maxNumber,
+		From_id:        from,
+		To_id:          to,
+		FigureId:       board.Cells[from].FigureId,
+		KilledFigureId: killedFigureId,
+		NewFigureId:    0,
+		IsCheckWhite:   game.IsCheckWhite.IsItCheck,
+		IsCheckBlack:   game.IsCheckBlack.IsItCheck,
+	}
+
+	responseMove, err := g.movesRepo.AddMove(move, tx)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -212,7 +251,10 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 
 	for index, cell := range cells.Cells {
-		responseBoard[index] = dto.BoardCellEntity{cell.IndexCell, cell.FigureId}
+		responseBoard[index] = dto.BoardCellEntity{
+			IndexCell: cell.IndexCell,
+			FigureId:  cell.FigureId,
+		}
 
 	}
 
@@ -228,16 +270,21 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		if getBoardResponse.BoardCells[i].FigureId == 0 {
 			fmt.Print(0)
 		} else {
-			fmt.Print(string(move_service.FigureRepo[getBoardResponse.BoardCells[i].FigureId]))
+			fmt.Print(string(g.figureRepo[getBoardResponse.BoardCells[i].FigureId]))
 		}
 	}
+	fmt.Println()
 
 	return responseMove, err
 }
 
 func (g *GamesService) GiveUp(gameId int) (models.Game, error) {
+	err := g.gamesRepo.UpdateIsEnded(gameId)
+	if err != nil {
+		return models.Game{}, err
+	}
 
-	game, err := g.gamesRepo.UpdateIsEnded(gameId)
+	game, err := g.gamesRepo.GetById(gameId)
 	if err != nil {
 		return models.Game{}, err
 	}
@@ -355,11 +402,4 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 	createGameResponse.LastPawnMove = response.LastPawnMove
 	createGameResponse.Side = response.Side
-}
-
-var startField = [][]int{
-	{0, 8}, {1, 9}, {2, 10}, {3, 11}, {4, 12}, {5, 10}, {6, 9}, {7, 14},
-	{8, 13}, {9, 13}, {10, 13}, {11, 13}, {12, 13}, {13, 13}, {14, 13}, {15, 13},
-	{48, 6}, {49, 6}, {50, 6}, {51, 6}, {52, 6}, {53, 6}, {54, 6}, {55, 6},
-	{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 7},
 }

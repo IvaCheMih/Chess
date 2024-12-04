@@ -1,9 +1,9 @@
 package user
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/user/dto"
 	_ "github.com/lib/pq"
+	"log"
 )
 
 type UsersService struct {
@@ -17,15 +17,9 @@ func CreateUsersService(usersRepo *UsersRepository) UsersService {
 }
 
 func (u *UsersService) CreateSession(clientId int, password string) bool {
-
 	query, err := u.usersRepo.GetUserById(clientId)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-
 	if err != nil || password != query.Password {
-		fmt.Println(err)
+		log.Println(err)
 		return false
 	}
 

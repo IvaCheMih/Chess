@@ -1,8 +1,6 @@
-package move_service
+package move
 
 import (
-	"fmt"
-	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"math"
 )
 
@@ -27,29 +25,6 @@ type Castling struct {
 	KingCastling  bool
 	RookACastling bool
 	RookHCastling bool
-}
-
-var FigureRepo = make(map[int]byte)
-
-func CreateGameStruct(gameModel models.Game, board models.Board) Game {
-
-	figures, blackKingCell, whiteKingCell := CreateField(board, gameModel)
-
-	side := gameModel.Side
-
-	return Game{
-		N: 8,
-		//WhiteClientId: &gameModel.WhiteUserId,
-		//BlackClientId: &gameModel.BlackUserId,
-		Figures:       figures,
-		IsCheckWhite:  IsCheck{gameModel.IsCheckWhite, whiteKingCell},
-		IsCheckBlack:  IsCheck{gameModel.IsCheckBlack, blackKingCell},
-		WhiteCastling: Castling{gameModel.WhiteKingCastling, gameModel.WhiteRookACastling, gameModel.WhiteRookHCastling},
-		BlackCastling: Castling{gameModel.BlackKingCastling, gameModel.BlackRookACastling, gameModel.BlackRookHCastling},
-		LastPawnMove:  gameModel.LastPawnMove,
-		Side:          side,
-		NewFigureId:   0,
-	}
 }
 
 func (game *Game) GetFigureByIndex(index int) *Figure {
@@ -199,7 +174,6 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 	crd := IndexToFieldCoordinates(index)
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] + i}); i++ {
-		fmt.Println([]int{crd[0] + i, crd[1] + i})
 		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1] + i}, 'b')
 		if isCheck {
 			return true
@@ -364,7 +338,6 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 }
 
 func (g *Game) ChangeToAndFrom(to int, from int) {
-
 	coordinateTo := IndexToFieldCoordinates(to)
 	coordinateFrom := IndexToFieldCoordinates(from)
 
@@ -380,7 +353,7 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	g.Figures[to] = g.Figures[from]
 	g.Figures[from] = nil
 
-	figureTo = g.GetFigureByIndex(to)
+	figureTo = g.GetFigureByIndex(to) //nolint:ineffassign,staticcheck
 }
 
 //func (g *Game) ChangeRookIfCastling(to int) {

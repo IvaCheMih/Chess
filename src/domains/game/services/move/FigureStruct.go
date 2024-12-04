@@ -1,4 +1,4 @@
-package move_service
+package move
 
 type FigurePawn struct {
 	BaseFigure
@@ -49,9 +49,9 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 		n = -1
 	}
 
-	vert := [][2]int{}
-	EnPass := [][2]int{}
-	crdLastPawnMove := [2]int{}
+	vert := make([][2]int, 0)
+	EnPass := make([][2]int, 0)
+	var crdLastPawnMove = [2]int{} //nolint:ineffassign
 
 	crd := figure.CellCoordinates
 

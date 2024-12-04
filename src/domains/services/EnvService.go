@@ -2,25 +2,39 @@ package services
 
 import (
 	"github.com/spf13/viper"
+	"log"
 )
 
-var PostgresqlUrl string
-var JWT_secret string
-var APP_URL string
-var MODE string
+type EnvService struct {
+	PostgresqlUrl string
+	JWTSecret     string
+	AppURL        string
+	MODE          string
+	Migrations    string
+}
 
-//var PostgresqlUrl = "postgres://user:pass@localhost:8090/test?sslmode=disable"
-//var JWT_secret = "secret"
-
-func GetFromEnv() {
-	MODE = viper.GetString("MODE")
-
-	if MODE == "LOCAL" {
-		PostgresqlUrl = viper.GetString("POSTGRES_URL_LOCAL")
-	} else {
-		PostgresqlUrl = viper.GetString("POSTGRES_URL_REMOTE")
+func NewEnvService() *EnvService {
+	viper.AutomaticEnv()
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	JWT_secret = viper.GetString("JWT_SECRET")
-	APP_URL = viper.GetString("APP_URL")
+	var postgresqlUrl string
+	mode := viper.GetString("MODE")
+
+	if mode == "LOCAL" {
+		postgresqlUrl = viper.GetString("POSTGRES_URL_LOCAL")
+	} else {
+		postgresqlUrl = viper.GetString("POSTGRES_URL_REMOTE")
+	}
+
+	return &EnvService{
+		PostgresqlUrl: postgresqlUrl,
+		JWTSecret:     viper.GetString("JWT_SECRET"),
+		AppURL:        viper.GetString("APP_URL"),
+		MODE:          mode,
+		Migrations:    viper.GetString("MIGRATIONS"),
+	}
 }

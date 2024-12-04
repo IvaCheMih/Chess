@@ -4,13 +4,11 @@ import (
 	_ "github.com/IvaCheMih/chess/src/docs"
 	"github.com/IvaCheMih/chess/src/domains/auth"
 	"github.com/IvaCheMih/chess/src/domains/game"
-	"github.com/IvaCheMih/chess/src/domains/game/services/move_service"
 	"github.com/IvaCheMih/chess/src/domains/services"
 	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -22,27 +20,15 @@ var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
-func Init() {
-	viper.AutomaticEnv()
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	services.GetFromEnv()
-
+func Init(envs *services.EnvService) {
 	migrationService := services.CreateMigrationService()
 
-	err = migrationService.RunUp(services.PostgresqlUrl, "file://migrations/postgresql")
+	err := migrationService.RunUp(envs.PostgresqlUrl, envs.Migrations)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	move_service.FigureRepo = move_service.CreateFigureRepo()
-
-	db, err = gorm.Open(postgres.Open(services.PostgresqlUrl), &gorm.Config{})
-
+	db, err = gorm.Open(postgres.Open(envs.PostgresqlUrl), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -53,7 +39,7 @@ func Init() {
 	gamesRepository := game.CreateGamesRepository(db)
 
 	usersServices := user.CreateUsersService(&usersRepository)
-	userHandlers = user.CreateUserHandlers(&usersServices)
+	userHandlers = user.CreateUserHandlers(&usersServices, envs.JWTSecret)
 
 	gamesService := game.CreateGamesService(&boardCellsRepository, &gamesRepository, &movesRepository)
 	gamesHandlers = game.CreateGamesHandlers(&gamesService)
@@ -79,7 +65,7 @@ func Shutdown() {
 // @license.name 				Apache 2.0
 // @license.url 				http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 						localhost:8080
+// @host 						127.0.0.1:8080
 // @BasePath 					/
 // @schemes 					http
 //
@@ -88,7 +74,9 @@ func Shutdown() {
 //	@name                       Authorization
 //	@description                JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.
 func main() {
-	Init()
+	envs := services.NewEnvService()
+
+	Init(envs)
 
 	defer Shutdown()
 
@@ -101,7 +89,7 @@ func main() {
 	server.Post("/session", userHandlers.CreateSession)
 
 	server.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte(services.JWT_secret)},
+		SigningKey: jwtware.SigningKey{Key: []byte(envs.JWTSecret)},
 	}))
 
 	server.Post("/game", authHandlers.Auth, gamesHandlers.CreateGame)

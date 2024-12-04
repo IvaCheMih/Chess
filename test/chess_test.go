@@ -1,17 +1,17 @@
 package test
 
 import (
-	"fmt"
-	gameDto "github.com/IvaCheMih/chess/src/domains/game/dto"
+	gamedto "github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/IvaCheMih/chess/src/domains/services"
-	userDto "github.com/IvaCheMih/chess/src/domains/user/dto"
+	userdto "github.com/IvaCheMih/chess/src/domains/user/dto"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 )
 
-var movesFirst = []gameDto.DoMoveBody{
+var movesFirst = []gamedto.DoMoveBody{
 	{From: "C2", To: "C4", NewFigure: 0},
 	{From: "B7", To: "B5", NewFigure: 0},
 
@@ -39,111 +39,89 @@ var boardFirst = [][]int{
 }
 
 func TestGame(t *testing.T) {
-	viper.AutomaticEnv()
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	t.Run("test user, session, game", func(t *testing.T) {
+		log.Println(1)
+		viper.AutomaticEnv()
+		viper.SetConfigFile(".env")
+		err := viper.ReadInConfig()
+		require.NoError(t, err)
 
-	services.GetFromEnv()
+		envs := services.NewEnvService()
 
-	expectedFirst := MakeExpected(boardFirst)
+		expectedFirst := MakeExpected(boardFirst)
 
-	DoTestChessGame(t, movesFirst, expectedFirst)
+		DoTestChessGame(t, movesFirst, expectedFirst, envs.AppURL)
+	})
 }
 
-func MakeExpected(boardMas [][]int) gameDto.GetBoardResponse {
-	var board = gameDto.GetBoardResponse{
-		BoardCells: []gameDto.BoardCellEntity{},
+func MakeExpected(boardMas [][]int) gamedto.GetBoardResponse {
+	var board = gamedto.GetBoardResponse{
+		BoardCells: []gamedto.BoardCellEntity{},
 	}
 
 	for _, b := range boardMas {
-		board.BoardCells = append(board.BoardCells, gameDto.BoardCellEntity{b[0], b[1]})
+		board.BoardCells = append(board.BoardCells, gamedto.BoardCellEntity{
+			IndexCell: b[0],
+			FigureId:  b[1],
+		})
 	}
 
 	return board
 }
 
-func DoTestChessGame(t *testing.T, moves []gameDto.DoMoveBody, expected gameDto.GetBoardResponse) {
-	var user1password = userDto.CreateUserRequest{Password: "password"}
-	var user2password = userDto.CreateUserRequest{Password: "password"}
+func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.GetBoardResponse, appURL string) {
+	var user1password = userdto.CreateUserRequest{Password: "password"}
+	var user2password = userdto.CreateUserRequest{Password: "password"}
 
-	err, user1response := CreateUser(user1password)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error creating user: %s", user1password)
-	}
+	err, user1response := CreateUser(user1password, appURL)
+	require.NoError(t, err)
 
-	err, user2response := CreateUser(user2password)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error creating user: %s", user1password)
-	}
+	err, user2response := CreateUser(user2password, appURL)
+	require.NoError(t, err)
 
-	var session1 = userDto.CreateSessionRequest{
+	var session1 = userdto.CreateSessionRequest{ //nolint:gosimple
 		Id:       user1response.Id,
 		Password: user1response.Password,
 	}
 
-	var session2 = userDto.CreateSessionRequest{
+	var session2 = userdto.CreateSessionRequest{ //nolint:gosimple
 		Id:       user2response.Id,
 		Password: user2response.Password,
 	}
 
-	err, session1response := CreateSession(session1)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error creating session: %+v", session1response)
-	}
+	err, session1response := CreateSession(session1, appURL)
+	require.NoError(t, err)
 
-	err, session2response := CreateSession(session2)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error creating session: %+v", session2response)
-	}
+	err, session2response := CreateSession(session2, appURL)
+	require.NoError(t, err)
 
-	var game1user = gameDto.CreateGameBody{true}
-	var game2user = gameDto.CreateGameBody{false}
+	var game1user = gamedto.CreateGameBody{IsWhite: true}
+	var game2user = gamedto.CreateGameBody{
+		IsWhite: false}
 
-	err, game1response := CreateGame(game1user, session1response.Token)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error creating game: %+v", game1response)
-	}
+	err, game1response := CreateGame(game1user, session1response.Token, appURL)
+	require.NoError(t, err)
 
-	err, game2response := CreateGame(game2user, session2response.Token)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error creating game: %+v", game2response)
-	}
+	err, game2response := CreateGame(game2user, session2response.Token, appURL)
+	require.NoError(t, err)
 
 	if game1response.GameId != game2response.GameId {
-		fmt.Println("Game ID is not correct")
+		log.Println("Game ID is not correct")
 		t.Errorf("[!] Game Ids is not equal")
 	}
 
 	for i, move := range moves {
 		if i%2 == 0 {
-			err, _ = CreateMove(move, session1response.Token, game1response.GameId)
-			if err != nil {
-				fmt.Println(err)
-				t.Errorf("[!] Error creating move: %+v", move)
-			}
+			err, _ = CreateMove(move, session1response.Token, game1response.GameId, appURL)
+			require.NoError(t, err)
 		} else {
-			err, _ = CreateMove(move, session2response.Token, game2response.GameId)
-			if err != nil {
-				fmt.Println(err)
-				t.Errorf("[!] Error creating move: %+v", move)
-			}
+			err, _ = CreateMove(move, session2response.Token, game2response.GameId, appURL)
+			require.NoError(t, err)
 		}
 	}
 
-	err, board := GetBoard(session1response.Token, game1response.GameId)
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("[!] Error getting board: %+v", board)
-	}
+	err, board := GetBoard(session1response.Token, game1response.GameId, appURL)
+	require.NoError(t, err)
 
 	if !assert.Equal(t, board, expected) {
 		t.Errorf("[!] Boards are not equal")

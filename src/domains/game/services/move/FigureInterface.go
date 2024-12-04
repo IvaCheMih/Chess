@@ -1,4 +1,4 @@
-package move_service
+package move
 
 import (
 	"github.com/IvaCheMih/chess/src/domains/game/models"
@@ -14,7 +14,7 @@ type Figure interface {
 	Delete()
 }
 
-func CreateField(board models.Board, gameModel models.Game) (map[int]*Figure, int, int) {
+func (m *MoveService) CreateField(board models.Board, gameModel models.Game) (map[int]*Figure, int, int) {
 	blackKingCell, whiteKingCell := 0, 0
 	field := map[int]*Figure{}
 
@@ -30,15 +30,14 @@ func CreateField(board models.Board, gameModel models.Game) (map[int]*Figure, in
 
 		isWhite := cell.FigureId <= 7
 
-		field[cell.IndexCell] = CreateFigureI(FigureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
+		field[cell.IndexCell] = m.createFigureI(m.figureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
 
 	}
 
 	return field, blackKingCell, whiteKingCell
 }
 
-func CreateFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *Figure {
-
+func (m *MoveService) createFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *Figure {
 	coordinates := IndexToFieldCoordinates(index)
 
 	figure := CreateFigure(_type, isWhite, coordinates, gameModel)

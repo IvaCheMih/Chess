@@ -1,4 +1,4 @@
-package move_service
+package move
 
 type BaseFigure struct {
 	IsWhite         bool
@@ -23,7 +23,7 @@ func (figure *BaseFigure) GetCoordinates() [2]int {
 }
 
 func (figure *BaseFigure) Delete() {
-	figure = nil
+	figure = nil //nolint:ineffassign
 }
 
 func (figure *BaseFigure) ChangeType(newType byte) {
