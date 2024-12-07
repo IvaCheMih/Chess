@@ -5,15 +5,17 @@ import (
 )
 
 type Game struct {
-	N             int
-	Figures       map[int]*Figure
-	IsCheckWhite  IsCheck
-	IsCheckBlack  IsCheck
-	WhiteCastling Castling
-	BlackCastling Castling
-	LastPawnMove  *int
-	Side          bool
-	NewFigureId   int
+	N                 int
+	Figures           map[int]*Figure
+	IsCheckWhite      IsCheck
+	IsCheckBlack      IsCheck
+	WhiteCastling     Castling
+	BlackCastling     Castling
+	LastPawnMove      *int
+	Side              bool
+	NewFigureId       int
+	newFigures        map[byte]struct{}
+	theoryKnightSteps *[]int
 }
 
 type IsCheck struct {
@@ -27,37 +29,37 @@ type Castling struct {
 	RookHCastling bool
 }
 
-func (game *Game) GetFigureByIndex(index int) *Figure {
-	return game.Figures[index]
+func (g *Game) GetFigureByIndex(index int) *Figure {
+	return g.Figures[index]
 }
 
-func (game *Game) GetFigureByFieldCoordinates(crd [2]int) *Figure {
+func (g *Game) GetFigureByFieldCoordinates(crd [2]int) *Figure {
 	index := FieldCoordinatesToIndex(crd)
-	return game.Figures[index]
+	return g.Figures[index]
 }
 
-func (game *Game) GetFigureByCoordinates(coordinates string) *Figure {
-	index := game.CoordinatesToIndex(coordinates)
+func (g *Game) GetFigureByCoordinates(coordinates string) *Figure {
+	index := g.CoordinatesToIndex(coordinates)
 
-	return game.Figures[index]
+	return g.Figures[index]
 }
 
-func (game *Game) IndexToCoordinates(index int) string {
-	y := int('8') - (index / game.N)
-	x := (index % game.N) + int('A')
+func (g *Game) IndexToCoordinates(index int) string {
+	y := int('8') - (index / g.N)
+	x := (index % g.N) + int('A')
 
 	return string(byte(x)) + string(byte(y))
 }
 
-func (game *Game) CoordinatesToIndex(coordinates string) int {
+func (g *Game) CoordinatesToIndex(coordinates string) int {
 	x := int(coordinates[0]) - int('A')
 	y := int('8') - int(coordinates[1])
 
-	return (y * game.N) + x
+	return (y * g.N) + x
 }
 
-func (game *Game) CheckCellOnBoardByIndex(index int) bool {
-	coordinates := game.IndexToCoordinates(index)
+func (g *Game) CheckCellOnBoardByIndex(index int) bool {
+	coordinates := g.IndexToCoordinates(index)
 	if coordinates[0] >= byte('A') && coordinates[0] <= byte('H') {
 		if coordinates[1] >= byte('1') && coordinates[1] <= byte('8') {
 			return true
@@ -66,100 +68,100 @@ func (game *Game) CheckCellOnBoardByIndex(index int) bool {
 	return false
 }
 
-func (game *Game) ChangeKingGameID(to int) {
-	figure := game.GetFigureByIndex(to)
+func (g *Game) ChangeKingGameID(to int) {
+	figure := g.GetFigureByIndex(to)
 
 	if (*figure).GetType() != 'K' {
 		return
 	}
 	if (*figure).IsItWhite() {
-		game.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
+		g.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
 	} else {
-		game.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
+		g.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
 	}
 }
 
-func (game *Game) Check() bool {
-	if game.Side && game.IsKingCheck(game.IsCheckWhite.KingGameID) {
+func (g *Game) Check() bool {
+	if g.Side && g.IsKingCheck(g.IsCheckWhite.KingGameID) {
 		return true
 	}
 
-	if !game.Side && game.IsKingCheck(game.IsCheckBlack.KingGameID) {
+	if !g.Side && g.IsKingCheck(g.IsCheckBlack.KingGameID) {
 		return true
 	}
 
 	return false
 }
 
-func (game *Game) ChangeCastlingFlag(to int) {
-	figure := game.GetFigureByIndex(to)
+func (g *Game) ChangeCastlingFlag(to int) {
+	figure := g.GetFigureByIndex(to)
 
 	switch (*figure).GetType() {
 	case 'K':
 		if (*figure).IsItWhite() {
-			game.WhiteCastling.KingCastling = true
+			g.WhiteCastling.KingCastling = true
 		} else {
-			game.BlackCastling.KingCastling = true
+			g.BlackCastling.KingCastling = true
 		}
 	case 'a':
 		if (*figure).IsItWhite() {
-			game.WhiteCastling.RookACastling = true
+			g.WhiteCastling.RookACastling = true
 		} else {
-			game.BlackCastling.RookACastling = true
+			g.BlackCastling.RookACastling = true
 		}
 	case 'h':
 		if (*figure).IsItWhite() {
-			game.WhiteCastling.RookHCastling = true
+			g.WhiteCastling.RookHCastling = true
 		} else {
-			game.BlackCastling.RookHCastling = true
+			g.BlackCastling.RookHCastling = true
 		}
 	}
 }
 
-func (game *Game) ChangeLastPawnMove(from int, to int) {
-	figure := game.GetFigureByIndex(to)
+func (g *Game) ChangeLastPawnMove(from int, to int) {
+	figure := g.GetFigureByIndex(to)
 
 	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 9 {
 
-		game.LastPawnMove = &to
+		g.LastPawnMove = &to
 
 		return
 	}
 
-	game.LastPawnMove = nil
+	g.LastPawnMove = nil
 }
 
-func (game *Game) IsKingCheck(index int) bool {
-	if game.CheckKnightAttack(index) {
+func (g *Game) IsKingCheck(index int) bool {
+	if g.CheckKnightAttack(index) {
 		return true
 	}
 
-	if game.CheckDiagonalAttack(index) {
+	if g.CheckDiagonalAttack(index) {
 		return true
 	}
 
-	if game.CheckVertGorAttack(index) {
+	if g.CheckVertGorAttack(index) {
 		return true
 	}
 
-	if game.CheckPawnAttack(index) {
+	if g.CheckPawnAttack(index) {
 		return true
 	}
 
 	return false
 }
 
-func (game *Game) CheckKnightAttack(index int) bool {
-	king := game.GetFigureByIndex(index)
-	for _, knPosition := range TheoryKnightSteps {
-		if game.CheckCellOnBoardByIndex(index + knPosition) {
-			if fig := game.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'h' {
+func (g *Game) CheckKnightAttack(index int) bool {
+	king := g.GetFigureByIndex(index)
+	for _, knPosition := range *g.theoryKnightSteps {
+		if g.CheckCellOnBoardByIndex(index + knPosition) {
+			if fig := g.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'k' {
 				if (*fig).IsItWhite() != (*king).IsItWhite() {
 					if (*king).IsItWhite() {
-						game.IsCheckWhite.IsItCheck = true
+						g.IsCheckWhite.IsItCheck = true
 						return true
 					} else {
-						game.IsCheckBlack.IsItCheck = true
+						g.IsCheckBlack.IsItCheck = true
 						return true
 					}
 				}
@@ -170,11 +172,11 @@ func (game *Game) CheckKnightAttack(index int) bool {
 	return false
 }
 
-func (game *Game) CheckDiagonalAttack(index int) bool {
+func (g *Game) CheckDiagonalAttack(index int) bool {
 	crd := IndexToFieldCoordinates(index)
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] + i}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1] + i}, 'b')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1] + i}, []byte{'b', 'q'})
 		if isCheck {
 			return true
 		}
@@ -184,7 +186,7 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 	}
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1] - i}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1] - i}, 'b')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1] - i}, []byte{'b', 'q'})
 		if isCheck {
 			return true
 		}
@@ -194,7 +196,7 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 	}
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1] + i}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] - i, crd[1] + i}, 'b')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0] - i, crd[1] + i}, []byte{'b', 'q'})
 		if isCheck {
 			return true
 		}
@@ -204,7 +206,7 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 	}
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1] - i}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] - i, crd[1] - i}, 'b')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0] - i, crd[1] - i}, []byte{'b', 'q'})
 		if isCheck {
 			return true
 		}
@@ -216,11 +218,11 @@ func (game *Game) CheckDiagonalAttack(index int) bool {
 	return false
 }
 
-func (game *Game) CheckVertGorAttack(index int) bool {
+func (g *Game) CheckVertGorAttack(index int) bool {
 	crd := IndexToFieldCoordinates(index)
 
 	for i := 1; IsOnRealBoard([2]int{crd[0], crd[1] + i}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0], crd[1] + i}, 'r')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0], crd[1] + i}, []byte{'a', 'h', 'q'})
 		if isCheck {
 			return true
 		}
@@ -230,7 +232,7 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	}
 
 	for i := 1; IsOnRealBoard([2]int{crd[0], crd[1] - i}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0], crd[1] - i}, 'r')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0], crd[1] - i}, []byte{'a', 'h', 'q'})
 		if isCheck {
 			return true
 		}
@@ -240,8 +242,7 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	}
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] + i, crd[1]}); i++ {
-
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1]}, 'r')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0] + i, crd[1]}, []byte{'a', 'h', 'q'})
 		if isCheck {
 			return true
 		}
@@ -251,7 +252,7 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	}
 
 	for i := 1; IsOnRealBoard([2]int{crd[0] - i, crd[1]}); i++ {
-		isCheck, endFor := game.CheckAttackCell(crd, [2]int{crd[0] - i, crd[1]}, 'r')
+		isCheck, endFor := g.CheckAttackCell(crd, [2]int{crd[0] - i, crd[1]}, []byte{'a', 'h', 'q'})
 		if isCheck {
 			return true
 		}
@@ -262,17 +263,16 @@ func (game *Game) CheckVertGorAttack(index int) bool {
 	return false
 }
 
-func (game *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, triggerFigure byte) (bool, bool) {
-
+func (g *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, triggerFigures []byte) (bool, bool) {
 	var king *Figure
 
-	if game.Side {
-		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
+	if g.Side {
+		king = g.GetFigureByIndex(g.IsCheckWhite.KingGameID)
 	} else {
-		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
+		king = g.GetFigureByIndex(g.IsCheckBlack.KingGameID)
 	}
 
-	fig := game.GetFigureByFieldCoordinates(cellCoordinate)
+	fig := g.GetFigureByFieldCoordinates(cellCoordinate)
 
 	if fig == nil {
 		return false, false
@@ -281,7 +281,7 @@ func (game *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, 
 		return false, true
 	}
 	if (*fig).IsItWhite() != (*king).IsItWhite() {
-		if (*fig).GetType() == triggerFigure || (*fig).GetType() == 'q' {
+		if isTriggerFigure((*fig).GetType(), triggerFigures) {
 			return true, true
 		}
 		return false, true
@@ -289,21 +289,28 @@ func (game *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, 
 	return false, false
 }
 
-func (game *Game) CheckPawnAttack(indexKing int) bool {
+func isTriggerFigure(_type byte, triggerFigures []byte) bool {
+	for _, fig := range triggerFigures {
+		if _type == fig {
+			return true
+		}
+	}
+	return false
+}
 
+func (g *Game) CheckPawnAttack(indexKing int) bool {
 	var king *Figure
 
-	if game.Side {
-		king = game.GetFigureByIndex(game.IsCheckWhite.KingGameID)
+	if g.Side {
+		king = g.GetFigureByIndex(indexKing)
 	} else {
-		king = game.GetFigureByIndex(game.IsCheckBlack.KingGameID)
+		king = g.GetFigureByIndex(indexKing)
 	}
 
 	crd := IndexToFieldCoordinates(indexKing)
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0], crd[1] + 1}) {
-
-		if fig := game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] + 1}); fig != nil {
+	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - 1}); fig != nil {
 
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
@@ -311,24 +318,24 @@ func (game *Game) CheckPawnAttack(indexKing int) bool {
 		}
 	}
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0], crd[1] - 1}) {
-		if fig := game.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - 1}); fig != nil {
+	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] - 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - 1}); fig != nil {
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1]}) {
-		if fig := game.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1]}); fig != nil {
+	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] + 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] + 1}); fig != nil {
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1]}) {
-		if fig := game.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1]}); fig != nil {
+	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] + 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] + 1}); fig != nil {
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
@@ -403,65 +410,47 @@ func (g *Game) ChangeRookField(indexesToChange []int) {
 	g.ChangeToAndFrom(indexesToChange[3], indexesToChange[2])
 }
 
-func (g *Game) NewFigure(to int, newFigure byte) bool {
+func (g *Game) NewFigureRequestCorrect(to int, newFigure byte) bool {
 	figure := g.GetFigureByIndex(to)
 
 	if (*figure).GetType() == 'p' {
 		if (*figure).IsItWhite() {
 			if to < 8 {
-				if !isNewFigureCorrect(newFigure) {
-					return false
-				}
+				return g.isNewFigureCorrect(newFigure)
+			}
+		} else {
+			if to > 55 {
+				return g.isNewFigureCorrect(newFigure)
+			}
+		}
+	}
 
-				(*g.Figures[to]).ChangeType(newFigure)
+	return false
+}
 
+func (g *Game) ChangePawnToNewFigure(to int, newFigure byte) {
+	figure := g.GetFigureByIndex(to)
+
+	if (*figure).GetType() == 'p' {
+		if (*figure).IsItWhite() {
+			if to < 8 && g.isNewFigureCorrect(newFigure) {
 				(*figure).ChangeType(newFigure)
 
 				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
 			}
 		} else {
-			if to > 55 {
-				if !isNewFigureCorrect(newFigure) {
-					return false
-				}
-				(*g.Figures[to]).ChangeType(newFigure)
-
+			if to > 55 && g.isNewFigureCorrect(newFigure) {
 				(*figure).ChangeType(newFigure)
 
 				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
 			}
 		}
 	}
-
-	return true
 }
 
-func isNewFigureCorrect(newFigure byte) bool {
-	switch newFigure {
-	case 'k':
-		return true
-	case 'h':
-		return true
-	case 'a':
-		return true
-	case 'q':
-		return true
-	case 'b':
-		return true
-	default:
-		return false
-	}
-}
-
-var TheoryKnightSteps = []int{
-	(2 * 8) + 1,
-	(2 * 8) - 1,
-	(-1)*(2*8) + 1,
-	(-1)*(2*8) - 1,
-	8 + 2,
-	-8 + 2,
-	8 - 2,
-	-8 - 2,
+func (g *Game) isNewFigureCorrect(newFigure byte) bool {
+	_, ok := g.newFigures[newFigure]
+	return ok
 }
 
 func IndexToCoordinates(index int) string {
@@ -522,4 +511,186 @@ func CreateFigureRepo() map[int]byte {
 	figureRepo[14] = 'h'
 
 	return figureRepo
+}
+
+func (g *Game) copyGame() *Game {
+	var lastPawnMove int
+	if g.LastPawnMove != nil {
+		lastPawnMove = *g.LastPawnMove
+	}
+
+	var figures = make(map[int]*Figure, len(g.Figures))
+
+	for i, figure := range g.Figures {
+		var f Figure
+		if figure != nil {
+			f = *figure
+
+			figures[i] = &f
+		}
+	}
+
+	var newGame = Game{
+		N: g.N,
+		IsCheckWhite: IsCheck{
+			IsItCheck:  g.IsCheckWhite.IsItCheck,
+			KingGameID: g.IsCheckWhite.KingGameID,
+		},
+		IsCheckBlack: IsCheck{
+			IsItCheck:  g.IsCheckBlack.IsItCheck,
+			KingGameID: g.IsCheckBlack.KingGameID,
+		},
+		WhiteCastling: Castling{
+			KingCastling:  g.WhiteCastling.KingCastling,
+			RookACastling: g.WhiteCastling.RookACastling,
+			RookHCastling: g.WhiteCastling.RookHCastling,
+		},
+		BlackCastling: Castling{
+			KingCastling:  g.BlackCastling.KingCastling,
+			RookACastling: g.BlackCastling.RookACastling,
+			RookHCastling: g.BlackCastling.RookHCastling,
+		},
+		LastPawnMove:      &lastPawnMove,
+		Figures:           figures,
+		Side:              g.Side,
+		NewFigureId:       g.NewFigureId,
+		newFigures:        g.newFigures,
+		theoryKnightSteps: g.theoryKnightSteps,
+	}
+
+	return &newGame
+}
+
+func (g *Game) IsItEndgame() (bool, EndgameReason) {
+	for _, figure := range g.Figures {
+		if !g.IsItYourFigure(figure) {
+			continue
+		}
+
+		fromCrd := (*figure).GetCoordinates()
+		theoryMoves := (*figure).GetPossibleMoves(g)
+
+		if g.movesExist(theoryMoves, fromCrd) {
+			return false, NotEndgame
+		}
+	}
+
+	if g.Side {
+		if g.IsCheckWhite.IsItCheck {
+			return true, Mate
+		}
+		return true, Pat
+	} else {
+		if g.IsCheckBlack.IsItCheck {
+			return true, Mate
+		}
+		return true, Pat
+	}
+}
+
+func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
+	if theoryMoves.Up != nil {
+		for _, move := range theoryMoves.Up {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.Down != nil {
+		for _, move := range theoryMoves.Down {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.Right != nil {
+		for _, move := range theoryMoves.Right {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.Left != nil {
+		for _, move := range theoryMoves.Left {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.UR != nil {
+		for _, move := range theoryMoves.UR {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.UL != nil {
+		for _, move := range theoryMoves.UL {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.DR != nil {
+		for _, move := range theoryMoves.DR {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.DL != nil {
+		for _, move := range theoryMoves.DL {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.Kn != nil {
+		for _, move := range theoryMoves.Kn {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.EnPass != nil {
+		for _, move := range theoryMoves.EnPass {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+	if theoryMoves.Castling != nil {
+		for _, move := range theoryMoves.Castling {
+			if g.moveExists(theoryMoves, move, fromCrd) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (g *Game) moveExists(theoryMoves *TheoryMoves, toCrd [2]int, fromCrd [2]int) bool {
+	moveInIndexes := []int{FieldCoordinatesToIndex(fromCrd), FieldCoordinatesToIndex(toCrd)}
+
+	isCorrect, indexesToChange := checkMove(theoryMoves, moveInIndexes)
+	if !isCorrect {
+		return false
+	}
+
+	if (*g.GetFigureByFieldCoordinates(fromCrd)).GetType() == 'p' {
+		for figureByte := range g.newFigures {
+			newGame := g.copyGame()
+			if !IsItCheck(indexesToChange, newGame, figureByte) {
+				return true
+			}
+		}
+	} else {
+		newGame := g.copyGame()
+		if !IsItCheck(indexesToChange, newGame, '0') {
+			return true
+		}
+	}
+
+	return false
 }

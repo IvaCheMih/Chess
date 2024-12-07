@@ -29,7 +29,7 @@ func (m *MovesRepository) Find(gameId int) ([]models.Move, error) {
 	return moves, nil
 }
 
-func (m *MovesRepository) AddMove(move models.Move, tx *gorm.DB) (models.Move, error) {
+func (m *MovesRepository) AddMove(tx *gorm.DB, move models.Move) (models.Move, error) {
 	err := tx.Table(`moves`).Create(&move).Error
 	if err != nil {
 		return models.Move{}, err
