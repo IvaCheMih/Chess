@@ -92,7 +92,9 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	FromModelsToDtoCreateGame(notStartedGame, &createGameResponse)
 
 	if createNewBoard {
-		err = g.boardRepo.CreateNewBoardCells(tx, createGameResponse.GameId)
+		boardCells := g.boardRepo.NewStartBoardCells(createGameResponse.GameId)
+
+		err = g.boardRepo.CreateNewBoardCells(tx, boardCells)
 	}
 	if err != nil {
 		return dto.CreateGameResponse{}, err
@@ -180,13 +182,13 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to)
+	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to, requestFromTo.NewFigure)
 
 	if len(indexesToChange) == 0 {
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	if !moveservice.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
+	if moveservice.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
 		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
 	}
 
@@ -404,4 +406,8 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 	createGameResponse.LastPawnMove = response.LastPawnMove
 	createGameResponse.Side = response.Side
+}
+
+func (g *GamesService) GetMoveService() *moveservice.MoveService {
+	return g.moveService
 }

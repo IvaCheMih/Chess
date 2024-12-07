@@ -1,6 +1,7 @@
 package move
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -155,7 +156,7 @@ func (g *Game) CheckKnightAttack(index int) bool {
 	king := g.GetFigureByIndex(index)
 	for _, knPosition := range *g.theoryKnightSteps {
 		if g.CheckCellOnBoardByIndex(index + knPosition) {
-			if fig := g.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'h' {
+			if fig := g.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'k' {
 				if (*fig).IsItWhite() != (*king).IsItWhite() {
 					if (*king).IsItWhite() {
 						g.IsCheckWhite.IsItCheck = true
@@ -292,20 +293,18 @@ func (g *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, tri
 }
 
 func (g *Game) CheckPawnAttack(indexKing int) bool {
-
 	var king *Figure
 
 	if g.Side {
-		king = g.GetFigureByIndex(g.IsCheckWhite.KingGameID)
+		king = g.GetFigureByIndex(indexKing)
 	} else {
-		king = g.GetFigureByIndex(g.IsCheckBlack.KingGameID)
+		king = g.GetFigureByIndex(indexKing)
 	}
 
 	crd := IndexToFieldCoordinates(indexKing)
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0], crd[1] + 1}) {
-
-		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] + 1}); fig != nil {
+	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - 1}); fig != nil {
 
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
@@ -313,24 +312,24 @@ func (g *Game) CheckPawnAttack(indexKing int) bool {
 		}
 	}
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0], crd[1] - 1}) {
-		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0], crd[1] - 1}); fig != nil {
+	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] - 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - 1}); fig != nil {
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1]}) {
-		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1]}); fig != nil {
+	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] + 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] + 1}); fig != nil {
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1]}) {
-		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1]}); fig != nil {
+	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] + 1}) {
+		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] + 1}); fig != nil {
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
@@ -405,37 +404,30 @@ func (g *Game) ChangeRookField(indexesToChange []int) {
 	g.ChangeToAndFrom(indexesToChange[3], indexesToChange[2])
 }
 
-func (g *Game) NewFigure(to int, newFigure byte) bool {
+func (g *Game) NewFigureRequestCorrect(to int, newFigure byte) bool {
 	figure := g.GetFigureByIndex(to)
 
 	if (*figure).GetType() == 'p' {
 		if (*figure).IsItWhite() {
 			if to < 8 {
-				if !g.isNewFigureCorrect(newFigure) {
-					return false
-				}
-
-				(*g.Figures[to]).ChangeType(newFigure)
-
-				(*figure).ChangeType(newFigure)
-
-				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
+				return g.isNewFigureCorrect(newFigure)
 			}
 		} else {
 			if to > 55 {
-				if !g.isNewFigureCorrect(newFigure) {
-					return false
-				}
-				(*g.Figures[to]).ChangeType(newFigure)
-
-				(*figure).ChangeType(newFigure)
-
-				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
+				return g.isNewFigureCorrect(newFigure)
 			}
 		}
 	}
 
-	return true
+	return false
+}
+
+func (g *Game) ChangePawnToNewFigure(to int, newFigure byte) {
+	figure := g.GetFigureByIndex(to)
+
+	(*figure).ChangeType(newFigure)
+
+	g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
 }
 
 func (g *Game) isNewFigureCorrect(newFigure byte) bool {
@@ -504,14 +496,20 @@ func CreateFigureRepo() map[int]byte {
 }
 
 func (g *Game) copyGame() *Game {
-	lastPawnMove := *g.LastPawnMove
+	var lastPawnMove int
+	if g.LastPawnMove != nil {
+		lastPawnMove = *g.LastPawnMove
+	}
 
 	var figures = make(map[int]*Figure, len(g.Figures))
 
 	for i, figure := range g.Figures {
-		f := *figure
+		var f Figure
+		if figure != nil {
+			f = *figure
 
-		figures[i] = &f
+			figures[i] = &f
+		}
 	}
 
 	var newGame = Game{
@@ -546,39 +544,41 @@ func (g *Game) copyGame() *Game {
 }
 
 func (g *Game) IsItEndgame() (bool, EndgameReason) {
-	return false, ""
+	for _, figure := range g.Figures {
+		if !g.IsItYourFigure(figure) {
+			continue
+		}
 
-	//for _, figure := range g.Figures {
-	//	if !g.IsItYourFigure(figure) {
-	//		continue
-	//	}
-	//
-	//	fromCrd := (*figure).GetCoordinates()
-	//	theoryMoves := (*figure).GetPossibleMoves(g)
-	//
-	//	if g.movesExist(theoryMoves, fromCrd) {
-	//		return false, ""
-	//	}
-	//
-	//	if g.Side {
-	//		if g.IsCheckWhite.IsItCheck {
-	//			return true, Mate
-	//		}
-	//		return true, Pat
-	//	} else {
-	//		if g.IsCheckBlack.IsItCheck {
-	//			return true, Mate
-	//		}
-	//		return true, Pat
-	//	}
-	//}
-	//
-	//return false, ""
+		fmt.Println(string((*figure).GetType()))
+
+		fromCrd := (*figure).GetCoordinates()
+		theoryMoves := (*figure).GetPossibleMoves(g)
+
+		if g.movesExist(theoryMoves, fromCrd) {
+			return false, ""
+		}
+		fmt.Println()
+	}
+
+	if g.Side {
+		if g.IsCheckWhite.IsItCheck {
+			return true, Mate
+		}
+		return true, Pat
+	} else {
+		if g.IsCheckBlack.IsItCheck {
+			return true, Mate
+		}
+		return true, Pat
+	}
+
+	return false, ""
 }
 
 func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	if theoryMoves.Up != nil {
 		for _, move := range theoryMoves.Up {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -586,6 +586,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.Down != nil {
 		for _, move := range theoryMoves.Down {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -593,6 +595,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.Right != nil {
 		for _, move := range theoryMoves.Right {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -600,6 +604,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.Left != nil {
 		for _, move := range theoryMoves.Left {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -607,6 +613,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.UR != nil {
 		for _, move := range theoryMoves.UR {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -614,6 +622,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.UL != nil {
 		for _, move := range theoryMoves.UL {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -621,6 +631,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.DR != nil {
 		for _, move := range theoryMoves.DR {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -628,6 +640,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.DL != nil {
 		for _, move := range theoryMoves.DL {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -635,6 +649,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.Kn != nil {
 		for _, move := range theoryMoves.Kn {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -642,6 +658,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.EnPass != nil {
 		for _, move := range theoryMoves.EnPass {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -649,6 +667,8 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	}
 	if theoryMoves.Castling != nil {
 		for _, move := range theoryMoves.Castling {
+			fmt.Println(IndexToCoordinates(FieldCoordinatesToIndex(fromCrd)), IndexToCoordinates(FieldCoordinatesToIndex(move)))
+
 			if g.moveExists(theoryMoves, move, fromCrd) {
 				return true
 			}
@@ -658,23 +678,24 @@ func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
 	return false
 }
 
-func (g *Game) moveExists(theoryMoves *TheoryMoves, move [2]int, fromCrd [2]int) bool {
-	moveInIndexes := []int{FieldCoordinatesToIndex(move), FieldCoordinatesToIndex(fromCrd)}
+func (g *Game) moveExists(theoryMoves *TheoryMoves, toCrd [2]int, fromCrd [2]int) bool {
+	moveInIndexes := []int{FieldCoordinatesToIndex(fromCrd), FieldCoordinatesToIndex(toCrd)}
 
 	isCorrect, indexesToChange := checkMove(theoryMoves, moveInIndexes)
 	if !isCorrect {
 		return false
 	}
 
-	newGame := g.copyGame()
-
-	if (*newGame.GetFigureByFieldCoordinates(fromCrd)).GetType() == 'p' {
+	if (*g.GetFigureByFieldCoordinates(fromCrd)).GetType() == 'p' {
 		for figureByte := range g.newFigures {
+			newGame := g.copyGame()
 			if !IsItCheck(indexesToChange, newGame, figureByte) {
+				fmt.Println("no check on board")
 				return true
 			}
 		}
 	} else {
+		newGame := g.copyGame()
 		if !IsItCheck(indexesToChange, newGame, '0') {
 			return true
 		}

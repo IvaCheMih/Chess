@@ -19,7 +19,13 @@ func CreateBoardCellsRepository(db *gorm.DB) BoardCellsRepository {
 	}
 }
 
-func (b *BoardCellsRepository) CreateNewBoardCells(tx *gorm.DB, gameId int) error {
+func (b *BoardCellsRepository) CreateNewBoardCells(tx *gorm.DB, boardCells []models.BoardCell) error {
+	return tx.Table(`board_cells`).
+		Create(boardCells).
+		Error
+}
+
+func (b *BoardCellsRepository) NewStartBoardCells(gameId int) []models.BoardCell {
 	var boardCells = make([]models.BoardCell, len(b.startField))
 
 	for i, cell := range b.startField {
@@ -30,9 +36,21 @@ func (b *BoardCellsRepository) CreateNewBoardCells(tx *gorm.DB, gameId int) erro
 		}
 	}
 
-	return tx.Table(`board_cells`).
-		Create(boardCells).
-		Error
+	return boardCells
+}
+
+func (b *BoardCellsRepository) MakeBoardCells(gameId int, field [][]int) []models.BoardCell {
+	var boardCells = make([]models.BoardCell, len(field))
+
+	for i, cell := range field {
+		boardCells[i] = models.BoardCell{
+			GameId:    gameId,
+			IndexCell: cell[0],
+			FigureId:  cell[1],
+		}
+	}
+
+	return boardCells
 }
 
 func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
@@ -44,11 +62,6 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 		Error
 	if err != nil {
 		return models.Board{}, err
-	}
-
-	res := b.db.Find(&boardCell).Where("game_id=?", gameId)
-	if res.Error != nil {
-		return models.Board{}, res.Error
 	}
 
 	var cells = map[int]*models.BoardCell{}

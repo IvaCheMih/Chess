@@ -1,6 +1,7 @@
 package move
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
@@ -50,7 +51,7 @@ func MakeTheoryKnightSteps() *[]int {
 	}
 }
 
-func (m *MoveService) createGameStruct(gameModel models.Game, board models.Board) Game {
+func (m *MoveService) CreateGameStruct(gameModel models.Game, board models.Board) Game {
 	figures, blackKingCell, whiteKingCell := m.createField(board, gameModel)
 
 	side := gameModel.Side
@@ -72,8 +73,8 @@ func (m *MoveService) createGameStruct(gameModel models.Game, board models.Board
 	}
 }
 
-func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int) ([]int, Game) {
-	game := m.createGameStruct(gameModel, board)
+func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, from int, to int, newFigure byte) ([]int, Game) {
+	game := m.CreateGameStruct(gameModel, board)
 
 	figure := game.GetFigureByIndex(from)
 
@@ -87,6 +88,10 @@ func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, f
 	// requested move is possible (is in possibleMoves)
 	isCorrect, indexesToChange := checkMove(possibleMoves, []int{from, to})
 	if !isCorrect {
+		return []int{}, Game{}
+	}
+
+	if !game.NewFigureRequestCorrect(to, newFigure) {
 		return []int{}, Game{}
 	}
 
@@ -122,6 +127,19 @@ func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 
 	//game := CreateGameStruct(gameModel, board)
 
+	for i := 0; i < 64; i++ {
+		if i%8 == 0 {
+			fmt.Println()
+		}
+		if game.Figures[i] != nil {
+			fmt.Print(string((*game.Figures[i]).GetType()))
+		} else {
+			fmt.Printf("0")
+		}
+
+	}
+	fmt.Println()
+
 	game.ChangeToAndFrom(to, from)
 
 	if len(indexesToChange) > 2 {
@@ -131,19 +149,31 @@ func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 
 	game.ChangeKingGameID(to)
 
-	if !game.NewFigure(to, newFigure) {
-		return false
-	}
+	game.ChangePawnToNewFigure(to, newFigure)
 
 	if game.Check() {
-		return false
+		fmt.Println("check on board")
+		return true
 	}
 
 	game.ChangeCastlingFlag(to)
 
 	game.ChangeLastPawnMove(from, to)
 
-	return true
+	for i := 0; i < 64; i++ {
+		if i%8 == 0 {
+			fmt.Println()
+		}
+		if game.Figures[i] != nil {
+			fmt.Print(string((*game.Figures[i]).GetType()))
+		} else {
+			fmt.Printf("0")
+		}
+
+	}
+	fmt.Println()
+
+	return false
 }
 
 func checkMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {
