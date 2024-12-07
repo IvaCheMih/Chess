@@ -1,7 +1,6 @@
 package move
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 )
 
@@ -14,6 +13,7 @@ type MoveService struct {
 type EndgameReason string
 
 const (
+	NotEndgame EndgameReason = ""
 	Mate       EndgameReason = "Mate"
 	Pat        EndgameReason = "Pat"
 	Repetition EndgameReason = "Repetition"
@@ -127,18 +127,18 @@ func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 
 	//game := CreateGameStruct(gameModel, board)
 
-	for i := 0; i < 64; i++ {
-		if i%8 == 0 {
-			fmt.Println()
-		}
-		if game.Figures[i] != nil {
-			fmt.Print(string((*game.Figures[i]).GetType()))
-		} else {
-			fmt.Printf("0")
-		}
-
-	}
-	fmt.Println()
+	//for i := 0; i < 64; i++ {
+	//	if i%8 == 0 {
+	//		fmt.Println()
+	//	}
+	//	if game.Figures[i] != nil {
+	//		fmt.Print(string((*game.Figures[i]).GetType()))
+	//	} else {
+	//		fmt.Printf("0")
+	//	}
+	//
+	//}
+	//fmt.Println()
 
 	game.ChangeToAndFrom(to, from)
 
@@ -152,26 +152,12 @@ func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 	game.ChangePawnToNewFigure(to, newFigure)
 
 	if game.Check() {
-		fmt.Println("check on board")
 		return true
 	}
 
 	game.ChangeCastlingFlag(to)
 
 	game.ChangeLastPawnMove(from, to)
-
-	for i := 0; i < 64; i++ {
-		if i%8 == 0 {
-			fmt.Println()
-		}
-		if game.Figures[i] != nil {
-			fmt.Print(string((*game.Figures[i]).GetType()))
-		} else {
-			fmt.Printf("0")
-		}
-
-	}
-	fmt.Println()
 
 	return false
 }
