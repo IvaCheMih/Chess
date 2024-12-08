@@ -9,7 +9,7 @@ vuln:
 
 test-prod:
 	go clean -testcache
-	go test -v ./... -short
+	go test -v ./test/... -short
 
 test-logic:
 	go clean -testcache

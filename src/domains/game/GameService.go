@@ -188,8 +188,10 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	if moveservice.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
-		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
+	moveservice.DoMove(indexesToChange, &game, requestFromTo.NewFigure)
+
+	if game.Check() {
+		return models.Move{}, errors.New("Move is not possible (Check)")
 	}
 
 	game.Side = !game.Side

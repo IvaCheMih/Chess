@@ -91,8 +91,10 @@ func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, f
 		return []int{}, Game{}
 	}
 
-	if !game.NewFigureRequestCorrect(to, newFigure) {
-		return []int{}, Game{}
+	if (*figure).GetType() == 'p' && game.isNewFigureCorrect(newFigure) {
+		if !game.NewFigureRequestCorrect(to, (*figure).IsItWhite()) {
+			return []int{}, Game{}
+		}
 	}
 
 	return indexesToChange, game
@@ -121,7 +123,7 @@ func (m *MoveService) createField(board models.Board, gameModel models.Game) (ma
 	return field, blackKingCell, whiteKingCell
 }
 
-func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
+func DoMove(indexesToChange []int, game *Game, newFigure byte) {
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
@@ -151,15 +153,9 @@ func IsItCheck(indexesToChange []int, game *Game, newFigure byte) bool {
 
 	game.ChangePawnToNewFigure(to, newFigure)
 
-	if game.Check() {
-		return true
-	}
-
 	game.ChangeCastlingFlag(to)
 
 	game.ChangeLastPawnMove(from, to)
-
-	return false
 }
 
 func checkMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {

@@ -410,19 +410,13 @@ func (g *Game) ChangeRookField(indexesToChange []int) {
 	g.ChangeToAndFrom(indexesToChange[3], indexesToChange[2])
 }
 
-func (g *Game) NewFigureRequestCorrect(to int, newFigure byte) bool {
-	figure := g.GetFigureByIndex(to)
+func (g *Game) NewFigureRequestCorrect(to int, pawnColor bool) bool {
+	if pawnColor && to < 8 {
+		return true
+	}
 
-	if (*figure).GetType() == 'p' {
-		if (*figure).IsItWhite() {
-			if to < 8 {
-				return g.isNewFigureCorrect(newFigure)
-			}
-		} else {
-			if to > 55 {
-				return g.isNewFigureCorrect(newFigure)
-			}
-		}
+	if !pawnColor && to > 55 {
+		return true
 	}
 
 	return false
@@ -681,13 +675,17 @@ func (g *Game) moveExists(theoryMoves *TheoryMoves, toCrd [2]int, fromCrd [2]int
 	if (*g.GetFigureByFieldCoordinates(fromCrd)).GetType() == 'p' {
 		for figureByte := range g.newFigures {
 			newGame := g.copyGame()
-			if !IsItCheck(indexesToChange, newGame, figureByte) {
+
+			DoMove(indexesToChange, newGame, figureByte)
+			if !newGame.Check() {
 				return true
 			}
 		}
 	} else {
 		newGame := g.copyGame()
-		if !IsItCheck(indexesToChange, newGame, '0') {
+
+		DoMove(indexesToChange, newGame, '0')
+		if !newGame.Check() {
 			return true
 		}
 	}
