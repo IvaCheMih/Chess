@@ -37,6 +37,7 @@ func TestEndgame(t *testing.T) {
 			BlackKingCastling:  false,
 			BlackRookACastling: false,
 			BlackRookHCastling: false,
+			LastLoss:           0,
 			LastPawnMove:       nil,
 			Side:               true,
 		}, models.Board{Cells: cells})
@@ -113,6 +114,41 @@ func TestEndgame(t *testing.T) {
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, move.Pat)
 	})
+
+	t.Run("Test no losses", func(t *testing.T) {
+		m := gameService.GetMoveService()
+
+		board := boardRepo.MakeBoardCells(1, makeNoMateNoPat())
+
+		var cells = map[int]*models.BoardCell{}
+
+		for i := range board {
+			cells[board[i].IndexCell] = &board[i]
+		}
+
+		game := m.CreateGameStruct(models.Game{
+			Id:                 1,
+			WhiteUserId:        1,
+			BlackUserId:        1,
+			IsStarted:          true,
+			IsEnded:            false,
+			IsCheckWhite:       false,
+			WhiteKingCastling:  false,
+			WhiteRookACastling: false,
+			WhiteRookHCastling: false,
+			IsCheckBlack:       false,
+			BlackKingCastling:  false,
+			BlackRookACastling: false,
+			BlackRookHCastling: false,
+			LastPawnMove:       nil,
+			LastLoss:           49,
+			Side:               false,
+		}, models.Board{Cells: cells})
+
+		isEnd, endgameReason := game.IsItEndgame()
+		require.True(t, isEnd)
+		require.Equal(t, endgameReason, move.NoLosses)
+	})
 }
 
 func makeWhiteCheckMatBoard1() [][]int {
@@ -129,5 +165,13 @@ func makeBlackPatBoard1() [][]int {
 		{0, 12},
 		{13, 7},
 		{57, 1}, {60, 5},
+	}
+}
+
+func makeNoMateNoPat() [][]int {
+	return [][]int{
+		{0, 12},
+		{13, 7},
+		{58, 1}, {60, 5},
 	}
 }

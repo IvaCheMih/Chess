@@ -80,6 +80,12 @@ func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, is
 		values["is_ended"] = true
 	}
 
+	if game.KilledFigure == 0 {
+		values["last_loss"] = game.LastLoss + 1
+	} else {
+		values["last_loss"] = 0
+	}
+
 	return tx.Table(`games`).
 		Model(&models.Game{}).
 		Where("id=?", gameId).

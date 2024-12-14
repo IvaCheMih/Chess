@@ -16,7 +16,11 @@ type Game struct {
 	NewFigureId       int
 	newFigures        map[byte]struct{}
 	theoryKnightSteps *[]int
+	KilledFigure      byte
+	LastLoss          int
 }
+
+const lastLossLimit = 50
 
 type IsCheck struct {
 	IsItCheck  bool
@@ -352,6 +356,7 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureFrom := g.GetFigureByFieldCoordinates(coordinateFrom)
 
 	if figureTo != nil {
+		g.KilledFigure = (*figureTo).GetType()
 		(*figureTo).Delete()
 	}
 
@@ -398,6 +403,8 @@ func (g *Game) DeletePawn(indexesToChange []int) {
 	}
 
 	figure := g.GetFigureByIndex(indexesToChange[3])
+
+	g.KilledFigure = (*figure).GetType()
 
 	(*figure).Delete()
 }
@@ -550,6 +557,8 @@ func (g *Game) copyGame() *Game {
 		NewFigureId:       g.NewFigureId,
 		newFigures:        g.newFigures,
 		theoryKnightSteps: g.theoryKnightSteps,
+		KilledFigure:      g.KilledFigure,
+		LastLoss:          g.LastLoss,
 	}
 
 	return &newGame
@@ -565,6 +574,11 @@ func (g *Game) IsItEndgame() (bool, EndgameReason) {
 		theoryMoves := (*figure).GetPossibleMoves(g)
 
 		if g.movesExist(theoryMoves, fromCrd) {
+			if g.LastLoss+1 == lastLossLimit {
+				return true, NoLosses
+			}
+
+			// TODO: same moves
 			return false, NotEndgame
 		}
 	}

@@ -70,6 +70,7 @@ func (m *MoveService) CreateGameStruct(gameModel models.Game, board models.Board
 		NewFigureId:       0,
 		newFigures:        m.newFigures,
 		theoryKnightSteps: m.theoryKnightSteps,
+		LastLoss:          gameModel.LastLoss,
 	}
 }
 

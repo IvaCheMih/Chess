@@ -215,18 +215,13 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	killedFigureId := 0
-	if board.Cells[to] != nil {
-		killedFigureId = board.Cells[to].FigureId
-	}
-
 	var move = models.Move{
 		GameId:         gameId,
 		MoveNumber:     maxNumber,
-		From_id:        from,
-		To_id:          to,
+		FromId:         from,
+		ToId:           to,
 		FigureId:       board.Cells[from].FigureId,
-		KilledFigureId: killedFigureId,
+		KilledFigureId: g.GetFigureID(game.KilledFigure),
 		NewFigureId:    0,
 		IsCheckWhite:   game.IsCheckWhite.IsItCheck,
 		IsCheckBlack:   game.IsCheckBlack.IsItCheck,
@@ -412,4 +407,14 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 func (g *GamesService) GetMoveService() *moveservice.MoveService {
 	return g.moveService
+}
+
+func (g *GamesService) GetFigureID(b byte) int {
+	for i := range g.figureRepo {
+		if g.figureRepo[i] == b {
+			return i
+		}
+	}
+
+	return 0
 }
