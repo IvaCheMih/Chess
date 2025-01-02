@@ -564,36 +564,8 @@ func (g *Game) copyGame() *Game {
 	return &newGame
 }
 
-func (g *Game) IsItEndgame() (bool, EndgameReason) {
-	for _, figure := range g.Figures {
-		if !g.IsItYourFigure(figure) {
-			continue
-		}
-
-		fromCrd := (*figure).GetCoordinates()
-		theoryMoves := (*figure).GetPossibleMoves(g)
-
-		if g.movesExist(theoryMoves, fromCrd) {
-			if g.LastLoss+1 == lastLossLimit {
-				return true, NoLosses
-			}
-
-			// TODO: same moves
-			return false, NotEndgame
-		}
-	}
-
-	if g.Side {
-		if g.IsCheckWhite.IsItCheck {
-			return true, Mate
-		}
-		return true, Pat
-	} else {
-		if g.IsCheckBlack.IsItCheck {
-			return true, Mate
-		}
-		return true, Pat
-	}
+func (g *Game) CompareGamesStates(gameState Game) bool {
+	return checkCompares(*g, gameState, compares)
 }
 
 func (g *Game) movesExist(theoryMoves *TheoryMoves, fromCrd [2]int) bool {
@@ -705,4 +677,93 @@ func (g *Game) moveExists(theoryMoves *TheoryMoves, toCrd [2]int, fromCrd [2]int
 	}
 
 	return false
+}
+
+type compareFunctions[T any] []compareFunction[T]
+
+type compareFunction[T any] func(a1, a2 T) bool
+
+func checkCompares(g1 Game, g2 Game, compares compareFunctions[Game]) bool {
+	for _, compare := range compares {
+		if !compare(g1, g2) {
+			return false
+		}
+	}
+
+	return true
+}
+
+var compares = compareFunctions[Game]{
+	func(g1, g2 Game) bool {
+		for i := range g1.N*g1.N - 1 {
+			if g1.Figures[i] == nil && g2.Figures[i] == nil {
+				continue
+			}
+
+			if g1.Figures[i] != nil && g2.Figures[i] != nil &&
+				(*g1.Figures[i]).IsItWhite() == (*g2.Figures[i]).IsItWhite() &&
+				(*g1.Figures[i]).GetType() == (*g2.Figures[i]).GetType() {
+				continue
+			}
+
+			return false
+		}
+		return true
+	},
+
+	func(g1, g2 Game) bool {
+		return g1.WhiteCastling.RookHCastling == g2.WhiteCastling.RookHCastling
+	},
+	func(g1, g2 Game) bool {
+		return g1.WhiteCastling.RookACastling == g2.WhiteCastling.RookACastling
+	},
+	func(g1, g2 Game) bool {
+		return g1.WhiteCastling.KingCastling == g2.WhiteCastling.KingCastling
+	},
+
+	func(g1, g2 Game) bool {
+		return g1.BlackCastling.RookHCastling == g2.BlackCastling.RookHCastling
+	},
+	func(g1, g2 Game) bool {
+		return g1.BlackCastling.RookACastling == g2.BlackCastling.RookACastling
+	},
+	func(g1, g2 Game) bool {
+		return g1.BlackCastling.KingCastling == g2.BlackCastling.KingCastling
+	},
+
+	func(g1, g2 Game) bool {
+		return g1.N == g2.N
+	},
+
+	func(g1, g2 Game) bool {
+		return g1.IsCheckBlack.KingGameID == g2.IsCheckBlack.KingGameID
+	},
+	func(g1, g2 Game) bool {
+		return g1.IsCheckBlack.IsItCheck == g2.IsCheckBlack.IsItCheck
+	},
+	func(g1, g2 Game) bool {
+		return g1.IsCheckWhite.KingGameID == g2.IsCheckWhite.KingGameID
+	},
+	func(g1, g2 Game) bool {
+		return g1.IsCheckWhite.IsItCheck == g2.IsCheckWhite.IsItCheck
+	},
+
+	func(g1, g2 Game) bool {
+		return g1.LastLoss == g2.LastLoss
+	},
+	func(g1, g2 Game) bool {
+		return g1.KilledFigure == g2.KilledFigure
+	},
+	func(g1, g2 Game) bool {
+		return g1.NewFigureId == g2.NewFigureId
+	},
+	func(g1, g2 Game) bool {
+		return g1.Side == g2.Side
+	},
+	func(g1, g2 Game) bool {
+		return g1.LastPawnMove == g2.LastPawnMove
+	},
+	func(g1, g2 Game) bool {
+		return g1.NewFigureId == g2.NewFigureId
+	},
 }

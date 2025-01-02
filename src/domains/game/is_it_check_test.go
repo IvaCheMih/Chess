@@ -1,15 +1,14 @@
-package services
+package game
 
 import (
-	gameservice "github.com/IvaCheMih/chess/src/domains/game"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCheck(t *testing.T) {
-	boardRepo := gameservice.CreateBoardCellsRepository(nil)
-	gameService := gameservice.CreateGamesService(&boardRepo, nil, nil)
+	boardRepo := CreateBoardCellsRepository(nil)
+	gameService := CreateGamesService(&boardRepo, nil, nil)
 
 	t.Run("Test start field", func(t *testing.T) {
 		m := gameService.GetMoveService()

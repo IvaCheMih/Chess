@@ -124,6 +124,102 @@ func (m *MoveService) createField(board models.Board, gameModel models.Game) (ma
 	return field, blackKingCell, whiteKingCell
 }
 
+func (m *MoveService) GetFigureRepo() map[int]byte {
+	return m.figureRepo
+}
+
+func (m *MoveService) GetFigureID(b byte) int {
+	for i := range m.figureRepo {
+		if m.figureRepo[i] == b {
+			return i
+		}
+	}
+
+	return 0
+}
+
+func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models.BoardCell) (bool, EndgameReason) {
+	var cells = map[int]*models.BoardCell{}
+
+	for i := range board {
+		cells[board[i].IndexCell] = &board[i]
+	}
+
+	gameHistory := m.CreateGameStruct(models.Game{
+		Id:                 1,
+		WhiteUserId:        1,
+		BlackUserId:        1,
+		IsStarted:          true,
+		IsEnded:            false,
+		IsCheckWhite:       false,
+		WhiteKingCastling:  false,
+		WhiteRookACastling: false,
+		WhiteRookHCastling: false,
+		IsCheckBlack:       false,
+		BlackKingCastling:  false,
+		BlackRookACastling: false,
+		BlackRookHCastling: false,
+		LastLoss:           0,
+		LastPawnMove:       nil,
+		Side:               true,
+	}, models.Board{Cells: cells})
+
+	count := 0
+
+	for i := range history {
+		gameHistory.DoMoveFromHistory(history[i], m.figureRepo[history[i].NewFigureId])
+
+		if g.CompareGamesStates(gameHistory) {
+			count++
+			if count == 2 {
+				return true, Repetition
+			}
+		}
+	}
+
+	for _, figure := range g.Figures {
+		if !g.IsItYourFigure(figure) {
+			continue
+		}
+
+		fromCrd := (*figure).GetCoordinates()
+		theoryMoves := (*figure).GetPossibleMoves(g)
+
+		if g.movesExist(theoryMoves, fromCrd) {
+			if g.LastLoss+1 == lastLossLimit {
+				return true, NoLosses
+			}
+
+			return false, NotEndgame
+		}
+	}
+
+	if g.Side {
+		if g.IsCheckWhite.IsItCheck {
+			return true, Mate
+		}
+		return true, Pat
+	} else {
+		if g.IsCheckBlack.IsItCheck {
+			return true, Mate
+		}
+		return true, Pat
+	}
+}
+
+func (g *Game) DoMoveFromHistory(move models.Move, newFigure byte) {
+	from := move.FromId
+	to := move.ToId
+
+	figure := g.GetFigureByIndex(from)
+
+	possibleMoves := (*figure).GetPossibleMoves(g)
+
+	_, indexesToChange := checkMove(possibleMoves, []int{from, to})
+
+	DoMove(indexesToChange, g, newFigure)
+}
+
 func DoMove(indexesToChange []int, game *Game, newFigure byte) {
 	from := indexesToChange[0]
 	to := indexesToChange[1]

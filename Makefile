@@ -13,7 +13,7 @@ test-prod:
 
 test-logic:
 	go clean -testcache
-	go test -v ./src/domains/game/services/... -short
+	go test -v ./src/domains/game/... -short
 
 run-remote:
 	docker-compose -f docker-compose-remote.yaml up -d

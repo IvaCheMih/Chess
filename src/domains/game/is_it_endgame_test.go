@@ -1,7 +1,6 @@
-package services
+package game
 
 import (
-	gameservice "github.com/IvaCheMih/chess/src/domains/game"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"github.com/IvaCheMih/chess/src/domains/game/services/move"
 	"github.com/stretchr/testify/require"
@@ -9,8 +8,8 @@ import (
 )
 
 func TestEndgame(t *testing.T) {
-	boardRepo := gameservice.CreateBoardCellsRepository(nil)
-	gameService := gameservice.CreateGamesService(&boardRepo, nil, nil)
+	boardRepo := CreateBoardCellsRepository(nil)
+	gameService := CreateGamesService(&boardRepo, nil, nil)
 
 	t.Run("Test start field", func(t *testing.T) {
 		m := gameService.GetMoveService()
@@ -42,7 +41,7 @@ func TestEndgame(t *testing.T) {
 			Side:               true,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := game.IsItEndgame()
+		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
 		require.False(t, isEnd)
 		require.Equal(t, endgameReason, move.NotEndgame)
 	})
@@ -76,7 +75,7 @@ func TestEndgame(t *testing.T) {
 			Side:               true,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := game.IsItEndgame()
+		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, move.Mate)
 	})
@@ -110,7 +109,7 @@ func TestEndgame(t *testing.T) {
 			Side:               false,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := game.IsItEndgame()
+		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, move.Pat)
 	})
@@ -145,7 +144,7 @@ func TestEndgame(t *testing.T) {
 			Side:               false,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := game.IsItEndgame()
+		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, move.NoLosses)
 	})
