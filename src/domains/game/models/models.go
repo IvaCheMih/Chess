@@ -15,8 +15,8 @@ type Move struct {
 	Id             int
 	GameId         int
 	MoveNumber     int
-	From_id        int
-	To_id          int
+	FromId         int
+	ToId           int
 	FigureId       int
 	KilledFigureId int
 	NewFigureId    int
@@ -38,6 +38,7 @@ type Game struct {
 	BlackKingCastling  bool
 	BlackRookACastling bool
 	BlackRookHCastling bool
+	LastLoss           int
 	LastPawnMove       *int
 	Side               bool
 }

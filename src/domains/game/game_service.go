@@ -16,8 +16,6 @@ type GamesService struct {
 	movesRepo *MovesRepository
 
 	moveService *moveservice.MoveService
-
-	figureRepo map[int]byte
 }
 
 func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesRepository, movesRepo *MovesRepository) GamesService {
@@ -27,7 +25,6 @@ func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesReposit
 		gamesRepo: gamesRepo,
 		movesRepo: movesRepo,
 
-		figureRepo:  figureRepo,
 		moveService: moveservice.NewMoveService(figureRepo),
 	}
 }
@@ -92,7 +89,9 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	FromModelsToDtoCreateGame(notStartedGame, &createGameResponse)
 
 	if createNewBoard {
-		err = g.boardRepo.CreateNewBoardCells(createGameResponse.GameId, tx)
+		boardCells := g.boardRepo.NewStartBoardCells(createGameResponse.GameId)
+
+		err = g.boardRepo.CreateNewBoardCells(tx, boardCells)
 	}
 	if err != nil {
 		return dto.CreateGameResponse{}, err
@@ -172,6 +171,8 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
+	// move logic
+
 	if err = CheckCorrectRequestSideUser(userId, gameModel); err != nil {
 		log.Println(err)
 		return models.Move{}, err
@@ -180,15 +181,29 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to)
+	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to, requestFromTo.NewFigure)
 
 	if len(indexesToChange) == 0 {
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	if !moveservice.IsItCheck(indexesToChange, &game, requestFromTo.NewFigure) {
-		return models.Move{}, errors.New("Move is not possible (IsItCheck)")
+	moveservice.DoMove(indexesToChange, &game, requestFromTo.NewFigure)
+
+	if game.Check() {
+		return models.Move{}, errors.New("Move is not possible (Check)")
 	}
+
+	game.Side = !game.Side
+
+	// end move logic
+
+	history, err := g.movesRepo.Find(gameId)
+	if err != nil {
+		log.Println(err)
+		return models.Move{}, err
+	}
+
+	isEnd, _ := g.moveService.IsItEndgame(&game, history, g.boardRepo.NewStartBoardCells(1))
 
 	tx := g.gamesRepo.db.Begin()
 	defer func() {
@@ -201,42 +216,29 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	maxNumber, err := g.movesRepo.FindMaxMoveNumber(gameId)
-	if err != nil {
-		log.Println(err)
-		return models.Move{}, err
-	}
-
-	killedFigureId := 0
-	if board.Cells[to] != nil {
-		killedFigureId = board.Cells[to].FigureId
-	}
-
 	var move = models.Move{
 		GameId:         gameId,
-		MoveNumber:     maxNumber,
-		From_id:        from,
-		To_id:          to,
+		MoveNumber:     len(history),
+		FromId:         from,
+		ToId:           to,
 		FigureId:       board.Cells[from].FigureId,
-		KilledFigureId: killedFigureId,
-		NewFigureId:    0,
+		KilledFigureId: g.moveService.GetFigureID(game.KilledFigure),
+		NewFigureId:    g.moveService.GetFigureID(requestFromTo.NewFigure),
 		IsCheckWhite:   game.IsCheckWhite.IsItCheck,
 		IsCheckBlack:   game.IsCheckBlack.IsItCheck,
 	}
 
-	responseMove, err := g.movesRepo.AddMove(move, tx)
+	responseMove, err := g.movesRepo.AddMove(tx, move)
 	if err != nil {
 		return models.Move{}, err
 	}
 
-	game.Side = !game.Side
-
-	err = g.gamesRepo.UpdateGame(gameId, game, tx)
+	err = g.gamesRepo.UpdateGame(tx, gameId, game, isEnd)
 	if err != nil {
 		return models.Move{}, err
 	}
 
-	err = UpdateBoardAfterMove(g, board, game.NewFigureId, indexesToChange, tx)
+	err = UpdateBoardAfterMove(tx, g, board, game.NewFigureId, indexesToChange)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -270,7 +272,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		if getBoardResponse.BoardCells[i].FigureId == 0 {
 			fmt.Print(0)
 		} else {
-			fmt.Print(string(g.figureRepo[getBoardResponse.BoardCells[i].FigureId]))
+			fmt.Print(string(g.moveService.GetFigureRepo()[getBoardResponse.BoardCells[i].FigureId]))
 		}
 	}
 	fmt.Println()
@@ -346,22 +348,22 @@ func CheckCorrectRequest(move dto.DoMoveBody) bool {
 	return true
 }
 
-func UpdateBoardAfterMove(g *GamesService, board models.Board, newFigureId int, indexesToChange []int, tx *gorm.DB) error {
+func UpdateBoardAfterMove(tx *gorm.DB, g *GamesService, board models.Board, newFigureId int, indexesToChange []int) error {
 	var err error
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
 	if board.Cells[to] != nil {
-		err = g.boardRepo.Delete(board.Cells[to].Id, tx)
+		err = g.boardRepo.Delete(tx, board.Cells[to].Id)
 		if err != nil {
 			return err
 		}
 	}
 
 	if newFigureId != 0 {
-		err = g.boardRepo.UpdateNewFigure(board.Cells[from].Id, to, newFigureId, tx)
+		err = g.boardRepo.UpdateNewFigure(tx, board.Cells[from].Id, to, newFigureId)
 	} else {
-		err = g.boardRepo.Update(board.Cells[from].Id, to, tx)
+		err = g.boardRepo.Update(tx, board.Cells[from].Id, to)
 	}
 
 	if err != nil {
@@ -370,9 +372,9 @@ func UpdateBoardAfterMove(g *GamesService, board models.Board, newFigureId int, 
 
 	if len(indexesToChange) > 2 {
 		if indexesToChange[2] == -1 {
-			err = g.boardRepo.Delete(board.Cells[indexesToChange[3]].Id, tx)
+			err = g.boardRepo.Delete(tx, board.Cells[indexesToChange[3]].Id)
 		} else {
-			err = g.boardRepo.Update(board.Cells[indexesToChange[2]].Id, indexesToChange[3], tx)
+			err = g.boardRepo.Update(tx, board.Cells[indexesToChange[2]].Id, indexesToChange[3])
 		}
 	}
 
@@ -402,4 +404,8 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 
 	createGameResponse.LastPawnMove = response.LastPawnMove
 	createGameResponse.Side = response.Side
+}
+
+func (g *GamesService) GetMoveService() *moveservice.MoveService {
+	return g.moveService
 }

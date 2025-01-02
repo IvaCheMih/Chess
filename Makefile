@@ -7,9 +7,13 @@ lint:
 vuln:
 	govulncheck ./...
 
-test:
+test-prod:
 	go clean -testcache
-	go test -v ./... -short
+	go test -v ./test/... -short
+
+test-logic:
+	go clean -testcache
+	go test -v ./src/domains/game/... -short
 
 run-remote:
 	docker-compose -f docker-compose-remote.yaml up -d

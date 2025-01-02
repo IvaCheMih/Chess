@@ -14,30 +14,7 @@ type Figure interface {
 	Delete()
 }
 
-func (m *MoveService) CreateField(board models.Board, gameModel models.Game) (map[int]*Figure, int, int) {
-	blackKingCell, whiteKingCell := 0, 0
-	field := map[int]*Figure{}
-
-	for _, cell := range board.Cells {
-		if cell.FigureId == 5 {
-			whiteKingCell = cell.IndexCell
-
-		}
-		if cell.FigureId == 12 {
-			blackKingCell = cell.IndexCell
-
-		}
-
-		isWhite := cell.FigureId <= 7
-
-		field[cell.IndexCell] = m.createFigureI(m.figureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
-
-	}
-
-	return field, blackKingCell, whiteKingCell
-}
-
-func (m *MoveService) createFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *Figure {
+func createFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *Figure {
 	coordinates := IndexToFieldCoordinates(index)
 
 	figure := CreateFigure(_type, isWhite, coordinates, gameModel)
