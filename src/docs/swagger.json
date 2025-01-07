@@ -245,7 +245,7 @@
         },
         "/user/": {
             "post": {
-                "description": "create new user.",
+                "description": "telegram sign-in.",
                 "consumes": [
                     "application/json"
                 ],
@@ -253,9 +253,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "telegram"
                 ],
-                "summary": "create new user.",
+                "summary": "telegram sign-in.",
                 "parameters": [
                     {
                         "description": "request",
@@ -263,7 +263,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateUserRequest"
+                            "$ref": "#/definitions/dto.TelegramSignInRequest"
                         }
                     }
                 ],
@@ -271,7 +271,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateUserResponse"
+                            "$ref": "#/definitions/dto.TelegramSignInResponse"
                         }
                     }
                 }
@@ -372,6 +372,9 @@
             "properties": {
                 "password": {
                     "type": "string"
+                },
+                "telegramId": {
+                    "type": "integer"
                 }
             }
         },
@@ -422,6 +425,25 @@
                 }
             }
         },
+        "dto.TelegramSignInRequest": {
+            "type": "object",
+            "properties": {
+                "chatId": {
+                    "type": "integer"
+                },
+                "telegramId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TelegramSignInResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Game": {
             "type": "object",
             "properties": {
@@ -452,6 +474,9 @@
                 "isStarted": {
                     "type": "boolean"
                 },
+                "lastLoss": {
+                    "type": "integer"
+                },
                 "lastPawnMove": {
                     "type": "integer"
                 },
@@ -478,7 +503,7 @@
                 "figureId": {
                     "type": "integer"
                 },
-                "from_id": {
+                "fromId": {
                     "type": "integer"
                 },
                 "gameId": {
@@ -502,7 +527,7 @@
                 "newFigureId": {
                     "type": "integer"
                 },
-                "to_id": {
+                "toId": {
                     "type": "integer"
                 }
             }

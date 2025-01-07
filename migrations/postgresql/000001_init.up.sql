@@ -1,6 +1,7 @@
 CREATE TABLE users (
-    id         serial       NOT NULL,
-    password   varchar(100) NOT NULL,
+    id           serial       NOT NULL,
+    telegram_id  integer      NOT NULL default 0,
+    password     varchar(100) NOT NULL,
 
     CONSTRAINT users_pkey PRIMARY KEY (id)
 );

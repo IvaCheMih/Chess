@@ -10,17 +10,17 @@ import (
 	"strconv"
 )
 
-func CreateUser(user1password userDto.CreateUserRequest, appURL string) (error, userDto.CreateUserResponse) {
+func CreateUser(user1password userDto.CreateUserRequest, appURL string) (userDto.CreateUserResponse, error) {
 	body, err := json.Marshal(user1password)
 	if err != nil {
-		return err, userDto.CreateUserResponse{}
+		return userDto.CreateUserResponse{}, err
 	}
 
 	url := appURL + "user/"
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return err, userDto.CreateUserResponse{}
+		return userDto.CreateUserResponse{}, err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
@@ -30,19 +30,57 @@ func CreateUser(user1password userDto.CreateUserRequest, appURL string) (error, 
 
 	response, err := client.Do(request)
 	if err != nil {
-		return err, userDto.CreateUserResponse{}
+		return userDto.CreateUserResponse{}, err
 	}
 
 	resBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return err, userDto.CreateUserResponse{}
+		return userDto.CreateUserResponse{}, err
 	}
 
 	var user1response = userDto.CreateUserResponse{}
 
 	err = json.Unmarshal(resBody, &user1response)
 
-	return err, user1response
+	return user1response, err
+}
+
+func TelegramAuth(req userDto.TelegramSignInRequest, appURL string) (userDto.TelegramSignInResponse, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return userDto.TelegramSignInResponse{}, err
+	}
+
+	url := appURL + "user/sign-in/telegram/"
+
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return userDto.TelegramSignInResponse{}, err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("accept", "application/json")
+
+	client := &http.Client{}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return userDto.TelegramSignInResponse{}, err
+	}
+
+	resBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return userDto.TelegramSignInResponse{}, err
+	}
+
+	var user1response = userDto.TelegramSignInResponse{}
+
+	err = json.Unmarshal(resBody, &user1response)
+	if err != nil {
+		return userDto.TelegramSignInResponse{}, err
+	}
+
+	return user1response, nil
 }
 
 func CreateSession(session userDto.CreateSessionRequest, appURL string) (error, userDto.CreateSessionResponse) {
@@ -80,17 +118,17 @@ func CreateSession(session userDto.CreateSessionRequest, appURL string) (error, 
 	return err, session1response
 }
 
-func CreateGame(game gameDto.CreateGameBody, token string, appURL string) (error, gameDto.CreateGameResponse) {
+func CreateGame(game gameDto.CreateGameBody, token string, appURL string) (gameDto.CreateGameResponse, error) {
 	body, err := json.Marshal(game)
 	if err != nil {
-		return err, gameDto.CreateGameResponse{}
+		return gameDto.CreateGameResponse{}, err
 	}
 
 	url := appURL + "game/"
 
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return err, gameDto.CreateGameResponse{}
+		return gameDto.CreateGameResponse{}, err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
@@ -102,22 +140,22 @@ func CreateGame(game gameDto.CreateGameBody, token string, appURL string) (error
 
 	response, err := client.Do(request)
 	if err != nil {
-		return err, gameDto.CreateGameResponse{}
+		return gameDto.CreateGameResponse{}, err
 	}
 
 	resBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return err, gameDto.CreateGameResponse{}
+		return gameDto.CreateGameResponse{}, err
 	}
 
 	var gameResponse = gameDto.CreateGameResponse{}
 
 	err = json.Unmarshal(resBody, &gameResponse)
 	if err != nil {
-		return err, gameDto.CreateGameResponse{}
+		return gameDto.CreateGameResponse{}, err
 	}
 
-	return err, gameResponse
+	return gameResponse, nil
 }
 
 func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string) (error, gameDto.DoMoveResponse) {
@@ -165,14 +203,14 @@ func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string
 	return err, doMove
 }
 
-func GetBoard(token string, gameId int, appURL string) (error, gameDto.GetBoardResponse) {
+func GetBoard(token string, gameId int, appURL string) (gameDto.GetBoardResponse, error) {
 
 	url := appURL + "game/" + strconv.Itoa(gameId) + "/board/"
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 
 	if err != nil {
-		return err, gameDto.GetBoardResponse{}
+		return gameDto.GetBoardResponse{}, err
 	}
 
 	request.Header.Set("Authorization", "Bearer "+token)
@@ -183,17 +221,20 @@ func GetBoard(token string, gameId int, appURL string) (error, gameDto.GetBoardR
 
 	response, err := client.Do(request)
 	if err != nil {
-		return err, gameDto.GetBoardResponse{}
+		return gameDto.GetBoardResponse{}, err
 	}
 
 	resBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return err, gameDto.GetBoardResponse{}
+		return gameDto.GetBoardResponse{}, err
 	}
 
 	var board = gameDto.GetBoardResponse{}
 
 	err = json.Unmarshal(resBody, &board)
+	if err != nil {
+		return gameDto.GetBoardResponse{}, err
+	}
 
-	return err, board
+	return board, nil
 }

@@ -1,4 +1,4 @@
-package services
+package env
 
 import (
 	"github.com/spf13/viper"
@@ -11,6 +11,7 @@ type EnvService struct {
 	AppURL        string
 	MODE          string
 	Migrations    string
+	TelegramBot   string
 }
 
 func NewEnvService() *EnvService {
@@ -36,5 +37,6 @@ func NewEnvService() *EnvService {
 		AppURL:        viper.GetString("APP_URL"),
 		MODE:          mode,
 		Migrations:    viper.GetString("MIGRATIONS"),
+		TelegramBot:   viper.GetString("TELEGRAM_BOT_TOKEN"),
 	}
 }

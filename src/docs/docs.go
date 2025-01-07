@@ -248,7 +248,7 @@ const docTemplate = `{
         },
         "/user/": {
             "post": {
-                "description": "create new user.",
+                "description": "telegram sign-in.",
                 "consumes": [
                     "application/json"
                 ],
@@ -256,9 +256,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "telegram"
                 ],
-                "summary": "create new user.",
+                "summary": "telegram sign-in.",
                 "parameters": [
                     {
                         "description": "request",
@@ -266,7 +266,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateUserRequest"
+                            "$ref": "#/definitions/dto.TelegramSignInRequest"
                         }
                     }
                 ],
@@ -274,7 +274,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateUserResponse"
+                            "$ref": "#/definitions/dto.TelegramSignInResponse"
                         }
                     }
                 }
@@ -375,6 +375,9 @@ const docTemplate = `{
             "properties": {
                 "password": {
                     "type": "string"
+                },
+                "telegramId": {
+                    "type": "integer"
                 }
             }
         },
@@ -425,6 +428,25 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.TelegramSignInRequest": {
+            "type": "object",
+            "properties": {
+                "chatId": {
+                    "type": "integer"
+                },
+                "telegramId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TelegramSignInResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Game": {
             "type": "object",
             "properties": {
@@ -455,6 +477,9 @@ const docTemplate = `{
                 "isStarted": {
                     "type": "boolean"
                 },
+                "lastLoss": {
+                    "type": "integer"
+                },
                 "lastPawnMove": {
                     "type": "integer"
                 },
@@ -481,7 +506,7 @@ const docTemplate = `{
                 "figureId": {
                     "type": "integer"
                 },
-                "from_id": {
+                "fromId": {
                     "type": "integer"
                 },
                 "gameId": {
@@ -505,7 +530,7 @@ const docTemplate = `{
                 "newFigureId": {
                     "type": "integer"
                 },
-                "to_id": {
+                "toId": {
                     "type": "integer"
                 }
             }

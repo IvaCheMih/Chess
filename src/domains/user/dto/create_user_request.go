@@ -1,7 +1,8 @@
 package dto
 
 type CreateUserRequest struct {
-	Password string
+	TelegramId int64  `json:"telegramId"`
+	Password   string `json:"password"`
 }
 
 type CreateUserResponse struct {

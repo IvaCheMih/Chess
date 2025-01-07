@@ -61,6 +61,8 @@ definitions:
     properties:
       password:
         type: string
+      telegramId:
+        type: integer
     type: object
   dto.CreateUserResponse:
     properties:
@@ -92,6 +94,18 @@ definitions:
           $ref: '#/definitions/models.Move'
         type: array
     type: object
+  dto.TelegramSignInRequest:
+    properties:
+      chatId:
+        type: integer
+      telegramId:
+        type: integer
+    type: object
+  dto.TelegramSignInResponse:
+    properties:
+      token:
+        type: string
+    type: object
   models.Game:
     properties:
       blackKingCastling:
@@ -112,6 +126,8 @@ definitions:
         type: boolean
       isStarted:
         type: boolean
+      lastLoss:
+        type: integer
       lastPawnMove:
         type: integer
       side:
@@ -129,7 +145,7 @@ definitions:
     properties:
       figureId:
         type: integer
-      from_id:
+      fromId:
         type: integer
       gameId:
         type: integer
@@ -145,7 +161,7 @@ definitions:
         type: integer
       newFigureId:
         type: integer
-      to_id:
+      toId:
         type: integer
     type: object
 host: 127.0.0.1:8080
@@ -302,24 +318,24 @@ paths:
     post:
       consumes:
       - application/json
-      description: create new user.
+      description: telegram sign-in.
       parameters:
       - description: request
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateUserRequest'
+          $ref: '#/definitions/dto.TelegramSignInRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateUserResponse'
-      summary: create new user.
+            $ref: '#/definitions/dto.TelegramSignInResponse'
+      summary: telegram sign-in.
       tags:
-      - user
+      - telegram
 schemes:
 - http
 securityDefinitions:
