@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	gameDto "github.com/IvaCheMih/chess/src/domains/game/dto"
+	"github.com/IvaCheMih/chess/src/domains/game/models"
 	userDto "github.com/IvaCheMih/chess/src/domains/user/dto"
 	"io"
 	"net/http"
@@ -158,10 +159,50 @@ func CreateGame(game gameDto.CreateGameBody, token string, appURL string) (gameD
 	return gameResponse, nil
 }
 
-func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string) (error, gameDto.DoMoveResponse) {
+func GetGame(game gameDto.GetGameRequest, token string, appURL string) (gameDto.GetGameResponse, error) {
+	body, err := json.Marshal(game)
+	if err != nil {
+		return gameDto.GetGameResponse{}, err
+	}
+
+	url := appURL + "game/"
+
+	request, err := http.NewRequest(http.MethodGet, url, bytes.NewReader(body))
+	if err != nil {
+		return gameDto.GetGameResponse{}, err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("accept", "application/json")
+
+	request.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return gameDto.GetGameResponse{}, err
+	}
+
+	resBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return gameDto.GetGameResponse{}, err
+	}
+
+	var gameResponse = gameDto.GetGameResponse{}
+
+	err = json.Unmarshal(resBody, &gameResponse)
+	if err != nil {
+		return gameDto.GetGameResponse{}, err
+	}
+
+	return gameResponse, nil
+}
+
+func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string) (models.Move, error) {
 	body, err := json.Marshal(move)
 	if err != nil {
-		return err, gameDto.DoMoveResponse{}
+		return models.Move{}, err
 	}
 
 	url := appURL + "game/" + strconv.Itoa(gameId) + "/move/"
@@ -169,7 +210,7 @@ func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 
 	if err != nil {
-		return err, gameDto.DoMoveResponse{}
+		return models.Move{}, err
 	}
 
 	request.Header.Set("Authorization", "Bearer "+token)
@@ -180,31 +221,30 @@ func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string
 
 	response, err := client.Do(request)
 	if err != nil {
-		return err, gameDto.DoMoveResponse{}
+		return models.Move{}, err
 	}
 
 	resBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return err, gameDto.DoMoveResponse{}
+		return models.Move{}, err
 	}
 
-	var doMove = gameDto.DoMoveResponse{}
+	var doMove = models.Move{}
 
 	err = json.Unmarshal(resBody, &doMove)
 	if err != nil {
-		return err, gameDto.DoMoveResponse{}
+		return models.Move{}, err
 	}
 
 	err = json.Unmarshal(resBody, &doMove)
 	if err != nil {
-		return err, gameDto.DoMoveResponse{}
+		return models.Move{}, err
 	}
 
-	return err, doMove
+	return doMove, nil
 }
 
 func GetBoard(token string, gameId int, appURL string) (gameDto.GetBoardResponse, error) {
-
 	url := appURL + "game/" + strconv.Itoa(gameId) + "/board/"
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)

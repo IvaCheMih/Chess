@@ -6,5 +6,6 @@ type TelegramSignInRequest struct {
 }
 
 type TelegramSignInResponse struct {
-	Token string
+	Token     string
+	AccountId int
 }

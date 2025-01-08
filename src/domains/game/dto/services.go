@@ -15,6 +15,16 @@ func GetRequestNewGame(c *fiber.Ctx) (CreateGameBody, error) {
 	return request, err
 }
 
+func GetRequestGetGame(c *fiber.Ctx) (GetGameRequest, error) {
+	body := c.Body()
+
+	var request GetGameRequest
+
+	err := json.Unmarshal(body, &request)
+
+	return request, err
+}
+
 func GetGameId(c *fiber.Ctx) (GetGameIdParam, error) {
 	gameId, err := c.ParamsInt("gameId")
 	if err != nil {

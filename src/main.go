@@ -6,7 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/src/domains/game"
 	"github.com/IvaCheMih/chess/src/domains/services/env"
 	"github.com/IvaCheMih/chess/src/domains/services/migrations"
-	telegram "github.com/IvaCheMih/chess/src/domains/services/telegrem"
+	telegram "github.com/IvaCheMih/chess/src/domains/services/telegram"
 	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"

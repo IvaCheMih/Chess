@@ -1,4 +1,4 @@
-package telegrem
+package telegram
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -18,7 +18,9 @@ func (b *TelegramService) responseError(chatId int64, messageID int, text string
 
 func (b *TelegramService) response(chatId int64, messageID int, text string, template *tgbotapi.InlineKeyboardMarkup) {
 	msg := tgbotapi.NewMessage(chatId, text)
-	msg.ReplyToMessageID = messageID
+	if messageID != 0 {
+		msg.ReplyToMessageID = messageID
+	}
 
 	if template != nil {
 		msg.ReplyMarkup = *template

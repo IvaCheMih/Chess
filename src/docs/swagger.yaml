@@ -87,6 +87,46 @@ definitions:
           $ref: '#/definitions/dto.BoardCellEntity'
         type: array
     type: object
+  dto.GetGameRequest:
+    properties:
+      game_id:
+        type: integer
+    type: object
+  dto.GetGameResponse:
+    properties:
+      black_king_castling:
+        type: boolean
+      black_rook_acastling:
+        type: boolean
+      black_rook_hcastling:
+        type: boolean
+      black_user_id:
+        type: integer
+      game_id:
+        type: integer
+      is_check_black:
+        type: boolean
+      is_check_white:
+        type: boolean
+      is_ended:
+        type: boolean
+      is_started:
+        type: boolean
+      last_loss:
+        type: integer
+      last_pawn_move:
+        type: integer
+      side:
+        type: boolean
+      white_king_castling:
+        type: boolean
+      white_rook_acastling:
+        type: boolean
+      white_rook_hcastling:
+        type: boolean
+      white_user_id:
+        type: integer
+    type: object
   dto.GetHistoryResponse:
     properties:
       moves:
@@ -103,6 +143,8 @@ definitions:
     type: object
   dto.TelegramSignInResponse:
     properties:
+      accountId:
+        type: integer
       token:
         type: string
     type: object
@@ -179,6 +221,29 @@ info:
   version: "2.0"
 paths:
   /game/:
+    get:
+      consumes:
+      - application/json
+      description: get game.
+      parameters:
+      - description: request
+        in: body
+        name: game
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GetGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetGameResponse'
+      security:
+      - JWT: []
+      summary: get game.
+      tags:
+      - game
     post:
       consumes:
       - application/json
@@ -318,6 +383,28 @@ paths:
     post:
       consumes:
       - application/json
+      description: create new user.
+      parameters:
+      - description: request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateUserResponse'
+      summary: create new user.
+      tags:
+      - user
+  /user/sign-in/telegram/:
+    post:
+      consumes:
+      - application/json
       description: telegram sign-in.
       parameters:
       - description: request
@@ -335,7 +422,7 @@ paths:
             $ref: '#/definitions/dto.TelegramSignInResponse'
       summary: telegram sign-in.
       tags:
-      - telegram
+      - user
 schemes:
 - http
 securityDefinitions:

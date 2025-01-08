@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/user/dto"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -105,9 +104,10 @@ func (h *UserHandlers) TelegramSignIn(c *fiber.Ctx) error {
 			"userId": userId,
 		},
 	)
-	fmt.Println("token", token)
 
-	var response dto.CreateSessionResponse
+	var response = dto.TelegramSignInResponse{
+		AccountId: userId,
+	}
 
 	response.Token, err = token.SignedString([]byte(h.jwtSecret))
 	if err != nil {

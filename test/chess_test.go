@@ -112,10 +112,10 @@ func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.
 
 	for i, move := range moves {
 		if i%2 == 0 {
-			err, _ = test.CreateMove(move, session1response.Token, game1response.GameId, appURL)
+			_, err = test.CreateMove(move, session1response.Token, game1response.GameId, appURL)
 			require.NoError(t, err)
 		} else {
-			err, _ = test.CreateMove(move, session2response.Token, game2response.GameId, appURL)
+			_, err = test.CreateMove(move, session2response.Token, game2response.GameId, appURL)
 			require.NoError(t, err)
 		}
 	}

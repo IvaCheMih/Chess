@@ -25,6 +25,43 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/game/": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get game.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game"
+                ],
+                "summary": "get game.",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "game",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetGameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetGameResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -248,6 +285,40 @@ const docTemplate = `{
         },
         "/user/": {
             "post": {
+                "description": "create new user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "create new user.",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/sign-in/telegram/": {
+            "post": {
                 "description": "telegram sign-in.",
                 "consumes": [
                     "application/json"
@@ -256,7 +327,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "telegram"
+                    "user"
                 ],
                 "summary": "telegram sign-in.",
                 "parameters": [
@@ -417,6 +488,67 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.GetGameRequest": {
+            "type": "object",
+            "properties": {
+                "game_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetGameResponse": {
+            "type": "object",
+            "properties": {
+                "black_king_castling": {
+                    "type": "boolean"
+                },
+                "black_rook_acastling": {
+                    "type": "boolean"
+                },
+                "black_rook_hcastling": {
+                    "type": "boolean"
+                },
+                "black_user_id": {
+                    "type": "integer"
+                },
+                "game_id": {
+                    "type": "integer"
+                },
+                "is_check_black": {
+                    "type": "boolean"
+                },
+                "is_check_white": {
+                    "type": "boolean"
+                },
+                "is_ended": {
+                    "type": "boolean"
+                },
+                "is_started": {
+                    "type": "boolean"
+                },
+                "last_loss": {
+                    "type": "integer"
+                },
+                "last_pawn_move": {
+                    "type": "integer"
+                },
+                "side": {
+                    "type": "boolean"
+                },
+                "white_king_castling": {
+                    "type": "boolean"
+                },
+                "white_rook_acastling": {
+                    "type": "boolean"
+                },
+                "white_rook_hcastling": {
+                    "type": "boolean"
+                },
+                "white_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.GetHistoryResponse": {
             "type": "object",
             "properties": {
@@ -442,6 +574,9 @@ const docTemplate = `{
         "dto.TelegramSignInResponse": {
             "type": "object",
             "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
                 "token": {
                     "type": "string"
                 }
