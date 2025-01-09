@@ -10,16 +10,6 @@ type MoveService struct {
 	theoryKnightSteps *[]int
 }
 
-type EndgameReason string
-
-const (
-	NotEndgame EndgameReason = ""
-	Mate       EndgameReason = "Mate"
-	Pat        EndgameReason = "Pat"
-	Repetition EndgameReason = "Repetition"
-	NoLosses   EndgameReason = "NoLosses"
-)
-
 func NewMoveService(figureRepo map[int]byte) *MoveService {
 	return &MoveService{
 		figureRepo:        figureRepo,
@@ -138,7 +128,7 @@ func (m *MoveService) GetFigureID(b byte) int {
 	return 0
 }
 
-func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models.BoardCell) (bool, EndgameReason) {
+func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models.BoardCell) (bool, models.EndgameReason) {
 	var cells = map[int]*models.BoardCell{}
 
 	for i := range board {
@@ -172,7 +162,7 @@ func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models
 		if g.CompareGamesStates(gameHistory) {
 			count++
 			if count == 2 {
-				return true, Repetition
+				return true, models.Repetition
 			}
 		}
 	}
@@ -187,23 +177,23 @@ func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models
 
 		if g.movesExist(theoryMoves, fromCrd) {
 			if g.LastLoss+1 == lastLossLimit {
-				return true, NoLosses
+				return true, models.NoLosses
 			}
 
-			return false, NotEndgame
+			return false, models.NotEndgame
 		}
 	}
 
 	if g.Side {
 		if g.IsCheckWhite.IsItCheck {
-			return true, Mate
+			return true, models.Mate
 		}
-		return true, Pat
+		return true, models.Pat
 	} else {
 		if g.IsCheckBlack.IsItCheck {
-			return true, Mate
+			return true, models.Mate
 		}
-		return true, Pat
+		return true, models.Pat
 	}
 }
 

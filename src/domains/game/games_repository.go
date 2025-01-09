@@ -77,7 +77,7 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 	return game, nil
 }
 
-func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool) error {
+func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool, reason models.EndgameReason) error {
 	var values = map[string]interface{}{
 		"is_check_white":        game.IsCheckWhite.IsItCheck,
 		"white_king_castling":   game.WhiteCastling.KingCastling,
@@ -93,6 +93,7 @@ func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, is
 
 	if isEnd {
 		values["is_ended"] = true
+		values["end_reason"] = reason
 	}
 
 	if game.KilledFigure == 0 {

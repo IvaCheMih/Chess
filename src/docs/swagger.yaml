@@ -87,11 +87,6 @@ definitions:
           $ref: '#/definitions/dto.BoardCellEntity'
         type: array
     type: object
-  dto.GetGameRequest:
-    properties:
-      game_id:
-        type: integer
-    type: object
   dto.GetGameResponse:
     properties:
       black_king_castling:
@@ -102,6 +97,8 @@ definitions:
         type: boolean
       black_user_id:
         type: integer
+      end_reason:
+        type: string
       game_id:
         type: integer
       is_check_black:
@@ -148,6 +145,20 @@ definitions:
       token:
         type: string
     type: object
+  models.EndgameReason:
+    enum:
+    - NotEndgame
+    - Mate
+    - Pat
+    - Repetition
+    - NoLosses
+    type: string
+    x-enum-varnames:
+    - NotEndgame
+    - Mate
+    - Pat
+    - Repetition
+    - NoLosses
   models.Game:
     properties:
       blackKingCastling:
@@ -158,6 +169,8 @@ definitions:
         type: boolean
       blackUserId:
         type: integer
+      endReason:
+        $ref: '#/definitions/models.EndgameReason'
       id:
         type: integer
       isCheckBlack:
@@ -221,29 +234,6 @@ info:
   version: "2.0"
 paths:
   /game/:
-    get:
-      consumes:
-      - application/json
-      description: get game.
-      parameters:
-      - description: request
-        in: body
-        name: game
-        required: true
-        schema:
-          $ref: '#/definitions/dto.GetGameRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetGameResponse'
-      security:
-      - JWT: []
-      summary: get game.
-      tags:
-      - game
     post:
       consumes:
       - application/json
@@ -265,6 +255,27 @@ paths:
       security:
       - JWT: []
       summary: create new game.
+      tags:
+      - game
+  /game/{gameId}:
+    get:
+      consumes:
+      - application/json
+      description: get game.
+      parameters:
+      - in: path
+        name: gameId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetGameResponse'
+      security:
+      - JWT: []
+      summary: get game.
       tags:
       - game
   /game/{gameId}/board:

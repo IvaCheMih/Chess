@@ -159,15 +159,10 @@ func CreateGame(game gameDto.CreateGameBody, token string, appURL string) (gameD
 	return gameResponse, nil
 }
 
-func GetGame(game gameDto.GetGameRequest, token string, appURL string) (gameDto.GetGameResponse, error) {
-	body, err := json.Marshal(game)
-	if err != nil {
-		return gameDto.GetGameResponse{}, err
-	}
+func GetGame(gameId int, token string, appURL string) (gameDto.GetGameResponse, error) {
+	url := appURL + "game/" + strconv.Itoa(gameId)
 
-	url := appURL + "game/"
-
-	request, err := http.NewRequest(http.MethodGet, url, bytes.NewReader(body))
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return gameDto.GetGameResponse{}, err
 	}

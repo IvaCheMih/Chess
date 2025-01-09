@@ -25,43 +25,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/game/": {
-            "get": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "description": "get game.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "game"
-                ],
-                "summary": "get game.",
-                "parameters": [
-                    {
-                        "description": "request",
-                        "name": "game",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetGameRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetGameResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
@@ -95,6 +58,41 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dto.CreateGameResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/game/{gameId}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get game.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game"
+                ],
+                "summary": "get game.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "gameId",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetGameResponse"
                         }
                     }
                 }
@@ -488,14 +486,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.GetGameRequest": {
-            "type": "object",
-            "properties": {
-                "game_id": {
-                    "type": "integer"
-                }
-            }
-        },
         "dto.GetGameResponse": {
             "type": "object",
             "properties": {
@@ -510,6 +500,9 @@ const docTemplate = `{
                 },
                 "black_user_id": {
                     "type": "integer"
+                },
+                "end_reason": {
+                    "type": "string"
                 },
                 "game_id": {
                     "type": "integer"
@@ -582,6 +575,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.EndgameReason": {
+            "type": "string",
+            "enum": [
+                "NotEndgame",
+                "Mate",
+                "Pat",
+                "Repetition",
+                "NoLosses"
+            ],
+            "x-enum-varnames": [
+                "NotEndgame",
+                "Mate",
+                "Pat",
+                "Repetition",
+                "NoLosses"
+            ]
+        },
         "models.Game": {
             "type": "object",
             "properties": {
@@ -596,6 +606,9 @@ const docTemplate = `{
                 },
                 "blackUserId": {
                     "type": "integer"
+                },
+                "endReason": {
+                    "$ref": "#/definitions/models.EndgameReason"
                 },
                 "id": {
                     "type": "integer"

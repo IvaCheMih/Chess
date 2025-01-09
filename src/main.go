@@ -107,6 +107,8 @@ func main() {
 
 	server.Post("/game", authHandlers.Auth, gamesHandlers.CreateGame)
 
+	server.Get("/game/:gameId", authHandlers.Auth, gamesHandlers.GetGame)
+
 	server.Get("/game/:gameId/board", authHandlers.Auth, gamesHandlers.GetBoard)
 
 	server.Get("/game/:gameId/history", authHandlers.Auth, gamesHandlers.GetHistory)

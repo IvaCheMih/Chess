@@ -22,6 +22,8 @@ CREATE TABLE games (
     is_started              BOOLEAN      NOT NULL default false,
     is_ended                BOOLEAN      NOT NULL default false,
 
+    end_reason              varchar      NOT NULL default 'NotEndgame',
+
     is_check_white          BOOLEAN      NOT NULL default false,
     white_king_castling     BOOLEAN      NOT NULL default false,
 

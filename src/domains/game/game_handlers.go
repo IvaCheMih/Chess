@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/gofiber/fiber/v2"
 	"log"
@@ -51,15 +52,17 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param game body dto.GetGameRequest true "request"
+// @Param gameId path dto.GetGameIdParam true "gameId"
 // @Success 200 {object} dto.GetGameResponse
-// @Router /game/ [get]
+// @Router /game/{gameId} [get]
 func (h *GamesHandlers) GetGame(c *fiber.Ctx) error {
-	request, err := dto.GetRequestGetGame(c)
+	request, err := dto.GetGameId(c)
 	if err != nil {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
+
+	fmt.Println(request)
 
 	userId := c.Context().Value("userId")
 
@@ -68,6 +71,8 @@ func (h *GamesHandlers) GetGame(c *fiber.Ctx) error {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
+
+	fmt.Println(responseCreateGame)
 
 	return c.JSON(responseCreateGame)
 

@@ -39,12 +39,15 @@ func (g *GamesService) GetGame(gameId int, accountId int) (dto.GetGameResponse, 
 		return dto.GetGameResponse{}, errors.New("you cant view this game")
 	}
 
+	fmt.Println(game)
+
 	return dto.GetGameResponse{
 		GameId:             game.Id,
 		WhiteUserId:        game.WhiteUserId,
 		BlackUserId:        game.BlackUserId,
 		IsStarted:          game.IsStarted,
 		IsEnded:            game.IsEnded,
+		EndReason:          game.EndReason.ToDTO(),
 		IsCheckWhite:       game.IsCheckWhite,
 		WhiteKingCastling:  game.WhiteKingCastling,
 		WhiteRookACastling: game.WhiteRookACastling,
@@ -255,7 +258,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	isEnd, _ := g.moveService.IsItEndgame(&game, history, g.boardRepo.NewStartBoardCells(1))
+	isEnd, endReason := g.moveService.IsItEndgame(&game, history, g.boardRepo.NewStartBoardCells(1))
 
 	tx := g.gamesRepo.db.Begin()
 	defer func() {
@@ -285,7 +288,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	err = g.gamesRepo.UpdateGame(tx, gameId, game, isEnd)
+	err = g.gamesRepo.UpdateGame(tx, gameId, game, isEnd, endReason)
 	if err != nil {
 		return models.Move{}, err
 	}
