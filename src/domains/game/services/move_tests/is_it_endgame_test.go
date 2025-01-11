@@ -1,14 +1,15 @@
-package game
+package move_tests
 
 import (
+	"github.com/IvaCheMih/chess/src/domains/game"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestEndgame(t *testing.T) {
-	boardRepo := CreateBoardCellsRepository(nil)
-	gameService := CreateGamesService(&boardRepo, nil, nil)
+	boardRepo := game.CreateBoardCellsRepository(nil)
+	gameService := game.CreateGamesService(&boardRepo, nil, nil)
 
 	t.Run("Test start field", func(t *testing.T) {
 		m := gameService.GetMoveService()
@@ -40,7 +41,7 @@ func TestEndgame(t *testing.T) {
 			Side:               true,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
+		isEnd, endgameReason := gameService.MoveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
 		require.False(t, isEnd)
 		require.Equal(t, endgameReason, models.NotEndgame)
 	})
@@ -74,7 +75,7 @@ func TestEndgame(t *testing.T) {
 			Side:               true,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, board)
+		isEnd, endgameReason := gameService.MoveService.IsItEndgame(&game, nil, board)
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, models.Mate)
 	})
@@ -108,7 +109,7 @@ func TestEndgame(t *testing.T) {
 			Side:               false,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, board)
+		isEnd, endgameReason := gameService.MoveService.IsItEndgame(&game, nil, board)
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, models.Mate)
 	})
@@ -142,7 +143,7 @@ func TestEndgame(t *testing.T) {
 			Side:               false,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, board)
+		isEnd, endgameReason := gameService.MoveService.IsItEndgame(&game, nil, board)
 		require.True(t, isEnd)
 		require.Equal(t, endgameReason, models.Pat)
 	})
@@ -168,7 +169,7 @@ func TestEndgame(t *testing.T) {
 			WhiteKingCastling:  false,
 			WhiteRookACastling: false,
 			WhiteRookHCastling: false,
-			IsCheckBlack:       true,
+			IsCheckBlack:       false,
 			BlackKingCastling:  false,
 			BlackRookACastling: false,
 			BlackRookHCastling: false,
@@ -177,9 +178,9 @@ func TestEndgame(t *testing.T) {
 			Side:               false,
 		}, models.Board{Cells: cells})
 
-		isEnd, endgameReason := gameService.moveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
+		isEnd, endgameReason := gameService.MoveService.IsItEndgame(&game, nil, boardRepo.NewStartBoardCells(1))
 		require.True(t, isEnd)
-		require.Equal(t, endgameReason, models.NoLosses)
+		require.Equal(t, models.NoLosses, endgameReason)
 	})
 }
 

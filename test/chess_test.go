@@ -12,41 +12,6 @@ import (
 	"testing"
 )
 
-var movesFirst = []gamedto.DoMoveBody{
-	{From: "C2", To: "C4", NewFigure: 0},
-	{From: "B7", To: "B5", NewFigure: 0},
-
-	{From: "C4", To: "B5", NewFigure: 0},
-	{From: "B8", To: "A6", NewFigure: 0},
-
-	{From: "B5", To: "A6", NewFigure: 0},
-	{From: "C8", To: "B7", NewFigure: 0},
-
-	{From: "A6", To: "B7", NewFigure: 0},
-	{From: "D8", To: "C8", NewFigure: 0},
-
-	{From: "B7", To: "A8", NewFigure: 113},
-	{From: "C8", To: "B8", NewFigure: 0},
-
-	{From: "A8", To: "B8", NewFigure: 0},
-}
-
-var board1 = [][]int{
-	{0, 0}, {1, 4}, {2, 0}, {3, 0}, {4, 12}, {5, 10}, {6, 9}, {7, 14},
-	{8, 13}, {9, 0}, {10, 13}, {11, 13}, {12, 13}, {13, 13}, {14, 13}, {15, 13},
-	{16, 0}, {17, 0}, {18, 0}, {19, 0}, {20, 0}, {21, 0}, {22, 0}, {23, 0},
-	{24, 0}, {25, 0}, {26, 0}, {27, 0}, {28, 0}, {29, 0}, {30, 0}, {31, 0},
-	{32, 0}, {33, 0}, {34, 0}, {35, 0}, {36, 0}, {37, 0}, {38, 0}, {39, 0},
-	{40, 0}, {41, 0}, {42, 0}, {43, 0}, {44, 0}, {45, 0}, {46, 0}, {47, 0},
-	{48, 6}, {49, 6}, {50, 0}, {51, 6}, {52, 6}, {53, 6}, {54, 6}, {55, 6},
-	{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 7},
-}
-
-var game1 = gamedto.GetGameResponse{
-	IsEnded:   false,
-	EndReason: "Mat",
-}
-
 func TestGame(t *testing.T) {
 	t.Run("test user, session, game", func(t *testing.T) {
 		viper.AutomaticEnv()
@@ -57,8 +22,10 @@ func TestGame(t *testing.T) {
 		envs := env.NewEnvService()
 
 		expected1 := MakeExpected(board1)
+		//expected2 := MakeExpected(board2)
 
-		DoTestChessGame(t, movesFirst, expected1, game1, envs.AppURL)
+		DoTestChessGame(t, moves1, expected1, game1, envs.AppURL)
+		//DoTestChessGame(t, moves2, expected2, game2, envs.AppURL)
 	})
 }
 
@@ -140,6 +107,7 @@ func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.
 		session1response.Token,
 		appURL,
 	)
+	require.NoError(t, err)
 
 	if !assert.Equal(t, expectedGame.IsEnded, game.IsEnded) {
 		t.Errorf("[!] IsEnded are not equal")

@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"fmt"
 	gamedto "github.com/IvaCheMih/chess/src/domains/game/dto"
 	gameservice "github.com/IvaCheMih/chess/src/domains/game/services/move"
 	"github.com/IvaCheMih/chess/src/domains/services/test"
@@ -116,9 +115,6 @@ func (b *TelegramService) newGame(color bool, update tgbotapi.Update) {
 
 	b.addGame(update.FromChat().ID, g.GameId)
 
-	fmt.Println("white: ", g.WhiteUserId)
-	fmt.Println("black: ", g.BlackUserId)
-
 	if color && g.BlackUserId != 0 {
 		b.addOpponent(update.FromChat().ID, g.BlackUserId)
 
@@ -128,20 +124,11 @@ func (b *TelegramService) newGame(color bool, update tgbotapi.Update) {
 	}
 
 	if !color && g.WhiteUserId != 0 {
-		fmt.Println()
-		fmt.Println("!color && g.WhiteUserId != 0")
-
 		b.addOpponent(update.FromChat().ID, g.WhiteUserId)
 
 		opponentTelegramId := b.authCache.accountIdToTelegramId[g.WhiteUserId]
 
-		fmt.Println("opponentTelegramId: ", opponentTelegramId)
-		fmt.Println("BlackUserId: ", g.BlackUserId)
-
 		b.addOpponent(opponentTelegramId, g.BlackUserId)
-
-		fmt.Println(b.getGame(opponentTelegramId))
-		fmt.Println(b.getGame(update.FromChat().ID))
 	}
 
 	boardTemplate := b.makeBoardTemplate(board.BoardCells)
@@ -156,11 +143,6 @@ func (b *TelegramService) newGame(color bool, update tgbotapi.Update) {
 		b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game created!", &boardTemplate)
 		return
 	}
-
-	fmt.Println()
-	fmt.Println("chat ids")
-	fmt.Println("account: ", update.FromChat().ID)
-	fmt.Println("opposite account: ", b.authCache.accountIdToTelegramId[gameOp.opponentId])
 
 	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game started", &boardTemplate)
 	b.response(b.authCache.accountIdToTelegramId[gameOp.opponentId], 0, "Game started", &boardTemplate)
@@ -188,9 +170,6 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 		return
 	}
 
-	fmt.Println("Move: ", *from, *to)
-	fmt.Println("Move: ", gameservice.IndexToCoordinates(*from), gameservice.IndexToCoordinates(*to))
-
 	_, err = test.CreateMove(gamedto.DoMoveBody{
 		From: gameservice.IndexToCoordinates(*from),
 		To:   gameservice.IndexToCoordinates(*to),
@@ -216,11 +195,6 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 	boardTemplate := b.makeBoardTemplate(board.BoardCells)
 
 	opponentTelegramId := b.authCache.accountIdToTelegramId[g.opponentId]
-
-	fmt.Println()
-	fmt.Println("chat ids")
-	fmt.Println("account: ", update.FromChat().ID)
-	fmt.Println("opposite account: ", opponentTelegramId)
 
 	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "New move", &boardTemplate)
 	b.response(opponentTelegramId, 0, "New move", &boardTemplate)

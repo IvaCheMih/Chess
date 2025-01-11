@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/gofiber/fiber/v2"
 	"log"
@@ -62,8 +61,6 @@ func (h *GamesHandlers) GetGame(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	fmt.Println(request)
-
 	userId := c.Context().Value("userId")
 
 	responseCreateGame, err := h.gameService.GetGame(request.GameId, userId.(int))
@@ -71,8 +68,6 @@ func (h *GamesHandlers) GetGame(c *fiber.Ctx) error {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-
-	fmt.Println(responseCreateGame)
 
 	return c.JSON(responseCreateGame)
 

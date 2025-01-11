@@ -98,17 +98,14 @@ func (m *MoveService) createField(board models.Board, gameModel models.Game) (ma
 	for _, cell := range board.Cells {
 		if cell.FigureId == 5 {
 			whiteKingCell = cell.IndexCell
-
 		}
 		if cell.FigureId == 12 {
 			blackKingCell = cell.IndexCell
-
 		}
 
 		isWhite := cell.FigureId <= 7
 
 		field[cell.IndexCell] = createFigureI(m.figureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
-
 	}
 
 	return field, blackKingCell, whiteKingCell
@@ -207,10 +204,10 @@ func (g *Game) DoMoveFromHistory(move models.Move, newFigure byte) {
 
 	_, indexesToChange := checkMove(possibleMoves, []int{from, to})
 
-	DoMove(indexesToChange, g, newFigure)
+	g.DoMove(indexesToChange, newFigure)
 }
 
-func DoMove(indexesToChange []int, game *Game, newFigure byte) {
+func (g *Game) DoMove(indexesToChange []int, newFigure byte) {
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
@@ -229,20 +226,22 @@ func DoMove(indexesToChange []int, game *Game, newFigure byte) {
 	//}
 	//fmt.Println()
 
-	game.ChangeToAndFrom(to, from)
+	g.ChangeToAndFrom(to, from)
 
 	if len(indexesToChange) > 2 {
-		game.DeletePawn(indexesToChange)
-		game.ChangeRookField(indexesToChange)
+		g.DeletePawn(indexesToChange)
+		g.ChangeRookField(indexesToChange)
 	}
 
-	game.ChangeKingGameID(to)
+	g.ChangeKingGameID(to)
 
-	game.ChangePawnToNewFigure(to, newFigure)
+	g.ChangePawnToNewFigure(to, newFigure)
 
-	game.ChangeCastlingFlag(to)
+	g.ChangeCastlingFlag(to)
 
-	game.ChangeLastPawnMove(from, to)
+	g.ChangeLastPawnMove(from, to)
+
+	g.ChangeIsItChecks()
 }
 
 func checkMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {
