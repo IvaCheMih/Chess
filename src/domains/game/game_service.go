@@ -15,7 +15,7 @@ type GamesService struct {
 	gamesRepo *GamesRepository
 	movesRepo *MovesRepository
 
-	moveService *moveservice.MoveService
+	MoveService *moveservice.MoveService
 }
 
 func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesRepository, movesRepo *MovesRepository) GamesService {
@@ -25,8 +25,39 @@ func CreateGamesService(boardRepo *BoardCellsRepository, gamesRepo *GamesReposit
 		gamesRepo: gamesRepo,
 		movesRepo: movesRepo,
 
-		moveService: moveservice.NewMoveService(figureRepo),
+		MoveService: moveservice.NewMoveService(figureRepo),
 	}
+}
+
+func (g *GamesService) GetGame(gameId int, accountId int) (dto.GetGameResponse, error) {
+	game, err := g.gamesRepo.GetById(gameId)
+	if err != nil {
+		return dto.GetGameResponse{}, err
+	}
+
+	if accountId != game.WhiteUserId && accountId != game.BlackUserId {
+		return dto.GetGameResponse{}, errors.New("you cant view this game")
+	}
+
+	return dto.GetGameResponse{
+		GameId:             game.Id,
+		WhiteUserId:        game.WhiteUserId,
+		BlackUserId:        game.BlackUserId,
+		IsStarted:          game.IsStarted,
+		IsEnded:            game.IsEnded,
+		EndReason:          game.EndReason.ToDTO(),
+		IsCheckWhite:       game.IsCheckWhite,
+		WhiteKingCastling:  game.WhiteKingCastling,
+		WhiteRookACastling: game.WhiteRookACastling,
+		WhiteRookHCastling: game.WhiteRookHCastling,
+		IsCheckBlack:       game.IsCheckBlack,
+		BlackKingCastling:  game.BlackKingCastling,
+		BlackRookACastling: game.BlackRookACastling,
+		BlackRookHCastling: game.BlackRookHCastling,
+		LastLoss:           game.LastLoss,
+		LastPawnMove:       game.LastPawnMove,
+		Side:               game.Side,
+	}, nil
 }
 
 func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.CreateGameResponse, error) {
@@ -75,15 +106,16 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 		}
 		createNewBoard = true
 	} else {
-		err = g.gamesRepo.UpdateColorUserIdByColor(notStartedGame.Id, userColor, gameSide, userId, tx)
+		err = g.gamesRepo.UpdateColorUserIdByColor(tx, notStartedGame.Id, userColor, gameSide, userId)
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
 
-		notStartedGame, err = g.gamesRepo.GetById(notStartedGame.Id)
+		notStartedGame, err = g.gamesRepo.GetByIdTx(tx, notStartedGame.Id)
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
+
 	}
 
 	FromModelsToDtoCreateGame(notStartedGame, &createGameResponse)
@@ -103,7 +135,6 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 }
 
 func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, error) {
-
 	game, err := g.gamesRepo.GetById(gameId)
 	if err != nil {
 		return dto.GetBoardResponse{}, err
@@ -120,12 +151,23 @@ func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, e
 
 	responseBoard := make([]dto.BoardCellEntity, 64)
 
-	for index, cell := range board.Cells {
-		responseBoard[index] = dto.BoardCellEntity{
-			IndexCell: cell.IndexCell,
-			FigureId:  cell.FigureId,
+	for i := 0; i <= 63; i++ {
+		figureId := 0
+		if cell, ok := board.Cells[i]; ok {
+			figureId = cell.FigureId
+		}
+		responseBoard[i] = dto.BoardCellEntity{
+			IndexCell: i,
+			FigureId:  figureId,
 		}
 	}
+
+	//for index, cell := range board.Cells {
+	//	responseBoard[index] = dto.BoardCellEntity{
+	//		IndexCell: index,
+	//		FigureId:  cell.FigureId,
+	//	}
+	//}
 
 	getBoardResponse := dto.GetBoardResponse{
 		BoardCells: responseBoard,
@@ -181,19 +223,22 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	from := CoordinatesToIndex(requestFromTo.From)
 	to := CoordinatesToIndex(requestFromTo.To)
 
-	indexesToChange, game := g.moveService.IsMoveCorrect(gameModel, board, from, to, requestFromTo.NewFigure)
+	indexesToChange, game := g.MoveService.IsMoveCorrect(gameModel, board, from, to, requestFromTo.NewFigure)
 
 	if len(indexesToChange) == 0 {
 		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
 	}
 
-	moveservice.DoMove(indexesToChange, &game, requestFromTo.NewFigure)
+	// process move and change game params
+	game.DoMove(indexesToChange, requestFromTo.NewFigure)
 
-	if game.Check() {
+	// player cant do this move if his king is under attack
+	if game.CheckToMovingPlayer() {
 		return models.Move{}, errors.New("Move is not possible (Check)")
 	}
 
-	game.Side = !game.Side
+	// move is correct and done. Change side to check Endgame and save game, board, move state
+	game.ChangeSide()
 
 	// end move logic
 
@@ -203,7 +248,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	isEnd, _ := g.moveService.IsItEndgame(&game, history, g.boardRepo.NewStartBoardCells(1))
+	isEnd, endReason := g.MoveService.IsItEndgame(&game, history, g.boardRepo.NewStartBoardCells(1))
 
 	tx := g.gamesRepo.db.Begin()
 	defer func() {
@@ -222,8 +267,8 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		FromId:         from,
 		ToId:           to,
 		FigureId:       board.Cells[from].FigureId,
-		KilledFigureId: g.moveService.GetFigureID(game.KilledFigure),
-		NewFigureId:    g.moveService.GetFigureID(requestFromTo.NewFigure),
+		KilledFigureId: g.MoveService.GetFigureID(game.KilledFigure),
+		NewFigureId:    g.MoveService.GetFigureID(requestFromTo.NewFigure),
 		IsCheckWhite:   game.IsCheckWhite.IsItCheck,
 		IsCheckBlack:   game.IsCheckBlack.IsItCheck,
 	}
@@ -233,7 +278,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	err = g.gamesRepo.UpdateGame(tx, gameId, game, isEnd)
+	err = g.gamesRepo.UpdateGame(tx, gameId, game, isEnd, endReason)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -252,13 +297,24 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	for index, cell := range cells.Cells {
-		responseBoard[index] = dto.BoardCellEntity{
-			IndexCell: cell.IndexCell,
-			FigureId:  cell.FigureId,
+	for i := 0; i <= 63; i++ {
+		figureId := 0
+		if cell, ok := cells.Cells[i]; ok {
+			figureId = cell.FigureId
 		}
-
+		responseBoard[i] = dto.BoardCellEntity{
+			IndexCell: i,
+			FigureId:  figureId,
+		}
 	}
+
+	//for index, cell := range cells.Cells {
+	//	responseBoard[index] = dto.BoardCellEntity{
+	//		IndexCell: index,
+	//		FigureId:  cell.FigureId,
+	//	}
+	//
+	//}
 
 	getBoardResponse := dto.GetBoardResponse{
 		BoardCells: responseBoard,
@@ -272,7 +328,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		if getBoardResponse.BoardCells[i].FigureId == 0 {
 			fmt.Print(0)
 		} else {
-			fmt.Print(string(g.moveService.GetFigureRepo()[getBoardResponse.BoardCells[i].FigureId]))
+			fmt.Print(string(g.MoveService.GetFigureRepo()[getBoardResponse.BoardCells[i].FigureId]))
 		}
 	}
 	fmt.Println()
@@ -407,5 +463,5 @@ func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.Cre
 }
 
 func (g *GamesService) GetMoveService() *moveservice.MoveService {
-	return g.moveService
+	return g.MoveService
 }

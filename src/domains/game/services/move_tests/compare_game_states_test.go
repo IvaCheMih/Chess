@@ -1,14 +1,15 @@
-package game
+package move_tests
 
 import (
+	"github.com/IvaCheMih/chess/src/domains/game"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCompareGames(t *testing.T) {
-	boardRepo := CreateBoardCellsRepository(nil)
-	gameService := CreateGamesService(&boardRepo, nil, nil)
+	boardRepo := game.CreateBoardCellsRepository(nil)
+	gameService := game.CreateGamesService(&boardRepo, nil, nil)
 
 	t.Run("Compare start positions", func(t *testing.T) {
 		m := gameService.GetMoveService()

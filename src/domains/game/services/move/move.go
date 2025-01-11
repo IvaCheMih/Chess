@@ -10,16 +10,6 @@ type MoveService struct {
 	theoryKnightSteps *[]int
 }
 
-type EndgameReason string
-
-const (
-	NotEndgame EndgameReason = ""
-	Mate       EndgameReason = "Mate"
-	Pat        EndgameReason = "Pat"
-	Repetition EndgameReason = "Repetition"
-	NoLosses   EndgameReason = "NoLosses"
-)
-
 func NewMoveService(figureRepo map[int]byte) *MoveService {
 	return &MoveService{
 		figureRepo:        figureRepo,
@@ -108,17 +98,14 @@ func (m *MoveService) createField(board models.Board, gameModel models.Game) (ma
 	for _, cell := range board.Cells {
 		if cell.FigureId == 5 {
 			whiteKingCell = cell.IndexCell
-
 		}
 		if cell.FigureId == 12 {
 			blackKingCell = cell.IndexCell
-
 		}
 
 		isWhite := cell.FigureId <= 7
 
 		field[cell.IndexCell] = createFigureI(m.figureRepo[cell.FigureId], isWhite, cell.IndexCell, gameModel)
-
 	}
 
 	return field, blackKingCell, whiteKingCell
@@ -138,7 +125,7 @@ func (m *MoveService) GetFigureID(b byte) int {
 	return 0
 }
 
-func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models.BoardCell) (bool, EndgameReason) {
+func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models.BoardCell) (bool, models.EndgameReason) {
 	var cells = map[int]*models.BoardCell{}
 
 	for i := range board {
@@ -172,7 +159,7 @@ func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models
 		if g.CompareGamesStates(gameHistory) {
 			count++
 			if count == 2 {
-				return true, Repetition
+				return true, models.Repetition
 			}
 		}
 	}
@@ -187,23 +174,23 @@ func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models
 
 		if g.movesExist(theoryMoves, fromCrd) {
 			if g.LastLoss+1 == lastLossLimit {
-				return true, NoLosses
+				return true, models.NoLosses
 			}
 
-			return false, NotEndgame
+			return false, models.NotEndgame
 		}
 	}
 
 	if g.Side {
 		if g.IsCheckWhite.IsItCheck {
-			return true, Mate
+			return true, models.Mate
 		}
-		return true, Pat
+		return true, models.Pat
 	} else {
 		if g.IsCheckBlack.IsItCheck {
-			return true, Mate
+			return true, models.Mate
 		}
-		return true, Pat
+		return true, models.Pat
 	}
 }
 
@@ -217,10 +204,10 @@ func (g *Game) DoMoveFromHistory(move models.Move, newFigure byte) {
 
 	_, indexesToChange := checkMove(possibleMoves, []int{from, to})
 
-	DoMove(indexesToChange, g, newFigure)
+	g.DoMove(indexesToChange, newFigure)
 }
 
-func DoMove(indexesToChange []int, game *Game, newFigure byte) {
+func (g *Game) DoMove(indexesToChange []int, newFigure byte) {
 	from := indexesToChange[0]
 	to := indexesToChange[1]
 
@@ -239,20 +226,22 @@ func DoMove(indexesToChange []int, game *Game, newFigure byte) {
 	//}
 	//fmt.Println()
 
-	game.ChangeToAndFrom(to, from)
+	g.ChangeToAndFrom(to, from)
 
 	if len(indexesToChange) > 2 {
-		game.DeletePawn(indexesToChange)
-		game.ChangeRookField(indexesToChange)
+		g.DeletePawn(indexesToChange)
+		g.ChangeRookField(indexesToChange)
 	}
 
-	game.ChangeKingGameID(to)
+	g.ChangeKingGameID(to)
 
-	game.ChangePawnToNewFigure(to, newFigure)
+	g.ChangePawnToNewFigure(to, newFigure)
 
-	game.ChangeCastlingFlag(to)
+	g.ChangeCastlingFlag(to)
 
-	game.ChangeLastPawnMove(from, to)
+	g.ChangeLastPawnMove(from, to)
+
+	g.ChangeIsItChecks()
 }
 
 func checkMove(possibleMoves *TheoryMoves, coordinatesToChange []int) (bool, []int) {

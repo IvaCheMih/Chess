@@ -42,6 +42,34 @@ func (h *GamesHandlers) CreateGame(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(responseCreateGame)
+}
+
+// GetGame godoc
+// @Summary get game.
+// @Description get game.
+// @Tags game
+// @Accept json
+// @Produce json
+// @Security       JWT
+// @Param gameId path dto.GetGameIdParam true "gameId"
+// @Success 200 {object} dto.GetGameResponse
+// @Router /game/{gameId} [get]
+func (h *GamesHandlers) GetGame(c *fiber.Ctx) error {
+	request, err := dto.GetGameId(c)
+	if err != nil {
+		log.Println(err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	userId := c.Context().Value("userId")
+
+	responseCreateGame, err := h.gameService.GetGame(request.GameId, userId.(int))
+	if err != nil {
+		log.Println(err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(responseCreateGame)
 
 }
 

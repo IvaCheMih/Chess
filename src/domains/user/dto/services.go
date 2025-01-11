@@ -24,3 +24,13 @@ func GetPassword(c *fiber.Ctx) (CreateUserRequest, error) {
 
 	return request, err
 }
+
+func GetTelegramSignInRequest(c *fiber.Ctx) (TelegramSignInRequest, error) {
+	body := c.Body()
+
+	var request TelegramSignInRequest
+
+	err := json.Unmarshal(body, &request)
+
+	return request, err
+}

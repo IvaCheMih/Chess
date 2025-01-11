@@ -19,8 +19,8 @@ func (m *MovesRepository) Find(gameId int) ([]models.Move, error) {
 	var moves []models.Move
 
 	err := m.db.Table(`moves`).
-		Find(&moves).
 		Where("game_id=?", gameId).
+		Find(&moves).
 		Error
 	if err != nil {
 		return nil, err

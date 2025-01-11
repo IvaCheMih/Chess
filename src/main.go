@@ -4,7 +4,9 @@ import (
 	_ "github.com/IvaCheMih/chess/src/docs"
 	"github.com/IvaCheMih/chess/src/domains/auth"
 	"github.com/IvaCheMih/chess/src/domains/game"
-	"github.com/IvaCheMih/chess/src/domains/services"
+	"github.com/IvaCheMih/chess/src/domains/services/env"
+	"github.com/IvaCheMih/chess/src/domains/services/migrations"
+	telegram "github.com/IvaCheMih/chess/src/domains/services/telegram"
 	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -20,8 +22,8 @@ var userHandlers user.UserHandlers
 var gamesHandlers game.GamesHandlers
 var authHandlers auth.AuthHandlers
 
-func Init(envs *services.EnvService) {
-	migrationService := services.CreateMigrationService()
+func Init(envs *env.EnvService) {
+	migrationService := migrations.CreateMigrationService()
 
 	err := migrationService.RunUp(envs.PostgresqlUrl, envs.Migrations)
 	if err != nil {
@@ -74,9 +76,18 @@ func Shutdown() {
 //	@name                       Authorization
 //	@description                JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.
 func main() {
-	envs := services.NewEnvService()
+	envs := env.NewEnvService()
 
 	Init(envs)
+
+	if envs.TelegramBot != "" {
+		telegramBot, err := telegram.NewTelegramBot(envs.TelegramBot, envs.AppURL)
+		if err != nil {
+			panic(err)
+		}
+
+		go telegramBot.StartBot()
+	}
 
 	defer Shutdown()
 
@@ -86,6 +97,8 @@ func main() {
 
 	server.Post("/user", userHandlers.CreateUser)
 
+	server.Post("/user/sign-in/telegram/", userHandlers.TelegramSignIn)
+
 	server.Post("/session", userHandlers.CreateSession)
 
 	server.Use(jwtware.New(jwtware.Config{
@@ -93,6 +106,8 @@ func main() {
 	}))
 
 	server.Post("/game", authHandlers.Auth, gamesHandlers.CreateGame)
+
+	server.Get("/game/:gameId", authHandlers.Auth, gamesHandlers.GetGame)
 
 	server.Get("/game/:gameId/board", authHandlers.Auth, gamesHandlers.GetBoard)
 

@@ -48,20 +48,6 @@ func (g *Game) GetFigureByCoordinates(coordinates string) *Figure {
 	return g.Figures[index]
 }
 
-func (g *Game) IndexToCoordinates(index int) string {
-	y := int('8') - (index / g.N)
-	x := (index % g.N) + int('A')
-
-	return string(byte(x)) + string(byte(y))
-}
-
-func (g *Game) CoordinatesToIndex(coordinates string) int {
-	x := int(coordinates[0]) - int('A')
-	y := int('8') - int(coordinates[1])
-
-	return (y * g.N) + x
-}
-
 func (g *Game) CheckCellOnBoardByIndex(index int) bool {
 	coordinates := g.IndexToCoordinates(index)
 	if coordinates[0] >= byte('A') && coordinates[0] <= byte('H') {
@@ -85,12 +71,28 @@ func (g *Game) ChangeKingGameID(to int) {
 	}
 }
 
-func (g *Game) Check() bool {
-	if g.Side && g.IsKingCheck(g.IsCheckWhite.KingGameID) {
+// ChangeIsItChecks for both players
+func (g *Game) ChangeIsItChecks() {
+	if g.IsKingCheck(g.IsCheckWhite.KingGameID) {
+		g.IsCheckWhite.IsItCheck = true
+	}
+
+	if g.IsKingCheck(g.IsCheckBlack.KingGameID) {
+		g.IsCheckBlack.IsItCheck = true
+	}
+}
+
+func (g *Game) ChangeSide() {
+	g.Side = !g.Side
+}
+
+// CheckToMovingPlayer to the moving player
+func (g *Game) CheckToMovingPlayer() bool {
+	if g.Side && g.IsCheckWhite.IsItCheck {
 		return true
 	}
 
-	if !g.Side && g.IsKingCheck(g.IsCheckBlack.KingGameID) {
+	if !g.Side && g.IsCheckBlack.IsItCheck {
 		return true
 	}
 
@@ -125,30 +127,27 @@ func (g *Game) ChangeCastlingFlag(to int) {
 func (g *Game) ChangeLastPawnMove(from int, to int) {
 	figure := g.GetFigureByIndex(to)
 
-	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) > 9 {
-
+	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) == 2*8 {
 		g.LastPawnMove = &to
-
 		return
 	}
 
 	g.LastPawnMove = nil
 }
 
-func (g *Game) IsKingCheck(index int) bool {
-	if g.CheckKnightAttack(index) {
+func (g *Game) IsKingCheck(kingCellIndex int) bool {
+	if g.CheckKnightAttack(kingCellIndex) {
+		return true
+	}
+	if g.CheckDiagonalAttack(kingCellIndex) {
 		return true
 	}
 
-	if g.CheckDiagonalAttack(index) {
+	if g.CheckVertGorAttack(kingCellIndex) {
 		return true
 	}
 
-	if g.CheckVertGorAttack(index) {
-		return true
-	}
-
-	if g.CheckPawnAttack(index) {
+	if g.CheckPawnAttack(kingCellIndex) {
 		return true
 	}
 
@@ -170,7 +169,6 @@ func (g *Game) CheckKnightAttack(index int) bool {
 					}
 				}
 			}
-
 		}
 	}
 	return false
@@ -264,17 +262,12 @@ func (g *Game) CheckVertGorAttack(index int) bool {
 			break
 		}
 	}
+
 	return false
 }
 
 func (g *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, triggerFigures []byte) (bool, bool) {
-	var king *Figure
-
-	if g.Side {
-		king = g.GetFigureByIndex(g.IsCheckWhite.KingGameID)
-	} else {
-		king = g.GetFigureByIndex(g.IsCheckBlack.KingGameID)
-	}
+	king := g.GetFigureByFieldCoordinates(kingCoordinate)
 
 	fig := g.GetFigureByFieldCoordinates(cellCoordinate)
 
@@ -303,19 +296,12 @@ func isTriggerFigure(_type byte, triggerFigures []byte) bool {
 }
 
 func (g *Game) CheckPawnAttack(indexKing int) bool {
-	var king *Figure
-
-	if g.Side {
-		king = g.GetFigureByIndex(indexKing)
-	} else {
-		king = g.GetFigureByIndex(indexKing)
-	}
+	king := g.GetFigureByIndex(indexKing)
 
 	crd := IndexToFieldCoordinates(indexKing)
 
 	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - 1}); fig != nil {
-
 			if (*fig).IsItWhite() != (*king).IsItWhite() {
 				return true
 			}
@@ -452,13 +438,6 @@ func (g *Game) ChangePawnToNewFigure(to int, newFigure byte) {
 func (g *Game) isNewFigureCorrect(newFigure byte) bool {
 	_, ok := g.newFigures[newFigure]
 	return ok
-}
-
-func IndexToCoordinates(index int) string {
-	y := int('8') - (index / 8)
-	x := (index % 8) + int('A')
-
-	return string(byte(x)) + string(byte(y))
 }
 
 func mutateNewFigureId(newFigure byte, color bool) int {
@@ -662,16 +641,18 @@ func (g *Game) moveExists(theoryMoves *TheoryMoves, toCrd [2]int, fromCrd [2]int
 		for figureByte := range g.newFigures {
 			newGame := g.copyGame()
 
-			DoMove(indexesToChange, newGame, figureByte)
-			if !newGame.Check() {
+			newGame.DoMove(indexesToChange, figureByte)
+
+			if !newGame.CheckToMovingPlayer() {
 				return true
 			}
 		}
 	} else {
 		newGame := g.copyGame()
 
-		DoMove(indexesToChange, newGame, '0')
-		if !newGame.Check() {
+		newGame.DoMove(indexesToChange, '0')
+
+		if !newGame.CheckToMovingPlayer() {
 			return true
 		}
 	}

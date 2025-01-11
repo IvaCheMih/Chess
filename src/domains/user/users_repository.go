@@ -17,10 +17,16 @@ func CreateUsersRepository(dbGorm *gorm.DB) UsersRepository {
 	}
 }
 
-func (r *UsersRepository) GetUserById(clientId int) (models.User, error) {
+func (r *UsersRepository) GetUserById(accountId int) (models.User, error) {
 	var user models.User
 
-	r.db.Take(&user, clientId)
+	err := r.db.Table(`users`).
+		Where("id=?", accountId).
+		Take(&user).
+		Error
+	if err != nil {
+		return models.User{}, err
+	}
 
 	if user.Password == "" {
 		return models.User{}, errors.New("gorm error, password is empty")
@@ -29,20 +35,30 @@ func (r *UsersRepository) GetUserById(clientId int) (models.User, error) {
 	return user, nil
 }
 
-func (r *UsersRepository) Create(password string) (models.User, error) {
-	var response models.User
+func (r *UsersRepository) GetUserByTelegramId(telegramId int64) (models.User, error) {
+	var user models.User
 
+	err := r.db.Table(`users`).
+		Where("telegram_id=?", telegramId).
+		Take(&user).
+		Error
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (r *UsersRepository) Create(telegramId int64, password string) (models.User, error) {
 	var user = models.User{
-		Password: password,
+		TelegramId: telegramId,
+		Password:   password,
 	}
 
-	result := r.db.Create(&user)
-
-	if result.Error != nil {
-		return models.User{}, result.Error
+	err := r.db.Create(&user).Error
+	if err != nil {
+		return models.User{}, err
 	}
 
-	err := result.Row().Scan(&response.Id, &response.Password)
-
-	return response, err
+	return user, nil
 }

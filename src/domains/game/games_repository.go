@@ -41,7 +41,7 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	return game, nil
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId string, gameSide bool, userId int, tx *gorm.DB) error {
+func (g *GamesRepository) UpdateColorUserIdByColor(tx *gorm.DB, gameId int, userColorId string, gameSide bool, userId int) error {
 	return tx.Table(`games`).
 		Where("id=?", gameId).
 		Updates(map[string]interface{}{userColorId: userId, "side": gameSide, "is_started": true}).
@@ -49,20 +49,35 @@ func (g *GamesRepository) UpdateColorUserIdByColor(gameId int, userColorId strin
 
 }
 
-func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
+func (g *GamesRepository) GetByIdTx(tx *gorm.DB, gameId int) (models.Game, error) {
 	var game models.Game
 
-	err := g.db.Table(`games`).
-		Take(&game, gameId).
+	err := tx.Table(`games`).
+		Where("id=?", gameId).
+		Take(&game).
 		Error
 	if err != nil {
 		return models.Game{}, err
 	}
 
-	return game, err
+	return game, nil
 }
 
-func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool) error {
+func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
+	var game models.Game
+
+	err := g.db.Table(`games`).
+		Where("id=?", gameId).
+		Take(&game).
+		Error
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	return game, nil
+}
+
+func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool, reason models.EndgameReason) error {
 	var values = map[string]interface{}{
 		"is_check_white":        game.IsCheckWhite.IsItCheck,
 		"white_king_castling":   game.WhiteCastling.KingCastling,
@@ -78,6 +93,7 @@ func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, is
 
 	if isEnd {
 		values["is_ended"] = true
+		values["end_reason"] = reason
 	}
 
 	if game.KilledFigure == 0 {

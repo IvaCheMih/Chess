@@ -63,6 +63,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/game/{gameId}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get game.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game"
+                ],
+                "summary": "get game.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "gameId",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetGameResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/game/{gameId}/board": {
             "get": {
                 "security": [
@@ -279,6 +314,40 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/sign-in/telegram/": {
+            "post": {
+                "description": "telegram sign-in.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "telegram sign-in.",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TelegramSignInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TelegramSignInResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -375,6 +444,9 @@ const docTemplate = `{
             "properties": {
                 "password": {
                     "type": "string"
+                },
+                "telegramId": {
+                    "type": "integer"
                 }
             }
         },
@@ -414,6 +486,62 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.GetGameResponse": {
+            "type": "object",
+            "properties": {
+                "black_king_castling": {
+                    "type": "boolean"
+                },
+                "black_rook_acastling": {
+                    "type": "boolean"
+                },
+                "black_rook_hcastling": {
+                    "type": "boolean"
+                },
+                "black_user_id": {
+                    "type": "integer"
+                },
+                "end_reason": {
+                    "type": "string"
+                },
+                "game_id": {
+                    "type": "integer"
+                },
+                "is_check_black": {
+                    "type": "boolean"
+                },
+                "is_check_white": {
+                    "type": "boolean"
+                },
+                "is_ended": {
+                    "type": "boolean"
+                },
+                "is_started": {
+                    "type": "boolean"
+                },
+                "last_loss": {
+                    "type": "integer"
+                },
+                "last_pawn_move": {
+                    "type": "integer"
+                },
+                "side": {
+                    "type": "boolean"
+                },
+                "white_king_castling": {
+                    "type": "boolean"
+                },
+                "white_rook_acastling": {
+                    "type": "boolean"
+                },
+                "white_rook_hcastling": {
+                    "type": "boolean"
+                },
+                "white_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.GetHistoryResponse": {
             "type": "object",
             "properties": {
@@ -424,6 +552,45 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "dto.TelegramSignInRequest": {
+            "type": "object",
+            "properties": {
+                "chatId": {
+                    "type": "integer"
+                },
+                "telegramId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TelegramSignInResponse": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.EndgameReason": {
+            "type": "string",
+            "enum": [
+                "NotEndgame",
+                "Mate",
+                "Pat",
+                "Repetition",
+                "NoLosses"
+            ],
+            "x-enum-varnames": [
+                "NotEndgame",
+                "Mate",
+                "Pat",
+                "Repetition",
+                "NoLosses"
+            ]
         },
         "models.Game": {
             "type": "object",
@@ -440,6 +607,9 @@ const docTemplate = `{
                 "blackUserId": {
                     "type": "integer"
                 },
+                "endReason": {
+                    "$ref": "#/definitions/models.EndgameReason"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -454,6 +624,9 @@ const docTemplate = `{
                 },
                 "isStarted": {
                     "type": "boolean"
+                },
+                "lastLoss": {
+                    "type": "integer"
                 },
                 "lastPawnMove": {
                     "type": "integer"
@@ -481,7 +654,7 @@ const docTemplate = `{
                 "figureId": {
                     "type": "integer"
                 },
-                "from_id": {
+                "fromId": {
                     "type": "integer"
                 },
                 "gameId": {
@@ -505,7 +678,7 @@ const docTemplate = `{
                 "newFigureId": {
                     "type": "integer"
                 },
-                "to_id": {
+                "toId": {
                     "type": "integer"
                 }
             }

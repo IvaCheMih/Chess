@@ -50,18 +50,17 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	}
 
 	vert := make([][2]int, 0)
-	EnPass := make([][2]int, 0)
+	enPass := make([][2]int, 0)
 	var crdLastPawnMove = [2]int{} //nolint:ineffassign
 
 	crd := figure.CellCoordinates
 
 	if game.LastPawnMove != nil {
-
 		crdLastPawnMove = IndexToFieldCoordinates(*game.LastPawnMove)
 
 		if crdLastPawnMove[0] == crd[0]+1 || crdLastPawnMove[0] == crd[0]-1 {
 			if crd[1] == crdLastPawnMove[1] {
-				EnPass = append(EnPass, [2]int{crdLastPawnMove[0], crdLastPawnMove[1] - n})
+				enPass = append(enPass, [2]int{crdLastPawnMove[0], crdLastPawnMove[1] - n})
 			}
 		}
 	}
@@ -108,7 +107,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 		DR:     nil,
 		DL:     nil,
 		Kn:     nil,
-		EnPass: EnPass,
+		EnPass: enPass,
 	}
 
 	return &theoryMoves

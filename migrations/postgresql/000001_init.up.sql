@@ -1,6 +1,7 @@
 CREATE TABLE users (
-    id         serial       NOT NULL,
-    password   varchar(100) NOT NULL,
+    id           serial       NOT NULL,
+    telegram_id  integer      NOT NULL default 0,
+    password     varchar(100) NOT NULL,
 
     CONSTRAINT users_pkey PRIMARY KEY (id)
 );
@@ -20,6 +21,8 @@ CREATE TABLE games (
     black_user_id           integer      NOT NULL default 0,
     is_started              BOOLEAN      NOT NULL default false,
     is_ended                BOOLEAN      NOT NULL default false,
+
+    end_reason              varchar      NOT NULL default 'NotEndgame',
 
     is_check_white          BOOLEAN      NOT NULL default false,
     white_king_castling     BOOLEAN      NOT NULL default false,
