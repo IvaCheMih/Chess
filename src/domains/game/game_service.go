@@ -6,7 +6,6 @@ import (
 	"github.com/IvaCheMih/chess/src/domains/game/dto"
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	moveservice "github.com/IvaCheMih/chess/src/domains/game/services/move"
-	"gorm.io/gorm"
 	"log"
 )
 
@@ -46,6 +45,7 @@ func (g *GamesService) GetGame(gameId int, accountId int) (dto.GetGameResponse, 
 		IsStarted:          game.IsStarted,
 		IsEnded:            game.IsEnded,
 		EndReason:          game.EndReason.ToDTO(),
+		Winner:             game.Winner,
 		IsCheckWhite:       game.IsCheckWhite,
 		WhiteKingCastling:  game.WhiteKingCastling,
 		WhiteRookACastling: game.WhiteRookACastling,
@@ -118,7 +118,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 
 	}
 
-	FromModelsToDtoCreateGame(notStartedGame, &createGameResponse)
+	fromModelsToDtoCreateGame(notStartedGame, &createGameResponse)
 
 	if createNewBoard {
 		boardCells := g.boardRepo.NewStartBoardCells(createGameResponse.GameId)
@@ -131,7 +131,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 
 	tx.Commit()
 
-	return createGameResponse, err
+	return createGameResponse, nil
 }
 
 func (g *GamesService) GetBoard(gameId int, userId any) (dto.GetBoardResponse, error) {
@@ -183,7 +183,7 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.GetHistoryRespons
 	}
 
 	if userId != responseGetGame.WhiteUserId && userId != responseGetGame.BlackUserId {
-		return dto.GetHistoryResponse{}, errors.New("This is not your game")
+		return dto.GetHistoryResponse{}, errors.New("this is not your game")
 	}
 
 	moves, err := g.movesRepo.Find(gameId)
@@ -199,34 +199,38 @@ func (g *GamesService) GetHistory(gameId int, userId any) (dto.GetHistoryRespons
 }
 
 func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody) (models.Move, error) {
-	board, err := g.boardRepo.Find(gameId)
-	if err != nil {
-		return models.Move{}, err
-	}
-
-	if !CheckCorrectRequest(requestFromTo) {
-		return models.Move{}, errors.New("Move is not correct")
-	}
-
 	gameModel, err := g.gamesRepo.GetById(gameId)
 	if err != nil {
 		return models.Move{}, err
 	}
 
+	if userId != gameModel.WhiteUserId && userId != gameModel.BlackUserId {
+		return models.Move{}, errors.New("this is not your game")
+	}
+
+	board, err := g.boardRepo.Find(gameId)
+	if err != nil {
+		return models.Move{}, err
+	}
+
+	if !checkCorrectRequest(requestFromTo) {
+		return models.Move{}, errors.New("move is not correct")
+	}
+
 	// move logic
 
-	if err = CheckCorrectRequestSideUser(userId, gameModel); err != nil {
+	if err = checkCorrectRequestSideUser(userId, gameModel); err != nil {
 		log.Println(err)
 		return models.Move{}, err
 	}
 
-	from := CoordinatesToIndex(requestFromTo.From)
-	to := CoordinatesToIndex(requestFromTo.To)
+	from := coordinatesToIndex(requestFromTo.From)
+	to := coordinatesToIndex(requestFromTo.To)
 
 	indexesToChange, game := g.MoveService.IsMoveCorrect(gameModel, board, from, to, requestFromTo.NewFigure)
 
 	if len(indexesToChange) == 0 {
-		return models.Move{}, errors.New("Move is not possible (IsMoveCorrect)")
+		return models.Move{}, errors.New("move is not possible (IsMoveCorrect)")
 	}
 
 	// process move and change game params
@@ -234,7 +238,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 
 	// player cant do this move if his king is under attack
 	if game.CheckToMovingPlayer() {
-		return models.Move{}, errors.New("Move is not possible (Check)")
+		return models.Move{}, errors.New("move is not possible (Check)")
 	}
 
 	// move is correct and done. Change side to check Endgame and save game, board, move state
@@ -283,7 +287,7 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 		return models.Move{}, err
 	}
 
-	err = UpdateBoardAfterMove(tx, g, board, game.NewFigureId, indexesToChange)
+	err = updateBoardAfterMove(tx, g, board, game.NewFigureId, indexesToChange)
 	if err != nil {
 		return models.Move{}, err
 	}
@@ -333,11 +337,12 @@ func (g *GamesService) Move(gameId int, userId any, requestFromTo dto.DoMoveBody
 	}
 	fmt.Println()
 
-	return responseMove, err
+	return responseMove, nil
 }
 
-func (g *GamesService) GiveUp(gameId int) (models.Game, error) {
-	err := g.gamesRepo.UpdateIsEnded(gameId)
+func (g *GamesService) EndGame(userId int, gameId int, reasonString string) (models.Game, error) {
+	var reason models.EndgameReason
+	err := reason.FromString(reasonString)
 	if err != nil {
 		return models.Game{}, err
 	}
@@ -347,119 +352,39 @@ func (g *GamesService) GiveUp(gameId int) (models.Game, error) {
 		return models.Game{}, err
 	}
 
-	return game, err
-
-}
-
-func CheckCorrectRequestSideUser(userId any, game models.Game) error {
-	if userId != game.WhiteUserId && userId != game.BlackUserId {
-		return errors.New("This is not your game")
+	if userId != game.WhiteUserId || userId != game.BlackUserId {
+		return models.Game{}, errors.New("this is not your game")
 	}
 
-	if !game.IsStarted || game.IsEnded {
-		return errors.New("Game is not active")
+	if game.IsEnded {
+		return models.Game{}, errors.New("game is already ended")
 	}
 
-	if game.Side && userId != game.WhiteUserId {
-		return errors.New("Its not your move now")
+	if !game.IsStarted {
+		return models.Game{}, errors.New("game is not started")
 	}
 
-	if !game.Side && userId != game.BlackUserId {
-		return errors.New("Its not your move now")
-	}
-	return nil
-}
-
-func IndexToCoordinates(index int) string {
-	y := int('8') - (index / 8)
-	x := (index % 8) + int('A')
-
-	return string(byte(x)) + string(byte(y))
-}
-
-func CoordinatesToIndex(coordinates string) int {
-	x := int(coordinates[0]) - int('A')
-	y := int('8') - int(coordinates[1])
-
-	return (y * 8) + x
-}
-
-func CheckCellOnBoardByIndex(index int) bool {
-	coordinates := IndexToCoordinates(index)
-	if coordinates[0] >= byte('A') && coordinates[0] <= byte('H') {
-		if coordinates[1] >= byte('1') && coordinates[1] <= byte('8') {
-			return true
-		}
-	}
-	return false
-}
-
-func CheckCorrectRequest(move dto.DoMoveBody) bool {
-	from, to := CoordinatesToIndex(move.From), CoordinatesToIndex(move.To)
-
-	if !CheckCellOnBoardByIndex(from) || !CheckCellOnBoardByIndex(to) {
-		return false
-	}
-
-	return true
-}
-
-func UpdateBoardAfterMove(tx *gorm.DB, g *GamesService, board models.Board, newFigureId int, indexesToChange []int) error {
-	var err error
-	from := indexesToChange[0]
-	to := indexesToChange[1]
-
-	if board.Cells[to] != nil {
-		err = g.boardRepo.Delete(tx, board.Cells[to].Id)
-		if err != nil {
-			return err
-		}
-	}
-
-	if newFigureId != 0 {
-		err = g.boardRepo.UpdateNewFigure(tx, board.Cells[from].Id, to, newFigureId)
-	} else {
-		err = g.boardRepo.Update(tx, board.Cells[from].Id, to)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	if len(indexesToChange) > 2 {
-		if indexesToChange[2] == -1 {
-			err = g.boardRepo.Delete(tx, board.Cells[indexesToChange[3]].Id)
+	if reason == models.GiveUp {
+		winner := 0
+		if userId == game.WhiteUserId {
+			winner = game.BlackUserId
 		} else {
-			err = g.boardRepo.Update(tx, board.Cells[indexesToChange[2]].Id, indexesToChange[3])
+			winner = game.WhiteUserId
+		}
+		err = g.gamesRepo.UpdateIsEnded(winner, gameId, reason)
+		if err != nil {
+			return models.Game{}, err
 		}
 	}
 
-	return err
-}
+	//TODO: giveup
 
-func FromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.CreateGameResponse) {
-	createGameResponse.GameId = response.Id
+	game, err = g.gamesRepo.GetById(gameId)
+	if err != nil {
+		return models.Game{}, err
+	}
 
-	createGameResponse.IsCheckWhite = response.IsCheckWhite
-	createGameResponse.IsCheckBlack = response.IsCheckBlack
-
-	createGameResponse.IsStarted = response.IsStarted
-	createGameResponse.IsEnded = response.IsEnded
-
-	createGameResponse.WhiteKingCastling = response.WhiteKingCastling
-	createGameResponse.BlackKingCastling = response.BlackKingCastling
-
-	createGameResponse.WhiteRookACastling = response.WhiteRookACastling
-	createGameResponse.WhiteRookHCastling = response.WhiteRookHCastling
-
-	createGameResponse.BlackRookACastling = response.BlackRookACastling
-	createGameResponse.BlackRookHCastling = response.BlackRookHCastling
-
-	createGameResponse.BlackUserId = response.BlackUserId
-	createGameResponse.WhiteUserId = response.WhiteUserId
-
-	createGameResponse.LastPawnMove = response.LastPawnMove
-	createGameResponse.Side = response.Side
+	return game, nil
 }
 
 func (g *GamesService) GetMoveService() *moveservice.MoveService {

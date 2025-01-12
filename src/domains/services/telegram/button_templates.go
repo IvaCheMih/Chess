@@ -14,3 +14,10 @@ var newGameTemplate = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("black", "black"),
 	),
 )
+
+var endGameTemplate = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("give up", "giveUp"),
+		tgbotapi.NewInlineKeyboardButtonData("draw", "draw"),
+	),
+)

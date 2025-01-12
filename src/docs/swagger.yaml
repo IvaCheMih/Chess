@@ -80,6 +80,13 @@ definitions:
       to:
         type: string
     type: object
+  dto.EndGameRequest:
+    properties:
+      gameId:
+        type: integer
+      reason:
+        type: string
+    type: object
   dto.GetBoardResponse:
     properties:
       boardCells:
@@ -152,6 +159,8 @@ definitions:
     - Pat
     - Repetition
     - NoLosses
+    - Draw
+    - GiveUp
     type: string
     x-enum-varnames:
     - NotEndgame
@@ -159,6 +168,8 @@ definitions:
     - Pat
     - Repetition
     - NoLosses
+    - Draw
+    - GiveUp
   models.Game:
     properties:
       blackKingCastling:
@@ -299,15 +310,18 @@ paths:
       summary: get board.
       tags:
       - board
-  /game/{gameId}/give-up:
+  /game/{gameId}/endgame:
     post:
       consumes:
       - application/json
       description: do give-up.
       parameters:
-      - in: path
-        name: gameId
-        type: integer
+      - description: gameId
+        in: body
+        name: endgame
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EndGameRequest'
       produces:
       - application/json
       responses:

@@ -164,26 +164,26 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 	return c.JSON(responseMove)
 }
 
-// GiveUp godoc
+// EndGame godoc
 // @Summary do give-up.
 // @Description do give-up.
 // @Tags give-up
 // @Accept json
 // @Produce json
 // @Security       JWT
-// @Param gameId path dto.GetGameIdParam true "gameId"
+// @Param endgame body dto.EndGameRequest true "gameId"
 // @Success 200 {object}  models.Game
-// @Router /game/{gameId}/give-up [post]
-func (h *GamesHandlers) GiveUp(c *fiber.Ctx) error {
-	request, err := dto.GetGameId(c)
+// @Router /game/endgame [post]
+func (h *GamesHandlers) EndGame(c *fiber.Ctx) error {
+	request, err := dto.GetEndGameRequest(c)
 	if err != nil {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	//userId := c.Context().Value("userId")
+	userId := c.Context().Value("userId")
 
-	responseMove, err := h.gameService.GiveUp(request.GameId)
+	responseMove, err := h.gameService.EndGame(userId.(int), request.GameId, request.Reason)
 	if err != nil {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)

@@ -115,7 +115,7 @@ func main() {
 
 	server.Post("/game/:gameId/move", authHandlers.Auth, gamesHandlers.Move)
 
-	server.Post("/game/:gameId/give-up", authHandlers.Auth, gamesHandlers.GiveUp)
+	server.Post("/game/endgame", authHandlers.Auth, gamesHandlers.EndGame)
 
 	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)

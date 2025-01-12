@@ -11,8 +11,11 @@ func GetRequestNewGame(c *fiber.Ctx) (CreateGameBody, error) {
 	var request CreateGameBody
 
 	err := json.Unmarshal(body, &request)
+	if err != nil {
+		return CreateGameBody{}, err
+	}
 
-	return request, err
+	return request, nil
 }
 
 func GetRequestGetGame(c *fiber.Ctx) (GetGameRequest, error) {
@@ -21,8 +24,11 @@ func GetRequestGetGame(c *fiber.Ctx) (GetGameRequest, error) {
 	var request GetGameRequest
 
 	err := json.Unmarshal(body, &request)
+	if err != nil {
+		return GetGameRequest{}, err
+	}
 
-	return request, err
+	return request, nil
 }
 
 func GetGameId(c *fiber.Ctx) (GetGameIdParam, error) {
@@ -38,12 +44,28 @@ func GetGameId(c *fiber.Ctx) (GetGameIdParam, error) {
 	return request, nil
 }
 
+func GetEndGameRequest(c *fiber.Ctx) (EndGameRequest, error) {
+	body := c.Body()
+
+	var request EndGameRequest
+
+	err := json.Unmarshal(body, &request)
+	if err != nil {
+		return EndGameRequest{}, err
+	}
+
+	return request, nil
+}
+
 func GetRequestDoMoveFromBody(c *fiber.Ctx) (DoMoveBody, error) {
 	body := c.Body()
 
 	var request DoMoveBody
 
 	err := json.Unmarshal(body, &request)
+	if err != nil {
+		return DoMoveBody{}, err
+	}
 
-	return request, err
+	return request, nil
 }

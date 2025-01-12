@@ -133,7 +133,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/game/{gameId}/give-up": {
+        "/game/{gameId}/endgame": {
             "post": {
                 "security": [
                     {
@@ -153,9 +153,13 @@ const docTemplate = `{
                 "summary": "do give-up.",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "name": "gameId",
-                        "in": "path"
+                        "description": "gameId",
+                        "name": "endgame",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.EndGameRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -475,6 +479,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.EndGameRequest": {
+            "type": "object",
+            "properties": {
+                "gameId": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.GetBoardResponse": {
             "type": "object",
             "properties": {
@@ -582,14 +597,18 @@ const docTemplate = `{
                 "Mate",
                 "Pat",
                 "Repetition",
-                "NoLosses"
+                "NoLosses",
+                "Draw",
+                "GiveUp"
             ],
             "x-enum-varnames": [
                 "NotEndgame",
                 "Mate",
                 "Pat",
                 "Repetition",
-                "NoLosses"
+                "NoLosses",
+                "Draw",
+                "GiveUp"
             ]
         },
         "models.Game": {

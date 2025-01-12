@@ -103,16 +103,16 @@ func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, is
 	}
 
 	return tx.Table(`games`).
-		Model(&models.Game{}).
 		Where("id=?", gameId).
 		Updates(values).
 		Error
 }
 
-func (g *GamesRepository) UpdateIsEnded(gameId int) error {
+func (g *GamesRepository) UpdateIsEnded(winner int, gameId int, reason models.EndgameReason) error {
 	return g.db.Table(`games`).
-		Model(&models.Game{}).
 		Where("id=?", gameId).
 		Updates(map[string]interface{}{"is_ended": true}).
+		Updates(map[string]interface{}{"end_reason": reason.ToDTO()}).
+		Updates(map[string]interface{}{"winner": winner}).
 		Error
 }

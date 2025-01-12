@@ -95,7 +95,7 @@ func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.
 		}
 	}
 
-	board, err := test.GetBoard(session1response.Token, game1response.GameId, appURL)
+	board, err := test.GetBoard(game1response.GameId, session1response.Token, appURL)
 	require.NoError(t, err)
 
 	if !assert.Equal(t, expected, board) {

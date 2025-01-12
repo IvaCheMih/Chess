@@ -86,6 +86,10 @@ func (b *TelegramService) StartBot() {
 				b.newGame(true, update)
 			case "black":
 				b.newGame(false, update)
+			case "endgame":
+				b.endgame(update)
+			case "giveUp":
+				b.giveUp(update)
 			default:
 				b.move(update)
 			}
@@ -107,7 +111,7 @@ func (b *TelegramService) newGame(color bool, update tgbotapi.Update) {
 		return
 	}
 
-	board, err := test.GetBoard(b.authCache.telegramIdToToken[update.FromChat().ID], g.GameId, b.appURL)
+	board, err := test.GetBoard(g.GameId, b.authCache.telegramIdToToken[update.FromChat().ID], b.appURL)
 	if err != nil {
 		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Failed to get board", err)
 		return
@@ -152,11 +156,13 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 	indexCell, err := parseData(update.CallbackQuery.Data)
 	if err != nil {
 		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Failed to parse data", err)
+		return
 	}
 
 	g, err := b.getGame(update.FromChat().ID)
 	if err != nil {
 		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Failed to get game", err)
+		return
 	}
 
 	from, to := b.addMove(update.FromChat().ID, indexCell)
@@ -186,7 +192,7 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 
 	b.cleanMoves(update.FromChat().ID)
 
-	board, err := test.GetBoard(b.authCache.telegramIdToToken[update.FromChat().ID], g.id, b.appURL)
+	board, err := test.GetBoard(g.id, b.authCache.telegramIdToToken[update.FromChat().ID], b.appURL)
 	if err != nil {
 		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Failed to get board", err)
 		return
@@ -198,4 +204,37 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 
 	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "New move", &boardTemplate)
 	b.response(opponentTelegramId, 0, "New move", &boardTemplate)
+}
+
+func (b *TelegramService) endgame(update tgbotapi.Update) {
+	if _, ok := b.games.accountIdToGameId[update.FromChat().ID]; !ok {
+		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "dont have active games", nil)
+		return
+	}
+
+	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Give up or draw?", &endGameTemplate)
+}
+
+func (b *TelegramService) giveUp(update tgbotapi.Update) {
+	if _, ok := b.games.accountIdToGameId[update.FromChat().ID]; !ok {
+		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "dont have active games", nil)
+	}
+
+	g := b.games.accountIdToGameId[update.FromChat().ID]
+
+	_, err := test.EndGame(
+		gamedto.EndGameRequest{
+			GameId: g.id,
+			Reason: "GiveUp",
+		},
+		b.authCache.telegramIdToToken[update.FromChat().ID],
+		b.appURL,
+	)
+	if err != nil {
+		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Failed to end game", err)
+		return
+	}
+
+	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game is ended: Lose", nil)
+	b.response(b.authCache.accountIdToTelegramId[g.opponentId], 0, "Game is ended: Win", nil)
 }

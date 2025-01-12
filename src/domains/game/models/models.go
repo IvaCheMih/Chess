@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 type BoardCell struct {
 	Id        int
 	GameId    int
@@ -31,6 +33,7 @@ type Game struct {
 	IsStarted          bool
 	IsEnded            bool
 	EndReason          EndgameReason
+	Winner             int
 	IsCheckWhite       bool
 	WhiteKingCastling  bool
 	WhiteRookACastling bool
@@ -52,6 +55,8 @@ const (
 	Pat        EndgameReason = "Pat"
 	Repetition EndgameReason = "Repetition"
 	NoLosses   EndgameReason = "NoLosses"
+	Draw       EndgameReason = "Draw"
+	GiveUp     EndgameReason = "GiveUp"
 )
 
 func (e *EndgameReason) ToDTO() string {
@@ -66,7 +71,39 @@ func (e *EndgameReason) ToDTO() string {
 		return "NoLosses"
 	case NotEndgame:
 		return "NotEndgame"
+	case Draw:
+		return "Draw"
+	case GiveUp:
+		return "GiveUp"
 	}
 
 	return ""
+}
+
+func (e *EndgameReason) FromString(reason string) error {
+	switch reason {
+	case string(Mate):
+		*e = Mate
+		return nil
+	case string(Pat):
+		*e = Pat
+		return nil
+	case string(Repetition):
+		*e = Repetition
+		return nil
+	case string(NoLosses):
+		*e = NoLosses
+		return nil
+	case string(NotEndgame):
+		*e = NotEndgame
+		return nil
+	case string(Draw):
+		*e = Draw
+		return nil
+	case string(GiveUp):
+		*e = GiveUp
+		return nil
+	default:
+		return errors.New("invalid endgame reason")
+	}
 }

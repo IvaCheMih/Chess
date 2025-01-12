@@ -239,7 +239,7 @@ func CreateMove(move gameDto.DoMoveBody, token string, gameId int, appURL string
 	return doMove, nil
 }
 
-func GetBoard(token string, gameId int, appURL string) (gameDto.GetBoardResponse, error) {
+func GetBoard(gameId int, token string, appURL string) (gameDto.GetBoardResponse, error) {
 	url := appURL + "game/" + strconv.Itoa(gameId) + "/board/"
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
@@ -269,6 +269,45 @@ func GetBoard(token string, gameId int, appURL string) (gameDto.GetBoardResponse
 	err = json.Unmarshal(resBody, &board)
 	if err != nil {
 		return gameDto.GetBoardResponse{}, err
+	}
+
+	return board, nil
+}
+
+func EndGame(endgame gameDto.EndGameRequest, token string, appURL string) (models.Game, error) {
+	url := appURL + "game/endgame/"
+
+	body, err := json.Marshal(endgame)
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	request.Header.Set("Authorization", "Bearer "+token)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("accept", "application/json")
+
+	client := &http.Client{}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	resBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	var board = models.Game{}
+
+	err = json.Unmarshal(resBody, &board)
+	if err != nil {
+		return models.Game{}, err
 	}
 
 	return board, nil

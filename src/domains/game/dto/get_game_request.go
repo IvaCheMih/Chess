@@ -11,6 +11,7 @@ type GetGameResponse struct {
 	IsStarted          bool   `json:"is_started"`
 	IsEnded            bool   `json:"is_ended"`
 	EndReason          string `json:"end_reason"`
+	Winner             int    `json:"winner"`
 	IsCheckWhite       bool   `json:"is_check_white"`
 	WhiteKingCastling  bool   `json:"white_king_castling"`
 	WhiteRookACastling bool   `json:"white_rook_acastling"`

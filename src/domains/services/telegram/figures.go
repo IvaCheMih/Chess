@@ -34,7 +34,6 @@ func (b *TelegramService) makeBoardTemplate(board []dto.BoardCellEntity) tgbotap
 	var row1, row2, row3, row4, row5, row6, row7, row8 []tgbotapi.InlineKeyboardButton
 
 	for i, cell := range board {
-
 		figure := " "
 
 		if f, ok := b.figures[cell.FigureId]; ok {
@@ -61,6 +60,9 @@ func (b *TelegramService) makeBoardTemplate(board []dto.BoardCellEntity) tgbotap
 		}
 	}
 
+	endgame := tgbotapi.NewInlineKeyboardButtonData("End game", "endgame")
+	rowEndGame := tgbotapi.NewInlineKeyboardRow(endgame)
+
 	return tgbotapi.NewInlineKeyboardMarkup(
 		row1,
 		row2,
@@ -70,6 +72,7 @@ func (b *TelegramService) makeBoardTemplate(board []dto.BoardCellEntity) tgbotap
 		row6,
 		row7,
 		row8,
+		rowEndGame,
 	)
 }
 

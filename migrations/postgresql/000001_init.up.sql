@@ -23,6 +23,7 @@ CREATE TABLE games (
     is_ended                BOOLEAN      NOT NULL default false,
 
     end_reason              varchar      NOT NULL default 'NotEndgame',
+    winner                  integer      NOT NULL default 0,
 
     is_check_white          BOOLEAN      NOT NULL default false,
     white_king_castling     BOOLEAN      NOT NULL default false,
