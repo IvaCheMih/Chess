@@ -8,10 +8,9 @@ type GetGameResponse struct {
 	GameId             int    `json:"game_id"`
 	WhiteUserId        int    `json:"white_user_id"`
 	BlackUserId        int    `json:"black_user_id"`
-	IsStarted          bool   `json:"is_started"`
-	IsEnded            bool   `json:"is_ended"`
+	Status             string `json:"status"`
 	EndReason          string `json:"end_reason"`
-	Winner             int    `json:"winner"`
+	WinnerUserId       int    `json:"winner_user_id"`
 	IsCheckWhite       bool   `json:"is_check_white"`
 	WhiteKingCastling  bool   `json:"white_king_castling"`
 	WhiteRookACastling bool   `json:"white_rook_acastling"`

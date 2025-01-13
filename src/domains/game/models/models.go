@@ -1,6 +1,8 @@
 package models
 
-import "errors"
+import (
+	"errors"
+)
 
 type BoardCell struct {
 	Id        int
@@ -30,10 +32,9 @@ type Game struct {
 	Id                 int
 	WhiteUserId        int
 	BlackUserId        int
-	IsStarted          bool
-	IsEnded            bool
+	Status             GameStatus
 	EndReason          EndgameReason
-	Winner             int
+	WinnerUserId       int
 	IsCheckWhite       bool
 	WhiteKingCastling  bool
 	WhiteRookACastling bool
@@ -59,7 +60,7 @@ const (
 	GiveUp     EndgameReason = "GiveUp"
 )
 
-func (e *EndgameReason) ToDTO() string {
+func (e *EndgameReason) ToString() string {
 	switch *e {
 	case Mate:
 		return "Mate"
@@ -105,5 +106,66 @@ func (e *EndgameReason) FromString(reason string) error {
 		return nil
 	default:
 		return errors.New("invalid endgame reason")
+	}
+}
+
+type GameStatus string
+
+const (
+	Created   GameStatus = "Created"
+	Cancelled GameStatus = "Cancelled"
+	Active    GameStatus = "Active"
+	Ended     GameStatus = "Ended"
+)
+
+func (e *GameStatus) ToString() string {
+	switch *e {
+	case Created:
+		return "Created"
+	case Cancelled:
+		return "Cancelled"
+	case Active:
+		return "Active"
+	case Ended:
+		return "Ended"
+	}
+
+	return ""
+}
+
+func (e *GameStatus) FromString(reason string) error {
+	switch reason {
+	case string(Created):
+		*e = Created
+		return nil
+	case string(Cancelled):
+		*e = Cancelled
+		return nil
+	case string(Active):
+		*e = Active
+		return nil
+	case string(Ended):
+		*e = Ended
+		return nil
+	default:
+		return errors.New("invalid game status")
+	}
+}
+
+func (g *Game) IsActive() bool {
+	switch g.Status {
+	case Active:
+		return true
+	default:
+		return false
+	}
+}
+
+func (g *Game) CanBeCancelled() bool {
+	switch g.Status {
+	case Created:
+		return true
+	default:
+		return false
 	}
 }
