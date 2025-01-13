@@ -37,6 +37,22 @@ func (g *Game) GetFigureByIndex(index int) *Figure {
 	return g.Figures[index]
 }
 
+func (g *Game) MakeKing(index int) Figure {
+	var _type byte
+
+	if g.Side {
+		_type = 5
+	} else {
+		_type = 12
+	}
+
+	coordinates := IndexToFieldCoordinates(index)
+
+	var bf = BaseFigure{g.Side, _type, coordinates}
+
+	return &FigureKing{bf, false}
+}
+
 func (g *Game) GetFigureByFieldCoordinates(crd [2]int) *Figure {
 	index := FieldCoordinatesToIndex(crd)
 	return g.Figures[index]
@@ -155,12 +171,13 @@ func (g *Game) IsKingCheck(kingCellIndex int) bool {
 }
 
 func (g *Game) CheckKnightAttack(index int) bool {
-	king := g.GetFigureByIndex(index)
+	//king := g.GetFigureByIndex(index)
+	king := g.MakeKing(index)
 	for _, knPosition := range *g.theoryKnightSteps {
 		if g.CheckCellOnBoardByIndex(index + knPosition) {
 			if fig := g.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'k' {
-				if (*fig).IsItWhite() != (*king).IsItWhite() {
-					if (*king).IsItWhite() {
+				if (*fig).IsItWhite() != king.IsItWhite() {
+					if king.IsItWhite() {
 						g.IsCheckWhite.IsItCheck = true
 						return true
 					} else {
@@ -267,17 +284,18 @@ func (g *Game) CheckVertGorAttack(index int) bool {
 }
 
 func (g *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, triggerFigures []byte) (bool, bool) {
-	king := g.GetFigureByFieldCoordinates(kingCoordinate)
-
+	//king := g.GetFigureByFieldCoordinates(kingCoordinate)
+	king := g.MakeKing(FieldCoordinatesToIndex(kingCoordinate))
 	fig := g.GetFigureByFieldCoordinates(cellCoordinate)
 
 	if fig == nil {
 		return false, false
 	}
-	if (*fig).IsItWhite() == (*king).IsItWhite() {
+
+	if (*fig).IsItWhite() == king.IsItWhite() {
 		return false, true
 	}
-	if (*fig).IsItWhite() != (*king).IsItWhite() {
+	if (*fig).IsItWhite() != king.IsItWhite() {
 		if isTriggerFigure((*fig).GetType(), triggerFigures) {
 			return true, true
 		}
@@ -296,37 +314,37 @@ func isTriggerFigure(_type byte, triggerFigures []byte) bool {
 }
 
 func (g *Game) CheckPawnAttack(indexKing int) bool {
-	king := g.GetFigureByIndex(indexKing)
-
+	//	king := g.GetFigureByIndex(indexKing)
+	king := g.MakeKing(indexKing)
 	crd := IndexToFieldCoordinates(indexKing)
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
+	if king.IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if (*fig).IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] - 1}) {
+	if king.IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] - 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if (*fig).IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] + 1}) {
+	if !king.IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] + 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] + 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if (*fig).IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] + 1}) {
+	if !king.IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] + 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] + 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if (*fig).IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}

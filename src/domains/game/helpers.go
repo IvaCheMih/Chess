@@ -114,5 +114,6 @@ func newGame() models.Game {
 	return models.Game{
 		EndReason: models.NotEndgame,
 		Status:    models.Created,
+		Side:      true,
 	}
 }

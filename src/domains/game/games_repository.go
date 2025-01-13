@@ -46,10 +46,10 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	return game, nil
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(tx *gorm.DB, gameId int, userColorId string, gameSide bool, userId int) error {
+func (g *GamesRepository) UpdateColorUserIdByColor(tx *gorm.DB, gameId int, userColorId string, userId int) error {
 	return tx.Table(`games`).
 		Where("id=?", gameId).
-		Updates(map[string]interface{}{userColorId: userId, "side": gameSide, "status": models.Active}).
+		Updates(map[string]interface{}{userColorId: userId, "status": models.Active}).
 		Error
 }
 

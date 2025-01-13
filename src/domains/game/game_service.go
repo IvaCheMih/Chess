@@ -63,7 +63,6 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	createNewBoard := false
 
 	userColor := "white_user_id"
-	gameSide := false
 
 	if !userRequestedColor {
 		userColor = "black_user_id"
@@ -72,10 +71,6 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 	notStartedGame, err := g.gamesRepo.FindNotStartedGame(userColor)
 	if err != nil && err.Error() != "record not found" {
 		return dto.CreateGameResponse{}, err
-	}
-
-	if userColor == "black_user_id" {
-		gameSide = true
 	}
 
 	tx := g.gamesRepo.db.Begin()
@@ -104,7 +99,7 @@ func (g *GamesService) CreateGame(userId int, userRequestedColor bool) (dto.Crea
 		}
 		createNewBoard = true
 	} else {
-		err = g.gamesRepo.UpdateColorUserIdByColor(tx, notStartedGame.Id, userColor, gameSide, userId)
+		err = g.gamesRepo.UpdateColorUserIdByColor(tx, notStartedGame.Id, userColor, userId)
 		if err != nil {
 			return dto.CreateGameResponse{}, err
 		}
