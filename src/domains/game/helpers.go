@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func checkCorrectRequestSideUser(userId any, game models.Game) error {
-	if !game.IsStarted || game.IsEnded {
+func checkCorrectRequestSideUser(userId int, game models.Game) error {
+	if !game.IsActive() {
 		return errors.New("game is not active")
 	}
 
@@ -89,27 +89,31 @@ func updateBoardAfterMove(tx *gorm.DB, g *GamesService, board models.Board, newF
 	return err
 }
 
-func fromModelsToDtoCreateGame(response models.Game, createGameResponse *dto.CreateGameResponse) {
-	createGameResponse.GameId = response.Id
+func fromModelsToDtoCreateGame(response models.Game) dto.CreateGameResponse {
+	return dto.CreateGameResponse{
+		GameId:             response.Id,
+		IsCheckWhite:       response.IsCheckWhite,
+		IsCheckBlack:       response.IsCheckBlack,
+		Status:             response.Status.ToString(),
+		EndReason:          response.EndReason.ToString(),
+		WhiteKingCastling:  response.WhiteKingCastling,
+		BlackKingCastling:  response.BlackKingCastling,
+		WhiteRookACastling: response.WhiteRookACastling,
+		WhiteRookHCastling: response.WhiteRookHCastling,
+		BlackRookACastling: response.BlackRookACastling,
+		BlackRookHCastling: response.BlackRookHCastling,
+		BlackUserId:        response.BlackUserId,
+		WhiteUserId:        response.WhiteUserId,
+		LastPawnMove:       response.LastPawnMove,
+		Side:               response.Side,
+	}
 
-	createGameResponse.IsCheckWhite = response.IsCheckWhite
-	createGameResponse.IsCheckBlack = response.IsCheckBlack
+}
 
-	createGameResponse.IsStarted = response.IsStarted
-	createGameResponse.IsEnded = response.IsEnded
-
-	createGameResponse.WhiteKingCastling = response.WhiteKingCastling
-	createGameResponse.BlackKingCastling = response.BlackKingCastling
-
-	createGameResponse.WhiteRookACastling = response.WhiteRookACastling
-	createGameResponse.WhiteRookHCastling = response.WhiteRookHCastling
-
-	createGameResponse.BlackRookACastling = response.BlackRookACastling
-	createGameResponse.BlackRookHCastling = response.BlackRookHCastling
-
-	createGameResponse.BlackUserId = response.BlackUserId
-	createGameResponse.WhiteUserId = response.WhiteUserId
-
-	createGameResponse.LastPawnMove = response.LastPawnMove
-	createGameResponse.Side = response.Side
+func newGame() models.Game {
+	return models.Game{
+		EndReason: models.NotEndgame,
+		Status:    models.Created,
+		Side:      true,
+	}
 }

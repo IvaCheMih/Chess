@@ -90,6 +90,8 @@ func (b *TelegramService) StartBot() {
 				b.endgame(update)
 			case "giveUp":
 				b.giveUp(update)
+			case "cancel":
+				b.cancelGame(update)
 			default:
 				b.move(update)
 			}
@@ -144,9 +146,12 @@ func (b *TelegramService) newGame(color bool, update tgbotapi.Update) {
 	}
 
 	if gameOp.opponentId == 0 {
+		boardTemplate = addCancelButtonButton(boardTemplate)
 		b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game created!", &boardTemplate)
 		return
 	}
+
+	boardTemplate = addEndgameButton(boardTemplate)
 
 	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game started", &boardTemplate)
 	b.response(b.authCache.accountIdToTelegramId[gameOp.opponentId], 0, "Game started", &boardTemplate)
@@ -176,7 +181,7 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 		return
 	}
 
-	_, err = test.CreateMove(gamedto.DoMoveBody{
+	move, err := test.CreateMove(gamedto.DoMoveBody{
 		From: gameservice.IndexToCoordinates(*from),
 		To:   gameservice.IndexToCoordinates(*to),
 		//TODO: new figure
@@ -198,12 +203,17 @@ func (b *TelegramService) move(update tgbotapi.Update) {
 		return
 	}
 
-	boardTemplate := b.makeBoardTemplate(board.BoardCells)
+	boardTemplate := addEndgameButton(b.makeBoardTemplate(board.BoardCells))
 
 	opponentTelegramId := b.authCache.accountIdToTelegramId[g.opponentId]
 
 	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "New move", &boardTemplate)
 	b.response(opponentTelegramId, 0, "New move", &boardTemplate)
+
+	if move.End {
+		b.removeGame(update.FromChat().ID)
+		b.removeGame(opponentTelegramId)
+	}
 }
 
 func (b *TelegramService) endgame(update tgbotapi.Update) {
@@ -235,6 +245,33 @@ func (b *TelegramService) giveUp(update tgbotapi.Update) {
 		return
 	}
 
+	oppId := b.authCache.accountIdToTelegramId[g.opponentId]
+
 	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game is ended: Lose", nil)
-	b.response(b.authCache.accountIdToTelegramId[g.opponentId], 0, "Game is ended: Win", nil)
+	b.response(oppId, 0, "Game is ended: Win", nil)
+
+	b.removeGame(update.FromChat().ID)
+	b.removeGame(oppId)
+}
+
+func (b *TelegramService) cancelGame(update tgbotapi.Update) {
+	if _, ok := b.games.accountIdToGameId[update.FromChat().ID]; !ok {
+		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "dont have active games", nil)
+	}
+
+	g := b.games.accountIdToGameId[update.FromChat().ID]
+
+	_, err := test.CancelGame(
+		g.id,
+		b.authCache.telegramIdToToken[update.FromChat().ID],
+		b.appURL,
+	)
+	if err != nil {
+		b.responseError(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Failed to cancel game", err)
+		return
+	}
+
+	b.response(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Game cancelled", &startTemplate)
+
+	b.removeGame(update.FromChat().ID)
 }

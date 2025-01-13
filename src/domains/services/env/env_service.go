@@ -12,6 +12,7 @@ type EnvService struct {
 	MODE          string
 	Migrations    string
 	TelegramBot   string
+	RedisAddress  string
 }
 
 func NewEnvService() *EnvService {
@@ -38,5 +39,6 @@ func NewEnvService() *EnvService {
 		MODE:          mode,
 		Migrations:    viper.GetString("MIGRATIONS"),
 		TelegramBot:   viper.GetString("TELEGRAM_BOT_TOKEN"),
+		RedisAddress:  viper.GetString("REDIS_ADDRESS"),
 	}
 }

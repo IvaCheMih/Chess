@@ -155,7 +155,7 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 
 	userId := c.Context().Value("userId")
 
-	responseMove, err := h.gameService.Move(request.GameId, userId, requestDoMove)
+	responseMove, err := h.gameService.Move(request.GameId, userId.(int), requestDoMove)
 	if err != nil {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
@@ -165,9 +165,9 @@ func (h *GamesHandlers) Move(c *fiber.Ctx) error {
 }
 
 // EndGame godoc
-// @Summary do give-up.
-// @Description do give-up.
-// @Tags give-up
+// @Summary end game.
+// @Description end game.
+// @Tags game
 // @Accept json
 // @Produce json
 // @Security       JWT
@@ -184,6 +184,34 @@ func (h *GamesHandlers) EndGame(c *fiber.Ctx) error {
 	userId := c.Context().Value("userId")
 
 	responseMove, err := h.gameService.EndGame(userId.(int), request.GameId, request.Reason)
+	if err != nil {
+		log.Println(err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(responseMove)
+}
+
+// CancelGame godoc
+// @Summary cancel game.
+// @Description cancel game.
+// @Tags game
+// @Accept json
+// @Produce json
+// @Security       JWT
+// @Param gameId path dto.GetGameIdParam true "gameId"
+// @Success 200 {object} models.Game
+// @Router /game/{gameId}/cancel [post]
+func (h *GamesHandlers) CancelGame(c *fiber.Ctx) error {
+	request, err := dto.GetGameId(c)
+	if err != nil {
+		log.Println(err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	userId := c.Context().Value("userId")
+
+	responseMove, err := h.gameService.CancelGame(userId.(int), request.GameId)
 	if err != nil {
 		log.Println(err)
 		return c.SendStatus(fiber.StatusInternalServerError)
