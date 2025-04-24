@@ -25,8 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install deps linter
+        run:  make install-deps
+
       - name: Run linter
-        run: make lint
+        run:  make lint
 
   vuln:
     name: Check Dependencies
@@ -35,6 +38,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install deps linter
+        run:  make install-deps
 
       - name: Check vulnerabilities
         run: make vuln
