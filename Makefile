@@ -31,3 +31,7 @@ run-local-app:
 
 swagger:
 	( cd src ; swag init )
+
+install-deps:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install golang.org/x/vuln/cmd/govulncheck@latest
