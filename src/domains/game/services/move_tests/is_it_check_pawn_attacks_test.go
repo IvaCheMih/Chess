@@ -132,7 +132,7 @@ func TestCheckPawnAttacks(t *testing.T) {
 			BlackRookACastling: false,
 			BlackRookHCastling: false,
 			LastPawnMove:       nil,
-			Side:               false,
+			Side:               true,
 		}, models.Board{Cells: cells})
 
 		check := game.IsKingCheck(game.IsCheckWhite.KingGameID)
@@ -164,7 +164,7 @@ func TestCheckPawnAttacks(t *testing.T) {
 			BlackRookACastling: false,
 			BlackRookHCastling: false,
 			LastPawnMove:       nil,
-			Side:               false,
+			Side:               true,
 		}, models.Board{Cells: cells})
 
 		check := game.IsKingCheck(game.IsCheckWhite.KingGameID)
