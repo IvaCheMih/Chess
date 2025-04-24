@@ -76,6 +76,7 @@ func TestEndgame(t *testing.T) {
 		}, models.Board{Cells: cells})
 
 		isEnd, endgameReason := gameService.MoveService.IsItEndgame(&game, nil, board)
+		require.True(t, isEnd)
 		require.False(t, isEnd)
 		require.Equal(t, endgameReason, models.Mate)
 	})
