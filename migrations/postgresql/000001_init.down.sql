@@ -1,10 +1,11 @@
-DROP TABLE users;
-
-DROP TABLE boardCells;
+DROP TABLE moves;
 
 DROP TABLE games;
 
-DROP TABLE moves;
+DROP TYPE GAME_STATUS;
 
+DROP TYPE GAME_ENDGAME;
 
+DROP TABLE boardCells;
 
+DROP TABLE users;

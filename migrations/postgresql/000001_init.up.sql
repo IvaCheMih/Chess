@@ -15,31 +15,33 @@ CREATE TABLE board_cells (
     CONSTRAINT board_cells_pkey PRIMARY KEY (id)
 );
 
+CREATE TYPE GAME_ENDGAME AS ENUM ('NotEndgame', 'Draw', 'Mate', 'Pat', 'Repetition',  'NoLosses', 'GiveUp');
+CREATE TYPE GAME_STATUS AS ENUM ('Created', 'Cancelled', 'Active', 'Ended');
+
 CREATE TABLE games (
-    id                      serial       NOT NULL,
-    white_user_id           integer      NOT NULL default 0,
-    black_user_id           integer      NOT NULL default 0,
-    is_started              BOOLEAN      NOT NULL default false,
-    is_ended                BOOLEAN      NOT NULL default false,
+    id                      serial        NOT NULL,
+    white_user_id           integer       NOT NULL default 0,
+    black_user_id           integer       NOT NULL default 0,
+    status                  GAME_STATUS   NOT NULL default 'Created',
 
-    end_reason              varchar      NOT NULL default 'NotEndgame',
-    winner                  integer      NOT NULL default 0,
+    end_reason              GAME_ENDGAME  NOT NULL default 'NotEndgame',
+    winner_user_id          integer       NOT NULL default 0,
 
-    is_check_white          BOOLEAN      NOT NULL default false,
-    white_king_castling     BOOLEAN      NOT NULL default false,
+    is_check_white          BOOLEAN       NOT NULL default false,
+    white_king_castling     BOOLEAN       NOT NULL default false,
 
-    white_rook_a_castling   BOOLEAN      NOT NULL default false,
-    white_rook_h_castling   BOOLEAN      NOT NULL default false,
+    white_rook_a_castling   BOOLEAN       NOT NULL default false,
+    white_rook_h_castling   BOOLEAN       NOT NULL default false,
 
-    is_check_black          BOOLEAN      NOT NULL default false,
-    black_king_castling     BOOLEAN      NOT NULL default false,
+    is_check_black          BOOLEAN       NOT NULL default false,
+    black_king_castling     BOOLEAN       NOT NULL default false,
 
-    black_rook_a_castling   BOOLEAN      NOT NULL default false,
-    black_rook_h_castling   BOOLEAN      NOT NULL default false,
+    black_rook_a_castling   BOOLEAN       NOT NULL default false,
+    black_rook_h_castling   BOOLEAN       NOT NULL default false,
 
-    last_loss               integer      NOT NULL default 0,
-    last_pawn_move          integer      ,
-    side                    BOOLEAN      NOT NULL default true,
+    last_loss               integer       NOT NULL default 0,
+    last_pawn_move          integer       ,
+    side                    BOOLEAN       NOT NULL default true,
 
     CONSTRAINT games_pkey PRIMARY KEY (id)
 );

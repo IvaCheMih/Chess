@@ -19,6 +19,19 @@ services:
     networks:
       - infra
 
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_USERNAME=user
+      - REDIS_PASSWORD=password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
 #  application:
 #    depends_on:
 #      postgres:

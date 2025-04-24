@@ -57,8 +57,8 @@ func (b *BoardCellsRepository) Find(gameId int) (models.Board, error) {
 	var boardCell = []models.BoardCell{}
 
 	err := b.db.Table(`board_cells`).
-		Find(&boardCell).
 		Where("game_id=?", gameId).
+		Find(&boardCell).
 		Error
 	if err != nil {
 		return models.Board{}, err

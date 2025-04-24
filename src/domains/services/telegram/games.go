@@ -40,12 +40,9 @@ func (b *TelegramService) addOpponent(telegramId int64, opponentId int) {
 	defer b.games.mu.Unlock()
 
 	if _, ok := b.games.accountIdToGameId[telegramId]; ok {
-		id := b.games.accountIdToGameId[telegramId].id
+		g := b.games.accountIdToGameId[telegramId]
 
-		b.games.accountIdToGameId[telegramId] = &game{
-			id:         id,
-			opponentId: opponentId,
-		}
+		g.opponentId = opponentId
 	}
 }
 
@@ -60,15 +57,12 @@ func (b *TelegramService) getGame(telegramId int64) (game, error) {
 	return game{}, errors.New("game not exists")
 }
 
-// TODO: endgame
-//func (b *TelegramService) removeGame(telegramId int64) {
-//	b.games.mu.Lock()
-//	defer b.games.mu.Unlock()
-//
-//	if _, ok := b.games.accountIdToGameId[telegramId]; ok {
-//		delete(b.games.accountIdToGameId, telegramId)
-//	}
-//}
+func (b *TelegramService) removeGame(telegramId int64) {
+	b.games.mu.Lock()
+	defer b.games.mu.Unlock()
+
+	delete(b.games.accountIdToGameId, telegramId)
+}
 
 // TODO: add new figure
 func (b *TelegramService) addMove(telegramId int64, index int) (*int, *int) {
@@ -76,25 +70,14 @@ func (b *TelegramService) addMove(telegramId int64, index int) (*int, *int) {
 	defer b.games.mu.Unlock()
 
 	if _, ok := b.games.accountIdToGameId[telegramId]; ok {
-		gameId := b.games.accountIdToGameId[telegramId].id
-		opponentId := b.games.accountIdToGameId[telegramId].opponentId
+		g := b.games.accountIdToGameId[telegramId]
 
 		if b.games.accountIdToGameId[telegramId].from == nil {
-			b.games.accountIdToGameId[telegramId] = &game{
-				id:         gameId,
-				from:       &index,
-				opponentId: opponentId,
-			}
+			g.from = &index
 		} else {
-			from := *b.games.accountIdToGameId[telegramId].from
-			b.games.accountIdToGameId[telegramId] = &game{
-				id:         gameId,
-				from:       &from,
-				to:         &index,
-				opponentId: opponentId,
-			}
+			g.to = &index
 
-			return &from, &index
+			return g.from, g.to
 		}
 	}
 
@@ -106,12 +89,8 @@ func (b *TelegramService) cleanMoves(telegramId int64) {
 	defer b.games.mu.Unlock()
 
 	if _, ok := b.games.accountIdToGameId[telegramId]; ok {
-		gameId := b.games.accountIdToGameId[telegramId].id
-		opponentId := b.games.accountIdToGameId[telegramId].opponentId
-
-		b.games.accountIdToGameId[telegramId] = &game{
-			id:         gameId,
-			opponentId: opponentId,
-		}
+		g := b.games.accountIdToGameId[telegramId]
+		g.to = nil
+		g.from = nil
 	}
 }

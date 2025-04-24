@@ -31,10 +31,10 @@ jobs:
     continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@main
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@main
         with:
           go-version: ${{ env.GO_VERSION }}
 

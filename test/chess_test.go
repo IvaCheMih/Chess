@@ -22,10 +22,10 @@ func TestGame(t *testing.T) {
 		envs := env.NewEnvService()
 
 		expected1 := MakeExpected(board1)
-		//expected2 := MakeExpected(board2)
+		expected2 := MakeExpected(board2)
 
 		DoTestChessGame(t, moves1, expected1, game1, envs.AppURL)
-		//DoTestChessGame(t, moves2, expected2, game2, envs.AppURL)
+		DoTestChessGame(t, moves2, expected2, game2, envs.AppURL)
 	})
 }
 
@@ -109,7 +109,7 @@ func DoTestChessGame(t *testing.T, moves []gamedto.DoMoveBody, expected gamedto.
 	)
 	require.NoError(t, err)
 
-	if !assert.Equal(t, expectedGame.IsEnded, game.IsEnded) {
+	if !assert.Equal(t, expectedGame.Status, game.Status) {
 		t.Errorf("[!] IsEnded are not equal")
 	}
 
