@@ -1,6 +1,6 @@
 module github.com/IvaCheMih/chess
 
-go 1.24.2
+go 1.24.6
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
