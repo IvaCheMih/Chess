@@ -14,7 +14,7 @@ type Figure interface {
 	Delete()
 }
 
-func createFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *Figure {
+func createFigureI(_type byte, isWhite bool, index int, gameModel models.Game) Figure {
 	coordinates := IndexToFieldCoordinates(index)
 
 	figure := CreateFigure(_type, isWhite, coordinates, gameModel)
@@ -23,7 +23,7 @@ func createFigureI(_type byte, isWhite bool, index int, gameModel models.Game) *
 		return nil
 	}
 
-	return &figure
+	return figure
 }
 
 func CreateFigure(_type byte, isWhite bool, coordinates [2]int, gameModel models.Game) Figure {
