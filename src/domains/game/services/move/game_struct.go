@@ -6,7 +6,7 @@ import (
 
 type Game struct {
 	N                 int
-	Figures           map[int]*Figure
+	Figures           map[int]Figure
 	IsCheckWhite      IsCheck
 	IsCheckBlack      IsCheck
 	WhiteCastling     Castling
@@ -33,16 +33,16 @@ type Castling struct {
 	RookHCastling bool
 }
 
-func (g *Game) GetFigureByIndex(index int) *Figure {
+func (g *Game) GetFigureByIndex(index int) Figure {
 	return g.Figures[index]
 }
 
-func (g *Game) GetFigureByFieldCoordinates(crd [2]int) *Figure {
+func (g *Game) GetFigureByFieldCoordinates(crd [2]int) Figure {
 	index := FieldCoordinatesToIndex(crd)
 	return g.Figures[index]
 }
 
-func (g *Game) GetFigureByCoordinates(coordinates string) *Figure {
+func (g *Game) GetFigureByCoordinates(coordinates string) Figure {
 	index := g.CoordinatesToIndex(coordinates)
 
 	return g.Figures[index]
@@ -61,13 +61,13 @@ func (g *Game) CheckCellOnBoardByIndex(index int) bool {
 func (g *Game) ChangeKingGameID(to int) {
 	figure := g.GetFigureByIndex(to)
 
-	if (*figure).GetType() != 'K' {
+	if figure.GetType() != 'K' {
 		return
 	}
-	if (*figure).IsItWhite() {
-		g.IsCheckWhite.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
+	if figure.IsItWhite() {
+		g.IsCheckWhite.KingGameID = FieldCoordinatesToIndex(figure.GetCoordinates())
 	} else {
-		g.IsCheckBlack.KingGameID = FieldCoordinatesToIndex((*figure).GetCoordinates())
+		g.IsCheckBlack.KingGameID = FieldCoordinatesToIndex(figure.GetCoordinates())
 	}
 }
 
@@ -102,21 +102,21 @@ func (g *Game) CheckToMovingPlayer() bool {
 func (g *Game) ChangeCastlingFlag(to int) {
 	figure := g.GetFigureByIndex(to)
 
-	switch (*figure).GetType() {
+	switch figure.GetType() {
 	case 'K':
-		if (*figure).IsItWhite() {
+		if figure.IsItWhite() {
 			g.WhiteCastling.KingCastling = true
 		} else {
 			g.BlackCastling.KingCastling = true
 		}
 	case 'a':
-		if (*figure).IsItWhite() {
+		if figure.IsItWhite() {
 			g.WhiteCastling.RookACastling = true
 		} else {
 			g.BlackCastling.RookACastling = true
 		}
 	case 'h':
-		if (*figure).IsItWhite() {
+		if figure.IsItWhite() {
 			g.WhiteCastling.RookHCastling = true
 		} else {
 			g.BlackCastling.RookHCastling = true
@@ -127,7 +127,7 @@ func (g *Game) ChangeCastlingFlag(to int) {
 func (g *Game) ChangeLastPawnMove(from int, to int) {
 	figure := g.GetFigureByIndex(to)
 
-	if (*figure).GetType() == 'p' && math.Abs(float64(from-to)) == 2*8 {
+	if figure.GetType() == 'p' && math.Abs(float64(from-to)) == 2*8 {
 		g.LastPawnMove = &to
 		return
 	}
@@ -158,9 +158,9 @@ func (g *Game) CheckKnightAttack(index int) bool {
 	king := g.GetFigureByIndex(index)
 	for _, knPosition := range *g.theoryKnightSteps {
 		if g.CheckCellOnBoardByIndex(index + knPosition) {
-			if fig := g.GetFigureByIndex(index + knPosition); fig != nil && (*fig).GetType() == 'k' {
-				if (*fig).IsItWhite() != (*king).IsItWhite() {
-					if (*king).IsItWhite() {
+			if fig := g.GetFigureByIndex(index + knPosition); fig != nil && fig.GetType() == 'k' {
+				if fig.IsItWhite() != king.IsItWhite() {
+					if king.IsItWhite() {
 						g.IsCheckWhite.IsItCheck = true
 						return true
 					} else {
@@ -274,11 +274,11 @@ func (g *Game) CheckAttackCell(kingCoordinate [2]int, cellCoordinate [2]int, tri
 	if fig == nil {
 		return false, false
 	}
-	if (*fig).IsItWhite() == (*king).IsItWhite() {
+	if fig.IsItWhite() == king.IsItWhite() {
 		return false, true
 	}
-	if (*fig).IsItWhite() != (*king).IsItWhite() {
-		if isTriggerFigure((*fig).GetType(), triggerFigures) {
+	if fig.IsItWhite() != king.IsItWhite() {
+		if isTriggerFigure(fig.GetType(), triggerFigures) {
 			return true, true
 		}
 		return false, true
@@ -300,33 +300,33 @@ func (g *Game) CheckPawnAttack(indexKing int) bool {
 
 	crd := IndexToFieldCoordinates(indexKing)
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
+	if king.IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] - 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if fig.IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if (*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] - 1}) {
+	if king.IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] - 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if fig.IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] + 1}) {
+	if !king.IsItWhite() && IsOnRealBoard([2]int{crd[0] + 1, crd[1] + 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] + 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if fig.IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
 	}
 
-	if !(*king).IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] + 1}) {
+	if !king.IsItWhite() && IsOnRealBoard([2]int{crd[0] - 1, crd[1] + 1}) {
 		if fig := g.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] + 1}); fig != nil {
-			if (*fig).IsItWhite() != (*king).IsItWhite() {
+			if fig.IsItWhite() != king.IsItWhite() {
 				return true
 			}
 		}
@@ -342,11 +342,11 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 	figureFrom := g.GetFigureByFieldCoordinates(coordinateFrom)
 
 	if figureTo != nil {
-		g.KilledFigure = (*figureTo).GetType()
-		(*figureTo).Delete()
+		g.KilledFigure = figureTo.GetType()
+		figureTo.Delete()
 	}
 
-	(*figureFrom).ChangeCoordinates(coordinateTo)
+	figureFrom.ChangeCoordinates(coordinateTo)
 
 	g.Figures[to] = g.Figures[from]
 	g.Figures[from] = nil
@@ -367,16 +367,16 @@ func (g *Game) ChangeToAndFrom(to int, from int) {
 //	}
 //}
 
-func (g *Game) IsItYourFigure(figure *Figure) bool {
+func (g *Game) IsItYourFigure(figure Figure) bool {
 	if figure == nil {
 		return false
 	}
 
-	if g.Side && !(*figure).IsItWhite() {
+	if g.Side && !figure.IsItWhite() {
 		return false
 	}
 
-	if !g.Side && (*figure).IsItWhite() {
+	if !g.Side && figure.IsItWhite() {
 		return false
 	}
 
@@ -390,9 +390,9 @@ func (g *Game) DeletePawn(indexesToChange []int) {
 
 	figure := g.GetFigureByIndex(indexesToChange[3])
 
-	g.KilledFigure = (*figure).GetType()
+	g.KilledFigure = figure.GetType()
 
-	(*figure).Delete()
+	figure.Delete()
 }
 
 func (g *Game) ChangeRookField(indexesToChange []int) {
@@ -418,18 +418,18 @@ func (g *Game) NewFigureRequestCorrect(to int, pawnColor bool) bool {
 func (g *Game) ChangePawnToNewFigure(to int, newFigure byte) {
 	figure := g.GetFigureByIndex(to)
 
-	if (*figure).GetType() == 'p' {
-		if (*figure).IsItWhite() {
+	if figure.GetType() == 'p' {
+		if figure.IsItWhite() {
 			if to < 8 && g.isNewFigureCorrect(newFigure) {
-				(*figure).ChangeType(newFigure)
+				figure.ChangeType(newFigure)
 
-				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
+				g.NewFigureId = mutateNewFigureId(newFigure, figure.IsItWhite())
 			}
 		} else {
 			if to > 55 && g.isNewFigureCorrect(newFigure) {
-				(*figure).ChangeType(newFigure)
+				figure.ChangeType(newFigure)
 
-				g.NewFigureId = mutateNewFigureId(newFigure, (*figure).IsItWhite())
+				g.NewFigureId = mutateNewFigureId(newFigure, figure.IsItWhite())
 			}
 		}
 	}
@@ -499,14 +499,14 @@ func (g *Game) copyGame() *Game {
 		lastPawnMove = *g.LastPawnMove
 	}
 
-	var figures = make(map[int]*Figure, len(g.Figures))
+	var figures = make(map[int]Figure, len(g.Figures))
 
 	for i, figure := range g.Figures {
 		var f Figure
 		if figure != nil {
-			f = *figure
+			f = figure
 
-			figures[i] = &f
+			figures[i] = f
 		}
 	}
 
@@ -637,7 +637,7 @@ func (g *Game) moveExists(theoryMoves *TheoryMoves, toCrd [2]int, fromCrd [2]int
 		return false
 	}
 
-	if (*g.GetFigureByFieldCoordinates(fromCrd)).GetType() == 'p' {
+	if g.GetFigureByFieldCoordinates(fromCrd).GetType() == 'p' {
 		for figureByte := range g.newFigures {
 			newGame := g.copyGame()
 
@@ -682,8 +682,8 @@ var compares = compareFunctions[Game]{
 			}
 
 			if g1.Figures[i] != nil && g2.Figures[i] != nil &&
-				(*g1.Figures[i]).IsItWhite() == (*g2.Figures[i]).IsItWhite() &&
-				(*g1.Figures[i]).GetType() == (*g2.Figures[i]).GetType() {
+				g1.Figures[i].IsItWhite() == g2.Figures[i].IsItWhite() &&
+				g1.Figures[i].GetType() == g2.Figures[i].GetType() {
 				continue
 			}
 

@@ -84,7 +84,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	left := [][2]int{}
 
 	if IsOnRealBoard([2]int{crd[0] + 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - n}) != nil {
-		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - n})).IsItWhite() {
+		if figure.IsItWhite() != game.GetFigureByFieldCoordinates([2]int{crd[0] + 1, crd[1] - n}).IsItWhite() {
 			left = append(left, [2]int{crd[0] + 1, crd[1] - n})
 		}
 	}
@@ -92,7 +92,7 @@ func (figure *FigurePawn) GetPossibleMoves(game *Game) *TheoryMoves {
 	right := [][2]int{}
 
 	if IsOnRealBoard([2]int{crd[0] - 1, crd[1] - n}) && game.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - n}) != nil {
-		if figure.IsItWhite() != (*game.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - n})).IsItWhite() {
+		if figure.IsItWhite() != game.GetFigureByFieldCoordinates([2]int{crd[0] - 1, crd[1] - n}).IsItWhite() {
 			right = append(right, [2]int{crd[0] - 1, crd[1] - n})
 		}
 	}
@@ -200,7 +200,7 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 			continue
 		} else {
 			fig := game.GetFigureByFieldCoordinates(coordinates)
-			if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
+			if fig != nil && fig.IsItWhite() == (*figure).IsItWhite() {
 				continue
 			}
 			kn = append(kn, coordinates)
@@ -423,13 +423,13 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 				fig := (*game).GetFigureByFieldCoordinates(move1)
 
 				if fig != nil &&
-					(*fig).GetType() == 'K' {
+					fig.GetType() == 'K' {
 					canMove = false
 					continue
 				}
 
 				if fig != nil &&
-					(*fig).GetType() == 'k' {
+					fig.GetType() == 'k' {
 					canMove = false
 					continue
 				}
@@ -446,7 +446,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 	if !figure.Castling {
 		if figure.IsItWhite() && crd[0] == 4 && crd[1] == 7 {
 			rookA := game.GetFigureByFieldCoordinates([2]int{0, 7})
-			if rookA != nil && (*rookA).IsItWhite() && (*rookA).GetType() == 'a' && !game.WhiteCastling.RookACastling {
+			if rookA != nil && rookA.IsItWhite() && rookA.GetType() == 'a' && !game.WhiteCastling.RookACastling {
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(59) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(59)) == nil &&
 					!game.IsKingCheck(58) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(58)) == nil &&
@@ -456,7 +456,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 
 			rookH := game.GetFigureByFieldCoordinates([2]int{7, 7})
-			if rookH != nil && (*rookH).IsItWhite() && (*rookH).GetType() == 'h' && !game.WhiteCastling.RookHCastling {
+			if rookH != nil && rookH.IsItWhite() && rookH.GetType() == 'h' && !game.WhiteCastling.RookHCastling {
 				if !game.IsKingCheck(60) &&
 					!game.IsKingCheck(61) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(61)) == nil &&
 					!game.IsKingCheck(62) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(62)) == nil {
@@ -467,7 +467,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 
 		if !figure.IsItWhite() && crd[0] == 4 && crd[1] == 0 {
 			rookA := game.GetFigureByFieldCoordinates([2]int{0, 0})
-			if rookA != nil && !(*rookA).IsItWhite() && (*rookA).GetType() == 'a' && !game.BlackCastling.RookACastling {
+			if rookA != nil && !rookA.IsItWhite() && rookA.GetType() == 'a' && !game.BlackCastling.RookACastling {
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(3) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(3)) == nil &&
 					!game.IsKingCheck(2) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(2)) == nil &&
@@ -477,7 +477,7 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 			}
 
 			rookH := game.GetFigureByFieldCoordinates([2]int{7, 0})
-			if rookH != nil && !(*rookH).IsItWhite() && (*rookH).GetType() == 'h' && !game.BlackCastling.RookHCastling {
+			if rookH != nil && !rookH.IsItWhite() && rookH.GetType() == 'h' && !game.BlackCastling.RookHCastling {
 				if !game.IsKingCheck(4) &&
 					!game.IsKingCheck(5) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(5)) == nil &&
 					!game.IsKingCheck(6) && game.GetFigureByFieldCoordinates(IndexToFieldCoordinates(6)) == nil {
@@ -505,11 +505,11 @@ func (figure *FigureKing) GetPossibleMoves(game *Game) *TheoryMoves {
 
 func (figure *FigureRook) AddMove(game *Game, crd [2]int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() == (*figure).IsItWhite() {
 		return false, false
 	}
 
-	if fig != nil && (*fig).IsItWhite() != (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() != (*figure).IsItWhite() {
 		return true, false
 	}
 
@@ -518,11 +518,11 @@ func (figure *FigureRook) AddMove(game *Game, crd [2]int) (bool, bool) {
 
 func (figure *FigureBishop) AddMove(game *Game, crd [2]int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() == (*figure).IsItWhite() {
 		return false, false
 	}
 
-	if fig != nil && (*fig).IsItWhite() != (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() != (*figure).IsItWhite() {
 		return true, false
 	}
 
@@ -531,11 +531,11 @@ func (figure *FigureBishop) AddMove(game *Game, crd [2]int) (bool, bool) {
 
 func (figure *FigureQueen) AddMove(game *Game, crd [2]int) (bool, bool) {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() == (*figure).IsItWhite() {
 		return false, false
 	}
 
-	if fig != nil && (*fig).IsItWhite() != (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() != (*figure).IsItWhite() {
 		return true, false
 	}
 
@@ -544,7 +544,7 @@ func (figure *FigureQueen) AddMove(game *Game, crd [2]int) (bool, bool) {
 
 func (figure *FigureKing) AddMove(game *Game, crd [2]int) bool {
 	fig := game.GetFigureByFieldCoordinates(crd)
-	if fig != nil && (*fig).IsItWhite() == (*figure).IsItWhite() {
+	if fig != nil && fig.IsItWhite() == (*figure).IsItWhite() {
 		return false
 	}
 	return true

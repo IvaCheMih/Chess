@@ -74,7 +74,7 @@ func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, f
 	}
 
 	// theory moves for this figure ("to" is on board)
-	possibleMoves := (*figure).GetPossibleMoves(&game)
+	possibleMoves := figure.GetPossibleMoves(&game)
 
 	// requested move is possible (is in possibleMoves)
 	isCorrect, indexesToChange := checkMove(possibleMoves, []int{from, to})
@@ -82,8 +82,8 @@ func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, f
 		return []int{}, Game{}
 	}
 
-	if (*figure).GetType() == 'p' && game.isNewFigureCorrect(newFigure) {
-		if !game.NewFigureRequestCorrect(to, (*figure).IsItWhite()) {
+	if figure.GetType() == 'p' && game.isNewFigureCorrect(newFigure) {
+		if !game.NewFigureRequestCorrect(to, figure.IsItWhite()) {
 			return []int{}, Game{}
 		}
 	}
@@ -91,9 +91,9 @@ func (m *MoveService) IsMoveCorrect(gameModel models.Game, board models.Board, f
 	return indexesToChange, game
 }
 
-func (m *MoveService) createField(board models.Board, gameModel models.Game) (map[int]*Figure, int, int) {
+func (m *MoveService) createField(board models.Board, gameModel models.Game) (map[int]Figure, int, int) {
 	blackKingCell, whiteKingCell := 0, 0
-	field := map[int]*Figure{}
+	field := map[int]Figure{}
 
 	for _, cell := range board.Cells {
 		if cell.FigureId == 5 {
@@ -169,8 +169,8 @@ func (m *MoveService) IsItEndgame(g *Game, history []models.Move, board []models
 			continue
 		}
 
-		fromCrd := (*figure).GetCoordinates()
-		theoryMoves := (*figure).GetPossibleMoves(g)
+		fromCrd := figure.GetCoordinates()
+		theoryMoves := figure.GetPossibleMoves(g)
 
 		if g.movesExist(theoryMoves, fromCrd) {
 			if g.LastLoss+1 == lastLossLimit {
@@ -200,7 +200,7 @@ func (g *Game) DoMoveFromHistory(move models.Move, newFigure byte) {
 
 	figure := g.GetFigureByIndex(from)
 
-	possibleMoves := (*figure).GetPossibleMoves(g)
+	possibleMoves := figure.GetPossibleMoves(g)
 
 	_, indexesToChange := checkMove(possibleMoves, []int{from, to})
 
