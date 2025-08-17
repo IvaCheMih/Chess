@@ -200,7 +200,7 @@ func (figure *FigureKnight) GetPossibleMoves(game *Game) *TheoryMoves {
 			continue
 		} else {
 			fig := game.GetFigureByFieldCoordinates(coordinates)
-			if fig != nil && fig.IsItWhite() == (*figure).IsItWhite() {
+			if fig != nil && fig.IsItWhite() == figure.IsItWhite() {
 				continue
 			}
 			kn = append(kn, coordinates)

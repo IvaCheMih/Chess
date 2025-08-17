@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/IvaCheMih/chess/src/domains/game/models"
+
 type DoMoveBody struct {
 	From      string
 	To        string
@@ -7,5 +9,6 @@ type DoMoveBody struct {
 }
 
 type DoMoveResponse struct {
-	BoardCells []BoardCellEntity
+	models.Move
+	End bool
 }

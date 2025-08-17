@@ -21,3 +21,19 @@ var endGameTemplate = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("draw", "draw"),
 	),
 )
+
+func addEndgameButton(template tgbotapi.InlineKeyboardMarkup) tgbotapi.InlineKeyboardMarkup {
+	endgame := tgbotapi.NewInlineKeyboardButtonData("End game", "endgame")
+	rowEndGame := tgbotapi.NewInlineKeyboardRow(endgame)
+
+	template.InlineKeyboard = append(template.InlineKeyboard, rowEndGame)
+	return template
+}
+
+func addCancelButtonButton(template tgbotapi.InlineKeyboardMarkup) tgbotapi.InlineKeyboardMarkup {
+	cancel := tgbotapi.NewInlineKeyboardButtonData("Cancel game", "cancel")
+	rowCancelGame := tgbotapi.NewInlineKeyboardRow(cancel)
+
+	template.InlineKeyboard = append(template.InlineKeyboard, rowCancelGame)
+	return template
+}

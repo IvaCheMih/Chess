@@ -6,6 +6,7 @@ import (
 	"github.com/IvaCheMih/chess/src/domains/game"
 	"github.com/IvaCheMih/chess/src/domains/services/env"
 	"github.com/IvaCheMih/chess/src/domains/services/migrations"
+	"github.com/IvaCheMih/chess/src/domains/services/redis"
 	telegram "github.com/IvaCheMih/chess/src/domains/services/telegram"
 	"github.com/IvaCheMih/chess/src/domains/user"
 	swagger "github.com/arsmn/fiber-swagger/v2"
@@ -35,10 +36,12 @@ func Init(envs *env.EnvService) {
 		log.Fatalln(err)
 	}
 
+	redisService := redis.CreateRedisService(envs.RedisAddress)
+
 	usersRepository := user.CreateUsersRepository(db)
 	boardCellsRepository := game.CreateBoardCellsRepository(db)
 	movesRepository := game.CreateMovesRepository(db)
-	gamesRepository := game.CreateGamesRepository(db)
+	gamesRepository := game.CreateGamesRepository(db, redisService)
 
 	usersServices := user.CreateUsersService(&usersRepository)
 	userHandlers = user.CreateUserHandlers(&usersServices, envs.JWTSecret)
@@ -116,6 +119,8 @@ func main() {
 	server.Post("/game/:gameId/move", authHandlers.Auth, gamesHandlers.Move)
 
 	server.Post("/game/endgame", authHandlers.Auth, gamesHandlers.EndGame)
+
+	server.Post("/game/:gameId/cancel", authHandlers.Auth, gamesHandlers.CancelGame)
 
 	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)

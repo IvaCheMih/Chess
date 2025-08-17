@@ -60,9 +60,6 @@ func (b *TelegramService) makeBoardTemplate(board []dto.BoardCellEntity) tgbotap
 		}
 	}
 
-	endgame := tgbotapi.NewInlineKeyboardButtonData("End game", "endgame")
-	rowEndGame := tgbotapi.NewInlineKeyboardRow(endgame)
-
 	return tgbotapi.NewInlineKeyboardMarkup(
 		row1,
 		row2,
@@ -72,7 +69,6 @@ func (b *TelegramService) makeBoardTemplate(board []dto.BoardCellEntity) tgbotap
 		row6,
 		row7,
 		row8,
-		rowEndGame,
 	)
 }
 

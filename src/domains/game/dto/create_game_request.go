@@ -8,8 +8,8 @@ type CreateGameResponse struct {
 	GameId             int
 	WhiteUserId        int
 	BlackUserId        int
-	IsStarted          bool
-	IsEnded            bool
+	Status             string
+	EndReason          string
 	IsCheckWhite       bool
 	WhiteKingCastling  bool
 	WhiteRookACastling bool

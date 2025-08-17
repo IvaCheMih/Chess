@@ -3,17 +3,20 @@ package game
 import (
 	"github.com/IvaCheMih/chess/src/domains/game/models"
 	"github.com/IvaCheMih/chess/src/domains/game/services/move"
+	"github.com/IvaCheMih/chess/src/domains/services/redis"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
 type GamesRepository struct {
-	db *gorm.DB
+	db    *gorm.DB
+	redis redis.RedisService
 }
 
-func CreateGamesRepository(db *gorm.DB) GamesRepository {
+func CreateGamesRepository(db *gorm.DB, redisService redis.RedisService) GamesRepository {
 	return GamesRepository{
-		db: db,
+		redis: redisService,
+		db:    db,
 	}
 }
 
@@ -32,7 +35,9 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	var game models.Game
 
 	err := g.db.Table(`games`).
-		Take(&game, map[string]interface{}{userColorId: 0}).
+		Where(map[string]interface{}{userColorId: 0}).
+		Where(map[string]interface{}{"status": models.Created}).
+		Take(&game).
 		Error
 	if err != nil {
 		return models.Game{}, err
@@ -41,12 +46,11 @@ func (g *GamesRepository) FindNotStartedGame(userColorId string) (models.Game, e
 	return game, nil
 }
 
-func (g *GamesRepository) UpdateColorUserIdByColor(tx *gorm.DB, gameId int, userColorId string, gameSide bool, userId int) error {
+func (g *GamesRepository) UpdateColorUserIdByColor(tx *gorm.DB, gameId int, userColorId string, userId int) error {
 	return tx.Table(`games`).
 		Where("id=?", gameId).
-		Updates(map[string]interface{}{userColorId: userId, "side": gameSide, "is_started": true}).
+		Updates(map[string]interface{}{userColorId: userId, "status": models.Active}).
 		Error
-
 }
 
 func (g *GamesRepository) GetByIdTx(tx *gorm.DB, gameId int) (models.Game, error) {
@@ -77,7 +81,7 @@ func (g *GamesRepository) GetById(gameId int) (models.Game, error) {
 	return game, nil
 }
 
-func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool, reason models.EndgameReason) error {
+func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, isEnd bool, reason models.EndgameReason, userId int) error {
 	var values = map[string]interface{}{
 		"is_check_white":        game.IsCheckWhite.IsItCheck,
 		"white_king_castling":   game.WhiteCastling.KingCastling,
@@ -92,8 +96,12 @@ func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, is
 	}
 
 	if isEnd {
-		values["is_ended"] = true
+		values["status"] = models.Ended
 		values["end_reason"] = reason
+
+		if reason == models.Mate {
+			values["winner_user_id"] = userId
+		}
 	}
 
 	if game.KilledFigure == 0 {
@@ -108,11 +116,18 @@ func (g *GamesRepository) UpdateGame(tx *gorm.DB, gameId int, game move.Game, is
 		Error
 }
 
-func (g *GamesRepository) UpdateIsEnded(winner int, gameId int, reason models.EndgameReason) error {
+func (g *GamesRepository) UpdateIsEnded(winnerUserId int, gameId int, reason models.EndgameReason) error {
 	return g.db.Table(`games`).
 		Where("id=?", gameId).
-		Updates(map[string]interface{}{"is_ended": true}).
-		Updates(map[string]interface{}{"end_reason": reason.ToDTO()}).
-		Updates(map[string]interface{}{"winner": winner}).
+		Updates(map[string]interface{}{"status": models.Ended}).
+		Updates(map[string]interface{}{"end_reason": reason.ToString()}).
+		Updates(map[string]interface{}{"winner_user_id": winnerUserId}).
+		Error
+}
+
+func (g *GamesRepository) UpdateIsCancelled(gameId int) error {
+	return g.db.Table(`games`).
+		Where("id=?", gameId).
+		Updates(map[string]interface{}{"status": models.Cancelled}).
 		Error
 }

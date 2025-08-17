@@ -7,48 +7,12 @@ import (
 	"testing"
 )
 
-func TestCorrectEnPass(t *testing.T) {
+func TestCorrectKingMove(t *testing.T) {
 	boardRepo := game.CreateBoardCellsRepository(nil)
 	gameService := game.CreateGamesService(&boardRepo, nil, nil)
 
-	t.Run("Test en pass 1", func(t *testing.T) {
-		board := boardRepo.MakeBoardCells(1, makeEnPass1())
-
-		var cells = map[int]*models.BoardCell{}
-
-		for i := range board {
-			cells[board[i].IndexCell] = &board[i]
-		}
-
-		gameModel := models.Game{
-			Id:                 1,
-			WhiteUserId:        1,
-			BlackUserId:        2,
-			Status:             models.Active,
-			IsCheckWhite:       false,
-			WhiteKingCastling:  false,
-			WhiteRookACastling: false,
-			WhiteRookHCastling: false,
-			IsCheckBlack:       false,
-			BlackKingCastling:  false,
-			BlackRookACastling: false,
-			BlackRookHCastling: false,
-			LastPawnMove:       &lastPawnMove1,
-			Side:               false,
-		}
-
-		indexes, _ := gameService.MoveService.IsMoveCorrect(
-			gameModel,
-			models.Board{Cells: cells},
-			35,
-			44,
-			0,
-		)
-		require.Equal(t, expected1, indexes)
-	})
-
-	t.Run("Test en pass 2", func(t *testing.T) {
-		board := boardRepo.MakeBoardCells(1, makeEnPass2())
+	t.Run("Test king move 1", func(t *testing.T) {
+		board := boardRepo.MakeBoardCells(1, makeKingMove1())
 
 		var cells = map[int]*models.BoardCell{}
 
@@ -73,33 +37,71 @@ func TestCorrectEnPass(t *testing.T) {
 			Side:               false,
 		}
 
-		indexes, _ := gameService.MoveService.IsMoveCorrect(gameModel, models.Board{Cells: cells}, 35, 44, 0)
-		require.Equal(t, expected2, indexes)
+		indexes, _ := gameService.MoveService.IsMoveCorrect(
+			gameModel,
+			models.Board{Cells: cells},
+			4,
+			6,
+			0,
+		)
+		require.Equal(t, expectedKingMove1, indexes)
+	})
+
+	t.Run("Test king move 2", func(t *testing.T) {
+		board := boardRepo.MakeBoardCells(1, makeKingMove2())
+
+		var cells = map[int]*models.BoardCell{}
+
+		for i := range board {
+			cells[board[i].IndexCell] = &board[i]
+		}
+
+		gameModel := models.Game{
+			Id:                 1,
+			WhiteUserId:        1,
+			BlackUserId:        2,
+			Status:             models.Active,
+			IsCheckWhite:       false,
+			WhiteKingCastling:  false,
+			WhiteRookACastling: false,
+			WhiteRookHCastling: false,
+			IsCheckBlack:       false,
+			BlackKingCastling:  false,
+			BlackRookACastling: false,
+			BlackRookHCastling: false,
+			LastPawnMove:       nil,
+			Side:               false,
+		}
+
+		indexes, _ := gameService.MoveService.IsMoveCorrect(
+			gameModel,
+			models.Board{Cells: cells},
+			4,
+			2,
+			0,
+		)
+		require.Equal(t, expectedKingMove2, indexes)
 	})
 }
 
-var lastPawnMove1 = 36
-
-func makeEnPass1() [][]int {
+func makeKingMove1() [][]int {
 	return [][]int{
-		{0, 8}, {1, 9}, {2, 10}, {3, 11}, {4, 12}, {5, 10}, {6, 9}, {7, 14},
-		{8, 13}, {9, 13}, {10, 13}, {35, 13}, {12, 13}, {13, 11}, {14, 13}, {15, 13},
+		{0, 8}, {1, 9}, {2, 10}, {3, 11}, {4, 12}, {5, 0}, {6, 0}, {7, 14},
+		{8, 13}, {9, 13}, {10, 13}, {0, 13}, {12, 13}, {13, 11}, {14, 13}, {15, 13},
 		{48, 6}, {49, 6}, {50, 6}, {51, 6}, {36, 6}, {53, 13}, {54, 6}, {55, 6},
 		{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 7},
 	}
 }
 
-var expected1 = []int{35, 44, -1, 36}
+var expectedKingMove1 = []int{4, 6, 7, 5}
 
-//var lastPawnMove2 = 0
-
-func makeEnPass2() [][]int {
+func makeKingMove2() [][]int {
 	return [][]int{
-		{0, 8}, {1, 9}, {2, 10}, {3, 11}, {4, 12}, {5, 10}, {6, 9}, {7, 14},
-		{8, 13}, {9, 13}, {10, 13}, {35, 13}, {12, 13}, {13, 11}, {14, 13}, {15, 13},
-		{48, 6}, {49, 6}, {50, 6}, {51, 6}, {36, 6}, {53, 13}, {54, 6}, {55, 6},
+		{0, 8}, {1, 0}, {2, 0}, {3, 0}, {4, 12}, {5, 0}, {6, 0}, {7, 14},
+		{8, 13}, {9, 13}, {10, 13}, {11, 0}, {12, 13}, {13, 11}, {14, 13}, {15, 13},
+		{48, 6}, {49, 6}, {50, 6}, {51, 6}, {52, 6}, {53, 13}, {54, 6}, {55, 6},
 		{56, 1}, {57, 2}, {58, 3}, {59, 4}, {60, 5}, {61, 3}, {62, 2}, {63, 7},
 	}
 }
 
-var expected2 = []int{}
+var expectedKingMove2 = []int{4, 2, 0, 3}
