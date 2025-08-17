@@ -53,7 +53,7 @@ func (g *Game) MakeKing(index int) Figure {
 	return &FigureKing{bf, false}
 }
 
-func (g *Game) GetFigureByFieldCoordinates(crd [2]int) *Figure {
+func (g *Game) GetFigureByFieldCoordinates(crd [2]int) Figure {
 	index := FieldCoordinatesToIndex(crd)
 	return g.Figures[index]
 }
